@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kuvert — Best Picture watchthrough</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#121821">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kuvert">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;600;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --house:#121821;
+    --house-deep:#0A0E14;
+    --house-line:#232C39;
+    --brass:#C08B3E;
+    --brass-dim:#7A5A2C;
+    --card:#EFE7D6;
+    --card-shade:#DED3BC;
+    --ink:#1B1712;
+    --dim:#7E8894;
+    --velvet:#6E2436;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(120% 80% at 50% 0%, #1A2331 0%, var(--house) 45%, var(--house-deep) 100%);
+    color:#D6DDE5;
+    font-family:"IBM Plex Sans",system-ui,sans-serif;
+    font-size:15px;
+    line-height:1.5;
+    min-height:100vh;
+    padding:env(safe-area-inset-top) 18px calc(64px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+
+  /* ---------- header ---------- */
+  header{padding:34px 0 20px;}
+  .marquee{
+    font-family:"Big Shoulders Display",sans-serif;
+    font-weight:800;
+    font-size:clamp(44px,13vw,86px);
+    line-height:.86;
+    letter-spacing:.01em;
+    color:var(--brass);
+    text-transform:uppercase;
+    margin:0;
+  }
+  .sub{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:11px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--dim);
+    margin:10px 0 0;
+  }
+
+  /* ---------- progress: one cell per film ---------- */
+  .reel{
+    margin:22px 0 0;
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(7px,1fr));
+    gap:2px;
+  }
+  .reel i{
+    display:block;height:16px;border-radius:1px;
+    background:#1D2531;border:1px solid #262F3D;
+  }
+  .reel i.seen{background:var(--brass);border-color:var(--brass);}
+  .reel i.now{background:var(--velvet);border-color:#8E3247;}
+  .tally{
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--dim);margin-top:10px;
+  }
+  .tally b{color:var(--brass);font-weight:500;}
+
+  /* ---------- envelope ---------- */
+  .stage{
+    margin:34px 0 8px;
+    perspective:1200px;
+    display:flex;flex-direction:column;align-items:center;
+  }
+  .env{
+    position:relative;width:100%;max-width:560px;
+    min-height:232px;
+    display:flex;align-items:flex-end;justify-content:center;
+  }
+  .env::before{
+    content:"";position:absolute;left:0;right:0;bottom:0;height:232px;z-index:0;
+    background:linear-gradient(#DCD1B8,#C8BB9D);
+    border-radius:3px;
+    box-shadow:0 16px 34px rgba(0,0,0,.5);
+  }
+  .flap{
+    position:absolute;bottom:114px;left:0;right:0;height:118px;
+    background:linear-gradient(#F5EEDF,#E3D9C3);
+    clip-path:polygon(0 0,100% 0,50% 100%);
+    transform-origin:top center;
+    transform:rotateX(0deg);
+    transition:transform .55s cubic-bezier(.4,0,.2,1);
+    z-index:4;
+    box-shadow:0 2px 10px rgba(0,0,0,.35);
+  }
+  .env.open .flap{transform:rotateX(-172deg);z-index:1;}
+  .pocket{
+    position:absolute;bottom:0;left:0;right:0;height:132px;
+    background:linear-gradient(#E7DECA,#D3C7AC);
+    border-top:1px solid #C6B896;
+    border-radius:0 0 3px 3px;
+    z-index:5;
+    box-shadow:0 -1px 0 rgba(0,0,0,.06);
+  }
+  .pocket::after{
+    content:"";position:absolute;inset:14px 16px auto;height:1px;background:rgba(0,0,0,.09);
+  }
+  .seal{
+    position:absolute;bottom:144px;left:50%;transform:translate(-50%,50%);
+    width:38px;height:38px;border-radius:50%;
+    background:var(--velvet);z-index:6;
+    display:flex;align-items:center;justify-content:center;
+    font-family:"Big Shoulders Display",sans-serif;font-weight:800;font-size:17px;
+    color:#F2DFC6;letter-spacing:.04em;
+    box-shadow:inset 0 -2px 4px rgba(0,0,0,.3);
+    transition:opacity .3s;
+  }
+  .env.open .seal{opacity:0;}
+
+  .slip{
+    position:relative;z-index:3;
+    width:calc(100% - 26px);
+    background:var(--card);
+    color:var(--ink);
+    padding:24px 24px 20px;
+    margin-bottom:22px;
+    border-radius:2px;
+    box-shadow:0 6px 22px rgba(0,0,0,.4);
+    transform:translateY(46px);
+    opacity:0;
+    display:none;
+    transition:transform .55s cubic-bezier(.2,.9,.3,1) .28s, opacity .3s .28s, display .55s allow-discrete;
+    text-align:left;
+  }
+  .env.open .slip{display:block;transform:translateY(-60px);opacity:1;z-index:6;}
+  @starting-style{
+    .env.open .slip{transform:translateY(46px);opacity:0;}
+  }
+
+  .eyebrow{
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.2em;
+    text-transform:uppercase;color:#8A7A5E;margin:0 0 6px;
+  }
+  .pick{
+    font-family:"Big Shoulders Display",sans-serif;font-weight:800;
+    font-size:clamp(30px,8vw,46px);line-height:.92;text-transform:uppercase;
+    margin:0;color:var(--ink);
+  }
+  .meta{
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;color:#6B6153;margin:10px 0 0;
+  }
+  .note{
+    margin:12px 0 0;padding:9px 11px;
+    background:rgba(110,36,54,.09);
+    border-left:2px solid var(--velvet);
+    font-size:13px;color:#4A3B33;
+  }
+  .slipacts{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+
+  /* ---------- buttons ---------- */
+  button{font:inherit;cursor:pointer;border-radius:2px;transition:background .15s,border-color .15s,color .15s;}
+  button:focus-visible{outline:2px solid var(--brass);outline-offset:2px;}
+  .draw{
+    font-family:"Big Shoulders Display",sans-serif;font-weight:600;
+    font-size:20px;letter-spacing:.08em;text-transform:uppercase;
+    background:var(--brass);color:#15100A;border:none;
+    padding:13px 30px;margin-top:4px;
+  }
+  .draw:hover{background:#D49B48;}
+  .draw:disabled{background:#3A4450;opacity:.4;cursor:default;}
+  .ghost{
+    background:transparent;border:1px solid var(--brass-dim);color:var(--brass);
+    font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+    font-family:"IBM Plex Mono",monospace;padding:9px 14px;
+  }
+  .ghost:hover{border-color:var(--brass);background:rgba(192,139,62,.1);}
+  .slip .ghost{border-color:#B3A488;color:#5A4E3C;}
+  .slip .ghost:hover{background:rgba(0,0,0,.05);border-color:#8A7A5E;}
+  .slip .solid{
+    background:var(--ink);color:var(--card);border:1px solid var(--ink);
+    font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.1em;
+    text-transform:uppercase;padding:9px 14px;
+  }
+  .slip .solid:hover{background:#3A322A;}
+
+  /* ---------- list ---------- */
+  .listhead{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    margin:46px 0 0;padding-bottom:10px;border-bottom:1px solid var(--house-line);
+    flex-wrap:wrap;
+  }
+  .listhead h2{
+    font-family:"Big Shoulders Display",sans-serif;font-weight:600;font-size:26px;
+    text-transform:uppercase;letter-spacing:.06em;margin:0;color:#C7D0DA;
+  }
+  .tabs{display:flex;gap:4px;}
+  .tab{
+    background:transparent;border:1px solid var(--house-line);color:var(--dim);
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;padding:6px 11px;
+  }
+  .tab[aria-pressed="true"]{border-color:var(--brass);color:var(--brass);}
+  .search{
+    width:100%;margin-top:12px;background:#161D27;border:1px solid var(--house-line);
+    color:#D6DDE5;padding:10px 12px;font:inherit;font-size:14px;border-radius:2px;
+  }
+  .search::placeholder{color:#5E6875;}
+  .search:focus{outline:none;border-color:var(--brass-dim);}
+
+  ul{list-style:none;margin:0;padding:0;}
+  li{
+    display:flex;align-items:baseline;gap:12px;
+    padding:11px 2px;border-bottom:1px solid #1A222D;
+  }
+  .tick{
+    flex:none;width:17px;height:17px;border:1px solid #38424F;background:transparent;
+    border-radius:1px;position:relative;top:3px;padding:0;
+  }
+  .tick[aria-pressed="true"]{background:var(--brass);border-color:var(--brass);}
+  .tick[aria-pressed="true"]::after{
+    content:"";position:absolute;left:5px;top:1px;width:4px;height:9px;
+    border:solid #15100A;border-width:0 2px 2px 0;transform:rotate(42deg);
+  }
+  li .t{flex:1;}
+  li.done .t{color:#5D6773;text-decoration:line-through;text-decoration-color:#3A434F;}
+  .yr{
+    font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--dim);flex:none;
+  }
+  .chip{
+    font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.12em;
+    text-transform:uppercase;padding:2px 5px;border:1px solid;flex:none;
+  }
+  .chip.w{color:var(--brass);border-color:var(--brass-dim);}
+  .chip.n{color:#6E7A88;border-color:#2C3642;}
+  .chip.x{color:#8A6070;border-color:#4A3038;}
+  .empty{padding:26px 2px;color:var(--dim);font-size:14px;}
+
+  footer{margin-top:34px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;}
+  .status{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#4E5865;letter-spacing:.08em;}
+  .status.warn{color:var(--brass);}
+  .backup{
+    margin-top:18px;padding:14px;border:1px solid var(--house-line);border-radius:2px;
+    background:#141B25;
+  }
+  .blabel{
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--dim);margin:0 0 9px;
+  }
+  #code{
+    width:100%;background:#0E141C;border:1px solid var(--house-line);color:var(--brass);
+    font-family:"IBM Plex Mono",monospace;font-size:12px;padding:9px 10px;border-radius:2px;
+  }
+  #code:focus{outline:none;border-color:var(--brass-dim);}
+  .bacts{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap;}
+  .bhint{font-size:12px;color:var(--dim);margin:10px 0 0;line-height:1.45;}
+
+  .slipbody{display:flex;gap:14px;align-items:flex-start;}
+  .slipmain{flex:1;min-width:0;}
+  .poster{flex:none;width:106px;border-radius:2px;box-shadow:0 3px 10px rgba(0,0,0,.35);}
+  .facts{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;color:#6B6153;margin:8px 0 0;}
+  .prov{font-size:13px;color:#4A3B33;margin:10px 0 0;line-height:1.45;}
+
+  .backdrop{display:block;width:calc(100% + 48px);margin:-24px -24px 16px;
+    aspect-ratio:21/9;height:auto;object-fit:cover;object-position:center;
+    background:#D8CDB3;
+    border-bottom:1px solid rgba(0,0,0,.12);border-radius:2px 2px 0 0;}
+  .tagline{font-style:italic;font-size:13.5px;color:#5A4E3C;margin:9px 0 0;}
+  .credits{font-size:13px;color:#4A3B33;margin:8px 0 0;line-height:1.45;}
+  .money{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;color:#6B6153;margin:8px 0 0;}
+  .slip a.ghost{text-decoration:none;display:inline-flex;align-items:center;}
+  .titlerow{display:flex;align-items:flex-end;gap:16px;}
+  .hast{margin:0 0 10px;opacity:.92;}
+  .hast svg{display:block;}
+  .when{font-family:"IBM Plex Mono",monospace;font-size:10px;color:#57616E;flex:none;min-width:60px;text-align:right;}
+  button.when{background:none;border:0;padding:0;cursor:pointer;}
+  button.when:hover{color:var(--brass);}
+  button.when:focus-visible{outline:1px solid var(--brass);outline-offset:2px;}
+  .tabdiv{width:1px;align-self:stretch;background:var(--house-line);margin:0 4px;}
+  .decs{display:flex;gap:4px;margin-top:12px;flex-wrap:wrap;}
+  .dec{position:relative;background:transparent;border:1px solid var(--house-line);color:var(--dim);
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.06em;
+    padding:5px 8px 7px;line-height:1.35;text-align:center;}
+  .dec b{display:block;font-weight:500;color:#AEB8C4;font-size:11px;}
+  .dec::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:var(--p,0%);background:var(--brass);}
+  .dec[aria-pressed="true"]{border-color:var(--brass);color:var(--brass);}
+  .dec[aria-pressed="true"] b{color:var(--brass);}
+  .leftline{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.08em;
+    color:#4E5865;margin:8px 0 0;text-transform:uppercase;}
+  .eyebrow.win{color:var(--brass);}
+  .slip.win{box-shadow:0 6px 22px rgba(0,0,0,.4), inset 0 0 0 2px var(--brass);}
+  .poster,.backdrop{cursor:zoom-in;}
+  .keys{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;color:#4E5865;margin:10px 0 0;text-align:center;}
+  .lightbox{position:fixed;inset:0;z-index:60;background:rgba(8,11,16,.94);
+    display:flex;align-items:center;justify-content:center;padding:4vh 4vw;cursor:zoom-out;}
+  .lightbox[hidden]{display:none;}
+  .lightbox img{max-width:100%;max-height:100%;border-radius:2px;box-shadow:0 24px 70px rgba(0,0,0,.65);}
+  html{scrollbar-color:#2C3644 #0E141C;}
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-track{background:#0E141C;}
+  ::-webkit-scrollbar-thumb{background:#2C3644;border-radius:5px;border:2px solid #0E141C;}
+  ::-webkit-scrollbar-thumb:hover{background:var(--brass-dim);}
+  .seal svg{display:block;}
+
+  .seenbox{margin:6px 0 0;}
+  .seenhead{display:flex;align-items:baseline;justify-content:space-between;
+    border-bottom:1px solid var(--house-line);padding-bottom:8px;}
+  .seenhead h2{font-family:"Big Shoulders Display",sans-serif;font-weight:600;font-size:20px;
+    text-transform:uppercase;letter-spacing:.06em;margin:0;color:#C7D0DA;}
+  .seencount{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--brass);letter-spacing:.12em;}
+  #seenList{max-height:224px;overflow-y:auto;}
+  li:hover{background:#161E29;}
+  .cols{display:block;}
+  @media (min-width:1100px){
+    .wrap{max-width:1280px;}
+    .cols{display:grid;grid-template-columns:560px minmax(0,1fr);gap:56px;align-items:start;}
+    .colB{padding-top:44px;}
+    .colB .listhead{margin-top:0;}
+  }
+  @media (min-width:1100px) and (min-height:780px){
+    .colA{position:sticky;top:24px;}
+  }
+
+  @media (pointer:coarse){
+    .search,#code,#tmdbTok{font-size:16px;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .flap,.slip,.seal{transition:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="cols">
+<div class="colA">
+
+  <header>
+    <div class="titlerow">
+      <h1 class="marquee">Kuvert</h1>
+    <div class="hast" title="Dalahäst — the only horse we approve of.">
+    <svg viewBox="0 0 100 90" width="52" height="47" aria-hidden="true"><path fill="var(--velvet)" d="M8 30 L12 20 L20 10 L24 4 L28 9 C40 10 50 18 54 30 L68 27 C78 28 83 32 84 36 L92 42 L87 54 L79 50 L84 84 L73 84 L71 53 L46 54 L49 84 L38 84 L38 50 L33 45 C28 40 26 34 24 30 L14 34 Z"/></svg>
+  </div>
+    </div>
+    <p class="sub">Best Picture winners &amp; chosen nominees · drawn at random</p>
+  </header>
+
+  <div class="stage">
+    <div class="env" id="env">
+      <div class="flap"></div>
+      <div class="seal" title="Tre kronor"><svg viewBox="0 0 24 20" width="18" height="15" aria-hidden="true" fill="#F2DFC6"><path d="m1 8 v-5 l2.5 2 L6 1 l2.5 4 2.5-2 v5 z"/><path d="m13 8 v-5 l2.5 2 L18 1 l2.5 4 2.5-2 v5 z"/><path d="m7 18 v-5 l2.5 2 L12 11 l2.5 4 2.5-2 v5 z"/></svg></div>
+      <div class="slip" id="slip" role="status" aria-live="polite">
+        <img class="backdrop" id="backdrop" alt="" hidden>
+        <div class="slipbody">
+          <img class="poster" id="poster" alt="" hidden>
+          <div class="slipmain">
+            <p class="eyebrow" id="pickEyebrow" title="Tonight's film">Kv&auml;llens film</p>
+            <h2 class="pick" id="pickTitle">—</h2>
+            <p class="meta" id="pickMeta"></p>
+            <p class="tagline" id="pickTag" hidden></p>
+            <p class="facts" id="pickFacts" hidden></p>
+            <p class="credits" id="pickCredits" hidden></p>
+            <p class="money" id="pickMoney" hidden></p>
+            <div class="note" id="pickNote" hidden></div>
+            <p class="prov" id="pickProv" hidden></p>
+          </div>
+        </div>
+        <div class="slipacts">
+          <button class="solid" id="markBtn">Mark as watched</button>
+          <button class="ghost" id="againBtn">Draw again</button>
+          <a class="ghost" id="lbxBtn" target="_blank" rel="noopener" hidden>Letterboxd</a>
+        </div>
+      </div>
+      <div class="pocket"></div>
+    </div>
+    <button class="draw" id="drawBtn">Öppna kuvertet</button>
+    <p class="keys">enter — dra &nbsp;·&nbsp; w — sedd &nbsp;·&nbsp; / — sök</p>
+  </div>
+
+  <div class="reel" id="reel" aria-hidden="true"></div>
+
+  <div class="seenbox">
+    <div class="seenhead"><h2 lang="sv" title="Watched">Sedda</h2><span class="seencount" id="seenCount">0</span></div>
+    <ul id="seenList"></ul>
+  </div>
+
+</div>
+
+<div class="colB">
+
+  <div class="listhead">
+    <h2 lang="sv">Listan</h2>
+    <div class="tabs">
+      <button class="tab" data-f="unseen" aria-pressed="true">Unseen</button>
+      <button class="tab" data-f="all" aria-pressed="false">All</button>
+      <span class="tabdiv"></span>
+      <button class="tab stat" data-s="W" aria-pressed="false">Won</button>
+      <button class="tab stat" data-s="N" aria-pressed="false">Nom</button>
+    </div>
+  </div>
+  <p class="tally" id="tally">Loading…</p>
+  <div class="decs" id="decs" aria-label="Coverage by decade"></div>
+  <p class="leftline" id="leftline"></p>
+  <input class="search" id="search" type="search" placeholder="Sök en titel…" aria-label="Find a title">
+  <ul id="list"></ul>
+
+  <footer>
+    <span class="status" id="saveState"></span>
+    <button class="ghost" id="resetBtn">Clear all progress</button>
+  </footer>
+
+  <div class="backup" id="backup">
+    <p class="blabel">Your progress file</p>
+    <div class="bacts">
+      <button class="ghost" id="saveFile">Save progress</button>
+      <button class="ghost" id="openFile">Load progress</button>
+      <button class="ghost" id="reconnect" hidden>Reconnect</button>
+      <input type="file" id="fileInput" accept=".json,application/json" hidden>
+    </div>
+    <p class="bhint" id="fhint">Saves a small file called envelope-progress.json to your Downloads. Keep it next to this page and load it when you come back.</p>
+    <p class="blabel" style="margin-top:16px">TMDB — posters &amp; streaming info</p>
+    <input id="tmdbTok" class="code" type="password" placeholder="Paste your TMDB API Read Access Token (or v3 key)" aria-label="TMDB credential">
+    <div class="bacts">
+      <button class="ghost" id="tmdbSave">Connect</button>
+      <button class="ghost" id="tmdbClear" hidden>Disconnect</button>
+    </div>
+    <p class="bhint" id="tmdbState">Optional. Adds the poster, runtime, director, and where to stream each draw. Your credential stays in this file's saved data on your computer.</p>
+    <p class="blabel" style="margin-top:16px">Or copy a text code</p>
+    <input id="code" readonly aria-label="Progress code">
+    <div class="bacts">
+      <button class="ghost" id="copyCode">Copy code</button>
+      <button class="ghost" id="loadCode">Restore from a code</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+</div>
+
+<div class="lightbox" id="lightbox" hidden><img id="lightImg" alt=""></div>
+
+<script>
+/* ---------------- data ----------------
+   s: W = Best Picture winner, N = nominated, X = not nominated
+   tri/ord: trilogy grouping so they always play in order          */
+const FILMS = [
+  {t:"Wings",y:1927,s:"W"},
+  {t:"The Broadway Melody",y:1929,s:"W"},
+  {t:"Hell's Angels",y:1930,s:"X"},
+  {t:"All Quiet on the Western Front",y:1930,s:"W"},
+  {t:"Cimarron",y:1931,s:"W"},
+  {t:"Grand Hotel",y:1932,s:"W"},
+  {t:"Cavalcade",y:1933,s:"W"},
+  {t:"It Happened One Night",y:1934,s:"W"},
+  {t:"Mutiny on the Bounty",y:1935,s:"W"},
+  {t:"A Midsummer Night's Dream",y:1935,s:"N"},
+  {t:"A Tale of Two Cities",y:1935,s:"N"},
+  {t:"The Great Ziegfeld",y:1936,s:"W"},
+  {t:"The Life of Emile Zola",y:1937,s:"W"},
+  {t:"You Can't Take It with You",y:1938,s:"W"},
+  {t:"Gone with the Wind",y:1939,s:"W"},
+  {t:"Rebecca",y:1940,s:"W"},
+  {t:"How Green Was My Valley",y:1941,s:"W"},
+  {t:"Mrs. Miniver",y:1942,s:"W"},
+  {t:"Casablanca",y:1942,s:"W"},
+  {t:"Going My Way",y:1944,s:"W"},
+  {t:"The Lost Weekend",y:1945,s:"W"},
+  {t:"The Best Years of Our Lives",y:1946,s:"W"},
+  {t:"Gentleman's Agreement",y:1947,s:"W"},
+  {t:"Hamlet",y:1948,s:"W"},
+  {t:"All the King's Men",y:1949,s:"W"},
+  {t:"All About Eve",y:1950,s:"W"},
+  {t:"An American in Paris",y:1951,s:"W"},
+  {t:"The Greatest Show on Earth",y:1952,s:"W"},
+  {t:"From Here to Eternity",y:1953,s:"W"},
+  {t:"Julius Caesar",y:1953,s:"N"},
+  {t:"On the Waterfront",y:1954,s:"W"},
+  {t:"Marty",y:1955,s:"W"},
+  {t:"Around the World in 80 Days",y:1956,s:"W"},
+  {t:"The Bridge on the River Kwai",y:1957,s:"W"},
+  {t:"12 Angry Men",y:1957,s:"N"},
+  {t:"Gigi",y:1958,s:"W"},
+  {t:"Ben-Hur",y:1959,s:"W"},
+  {t:"The Nun's Story",y:1959,s:"N"},
+  {t:"The Apartment",y:1960,s:"W"},
+  {t:"The Alamo",y:1960,s:"N"},
+  {t:"West Side Story",y:1961,s:"W"},
+  {t:"The Guns of Navarone",y:1961,s:"N"},
+  {t:"Lawrence of Arabia",y:1962,s:"W"},
+  {t:"The Longest Day",y:1962,s:"N"},
+  {t:"Tom Jones",y:1963,s:"W"},
+  {t:"Cleopatra",y:1963,s:"N"},
+  {t:"My Fair Lady",y:1964,s:"W"},
+  {t:"Dr. Strangelove",y:1964,s:"N"},
+  {t:"The Sound of Music",y:1965,s:"W"},
+  {t:"Doctor Zhivago",y:1965,s:"N"},
+  {t:"A Man for All Seasons",y:1966,s:"W"},
+  {t:"In the Heat of the Night",y:1967,s:"W"},
+  {t:"Oliver!",y:1968,s:"W"},
+  {t:"Midnight Cowboy",y:1969,s:"W"},
+  {t:"Patton",y:1970,s:"W"},
+  {t:"The French Connection",y:1971,s:"W"},
+  {t:"The Godfather",y:1972,s:"W",tri:"gf",ord:1},
+  {t:"Cabaret",y:1972,s:"N"},
+  {t:"Deliverance",y:1972,s:"N"},
+  {t:"The Sting",y:1973,s:"W"},
+  {t:"The Exorcist",y:1973,s:"N"},
+  {t:"The Godfather Part II",y:1974,s:"W",tri:"gf",ord:2},
+  {t:"Chinatown",y:1974,s:"N"},
+  {t:"One Flew Over the Cuckoo's Nest",y:1975,s:"W"},
+  {t:"Dog Day Afternoon",y:1975,s:"N"},
+  {t:"Jaws",y:1975,s:"N"},
+  {t:"Barry Lyndon",y:1975,s:"N"},
+  {t:"Rocky",y:1976,s:"W"},
+  {t:"Taxi Driver",y:1976,s:"N"},
+  {t:"All the President's Men",y:1976,s:"N"},
+  {t:"Annie Hall",y:1977,s:"W"},
+  {t:"Star Wars",y:1977,s:"N"},
+  {t:"The Deer Hunter",y:1978,s:"W"},
+  {t:"Kramer vs. Kramer",y:1979,s:"W"},
+  {t:"Apocalypse Now",y:1979,s:"N"},
+  {t:"Ordinary People",y:1980,s:"W"},
+  {t:"Raging Bull",y:1980,s:"N"},
+  {t:"Chariots of Fire",y:1981,s:"W"},
+  {t:"Raiders of the Lost Ark",y:1981,s:"N"},
+  {t:"Gandhi",y:1982,s:"W"},
+  {t:"E.T. the Extra-Terrestrial",y:1982,s:"N"},
+  {t:"Terms of Endearment",y:1983,s:"W"},
+  {t:"Amadeus",y:1984,s:"W"},
+  {t:"Out of Africa",y:1985,s:"W"},
+  {t:"The Color Purple",y:1985,s:"N"},
+  {t:"Platoon",y:1986,s:"W"},
+  {t:"The Last Emperor",y:1987,s:"W"},
+  {t:"Rain Man",y:1988,s:"W"},
+  {t:"Driving Miss Daisy",y:1989,s:"W"},
+  {t:"Field of Dreams",y:1989,s:"N"},
+  {t:"Dances With Wolves",y:1990,s:"W"},
+  {t:"Goodfellas",y:1990,s:"N"},
+  {t:"The Godfather Part III",y:1990,s:"N",tri:"gf",ord:3},
+  {t:"The Silence of the Lambs",y:1991,s:"W"},
+  {t:"JFK",y:1991,s:"N"},
+  {t:"Unforgiven",y:1992,s:"W"},
+  {t:"A Few Good Men",y:1992,s:"N"},
+  {t:"Schindler's List",y:1993,s:"W"},
+  {t:"The Fugitive",y:1993,s:"N"},
+  {t:"Forrest Gump",y:1994,s:"W"},
+  {t:"Pulp Fiction",y:1994,s:"N"},
+  {t:"The Shawshank Redemption",y:1994,s:"N"},
+  {t:"Braveheart",y:1995,s:"W"},
+  {t:"Apollo 13",y:1995,s:"N"},
+  {t:"The English Patient",y:1996,s:"W"},
+  {t:"Fargo",y:1996,s:"N"},
+  {t:"Titanic",y:1997,s:"W"},
+  {t:"Good Will Hunting",y:1997,s:"N"},
+  {t:"L.A. Confidential",y:1997,s:"N"},
+  {t:"Shakespeare in Love",y:1998,s:"W"},
+  {t:"Saving Private Ryan",y:1998,s:"N"},
+  {t:"The Thin Red Line",y:1998,s:"N"},
+  {t:"American Beauty",y:1999,s:"W"},
+  {t:"The Sixth Sense",y:1999,s:"N"},
+  {t:"Gladiator",y:2000,s:"W"},
+  {t:"Crouching Tiger, Hidden Dragon",y:2000,s:"N"},
+  {t:"A Beautiful Mind",y:2001,s:"W"},
+  {t:"The Lord of the Rings: The Fellowship of the Ring",y:2001,s:"N",tri:"lotr",ord:1},
+  {t:"Chicago",y:2002,s:"W"},
+  {t:"The Lord of the Rings: The Two Towers",y:2002,s:"N",tri:"lotr",ord:2},
+  {t:"Gangs of New York",y:2002,s:"N"},
+  {t:"The Lord of the Rings: The Return of the King",y:2003,s:"W",tri:"lotr",ord:3},
+  {t:"Master and Commander: The Far Side of the World",y:2003,s:"N"},
+  {t:"Million Dollar Baby",y:2004,s:"W"},
+  {t:"The Aviator",y:2004,s:"N"},
+  {t:"Crash",y:2005,s:"W"},
+  {t:"Brokeback Mountain",y:2005,s:"N"},
+  {t:"The Departed",y:2006,s:"W"},
+  {t:"Letters from Iwo Jima",y:2006,s:"N"},
+  {t:"No Country for Old Men",y:2007,s:"W"},
+  {t:"There Will Be Blood",y:2007,s:"N"},
+  {t:"Slumdog Millionaire",y:2008,s:"W"},
+  {t:"The Hurt Locker",y:2009,s:"W"},
+  {t:"Avatar",y:2009,s:"N"},
+  {t:"The King's Speech",y:2010,s:"W"},
+  {t:"Inception",y:2010,s:"N"},
+  {t:"Black Swan",y:2010,s:"N"},
+  {t:"True Grit",y:2010,s:"N"},
+  {t:"The Artist",y:2011,s:"W"},
+  {t:"War Horse",y:2011,s:"N"},
+  {t:"Argo",y:2012,s:"W"},
+  {t:"Zero Dark Thirty",y:2012,s:"N"},
+  {t:"Django Unchained",y:2012,s:"N"},
+  {t:"12 Years a Slave",y:2013,s:"W"},
+  {t:"The Wolf of Wall Street",y:2013,s:"N"},
+  {t:"Birdman or (The Unexpected Virtue of Ignorance)",y:2014,s:"W"},
+  {t:"Whiplash",y:2014,s:"N"},
+  {t:"Spotlight",y:2015,s:"W"},
+  {t:"The Revenant",y:2015,s:"N"},
+  {t:"Bridge of Spies",y:2015,s:"N"},
+  {t:"Moonlight",y:2016,s:"W"},
+  {t:"Arrival",y:2016,s:"N"},
+  {t:"Hell or High Water",y:2016,s:"N"},
+  {t:"Hacksaw Ridge",y:2016,s:"N"},
+  {t:"Manchester by the Sea",y:2016,s:"N"},
+  {t:"The Shape of Water",y:2017,s:"W"},
+  {t:"Dunkirk",y:2017,s:"N"},
+  {t:"Get Out",y:2017,s:"N"},
+  {t:"Darkest Hour",y:2017,s:"N"},
+  {t:"Green Book",y:2018,s:"W"},
+  {t:"Parasite",y:2019,s:"W"},
+  {t:"Ford v Ferrari",y:2019,s:"N"},
+  {t:"1917",y:2019,s:"N"},
+  {t:"Little Women",y:2019,s:"N"},
+  {t:"The Irishman",y:2019,s:"N"},
+  {t:"Jojo Rabbit",y:2019,s:"N"},
+  {t:"Once Upon a Time in Hollywood",y:2019,s:"N"},
+  {t:"Joker",y:2019,s:"N"},
+  {t:"Nomadland",y:2020,s:"W"},
+  {t:"Judas and the Black Messiah",y:2020,s:"N"},
+  {t:"CODA",y:2021,s:"W"},
+  {t:"Everything Everywhere All at Once",y:2022,s:"W"},
+  {t:"All Quiet on the Western Front",y:2022,s:"N"},
+  {t:"Top Gun: Maverick",y:2022,s:"N"},
+  {t:"Elvis",y:2022,s:"N"},
+  {t:"Oppenheimer",y:2023,s:"W"},
+  {t:"Killers of the Flower Moon",y:2023,s:"N"},
+  {t:"Barbie",y:2023,s:"N"},
+  {t:"Anora",y:2024,s:"W"},
+  {t:"Dune: Part Two",y:2024,s:"N",tri:"dune",ord:2},
+  {t:"One Battle After Another",y:2025,s:"W"},
+  {t:"Marty Supreme",y:2025,s:"N"},
+  {t:"Dune",y:2021,s:"N",tri:"dune",ord:1}
+];
+FILMS.forEach((f,i)=>f.id=i);
+
+const TRI_NAME={gf:"The Godfather",lotr:"The Lord of the Rings",dune:"Dune"};
+const KEY="envelope:v1";
+const PROBE="envelope:probe";
+const TKEY="envelope:tmdb";
+
+let seen=new Set();
+let current=null;
+let filter="unseen";
+let query="";
+let storageOK=false;
+let dirty=false;
+let fileHandle=null;
+let storedHandle=null;
+let autosaveWarn=false;
+let tmdbTok=null;
+let dates={};
+let statusFilter=null;
+let decadeFilter=null;
+
+const $=id=>document.getElementById(id);
+
+/* ---------------- tiny IndexedDB helpers (for remembering the file) ---------------- */
+function idbOpen(){
+  return new Promise((res,rej)=>{
+    if(!("indexedDB" in window))return rej(new Error("no idb"));
+    const q=indexedDB.open("kuvert",1);
+    q.onupgradeneeded=()=>q.result.createObjectStore("handles");
+    q.onsuccess=()=>res(q.result);
+    q.onerror=()=>rej(q.error);
+  });
+}
+async function idbSet(k,v){
+  try{
+    const db=await idbOpen();
+    await new Promise((res,rej)=>{
+      const tx=db.transaction("handles","readwrite");
+      tx.objectStore("handles").put(v,k);
+      tx.oncomplete=res;tx.onerror=()=>rej(tx.error);
+    });
+  }catch(e){/* fine — reconnect just won't be offered */}
+}
+async function idbGet(k){
+  try{
+    const db=await idbOpen();
+    return await new Promise((res,rej)=>{
+      const tx=db.transaction("handles","readonly");
+      const q=tx.objectStore("handles").get(k);
+      q.onsuccess=()=>res(q.result);
+      q.onerror=()=>rej(q.error);
+    });
+  }catch(e){return null;}
+}
+async function idbDel(k){
+  try{
+    const db=await idbOpen();
+    await new Promise((res,rej)=>{
+      const tx=db.transaction("handles","readwrite");
+      tx.objectStore("handles").delete(k);
+      tx.oncomplete=res;tx.onerror=()=>rej(tx.error);
+    });
+  }catch(e){}
+}
+
+/* ---------------- storage ---------------- */
+function checkStorage(){
+  try{
+    window.localStorage.setItem(PROBE,"ok");
+    storageOK = window.localStorage.getItem(PROBE)==="ok";
+    window.localStorage.removeItem(PROBE);
+  }catch(e){storageOK=false;}
+}
+function load(){
+  checkStorage();
+  if(storageOK){
+    try{
+      const v=window.localStorage.getItem(KEY);
+      if(v){const d=JSON.parse(v);seen=new Set(d.seen||[]);dates=d.dates||{};}
+      const t=window.localStorage.getItem(TKEY);
+      if(t)tmdbTok=t;
+    }catch(e){/* first run */}
+  }
+  $("fhint").textContent = window.showSaveFilePicker
+    ? "First save asks where to keep envelope-progress.json. After that, every mark writes to it automatically, and next visit one click reconnects it."
+    : "Saves a small file called envelope-progress.json to your Downloads. Keep it next to this page and load it when you come back.";
+  showState();
+  updateTmdbUI();
+}
+function payload(){
+  return JSON.stringify({app:"envelope",v:3,saved:new Date().toISOString(),
+    seen:[...seen].sort((a,b)=>a-b),dates,code:encode(),
+    tmdb:tmdbTok||undefined},null,2);
+}
+function save(){
+  dirty=true;
+  if(storageOK){
+    try{ window.localStorage.setItem(KEY,JSON.stringify({seen:[...seen],dates})); dirty=false; }
+    catch(e){ storageOK=false; }
+  }
+  if(fileHandle)queueWrite();
+  showState();
+}
+let writeChain=Promise.resolve();
+function queueWrite(){
+  writeChain=writeChain
+    .then(()=>writeHandle())
+    .then(()=>{autosaveWarn=false;dirty=false;showState();})
+    .catch(()=>{autosaveWarn=true;showState();});
+}
+async function writeHandle(){
+  const w=await fileHandle.createWritable();
+  await w.write(payload());
+  await w.close();
+}
+function downloadFile(){
+  const blob=new Blob([payload()],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download="envelope-progress.json";
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),500);
+  dirty=false;showState();
+}
+async function saveToFile(){
+  if(window.showSaveFilePicker){
+    try{
+      if(!fileHandle){
+        fileHandle=await window.showSaveFilePicker({
+          suggestedName:"envelope-progress.json",
+          types:[{description:"Kuvert progress",accept:{"application/json":[".json"]}}]
+        });
+        idbSet("handle",fileHandle);
+      }
+      await writeHandle();
+      autosaveWarn=false;dirty=false;showState();
+      return;
+    }catch(e){
+      if(e&&e.name==="AbortError")return;
+      fileHandle=null;
+    }
+  }
+  downloadFile();
+}
+function applyLoaded(d){
+  if(Array.isArray(d.seen)) seen=new Set(d.seen);
+  else if(d.code) seen=decode(d.code);
+  else throw new Error("no data");
+  dates=(d.dates&&typeof d.dates==="object")?d.dates:{};
+  if(d.tmdb){
+    tmdbTok=d.tmdb;
+    if(storageOK){try{window.localStorage.setItem(TKEY,tmdbTok);}catch(e){}}
+  }
+  dirty=false;
+  if(storageOK){try{window.localStorage.setItem(KEY,JSON.stringify({seen:[...seen],dates}));}catch(e){}}
+  render();showState();updateTmdbUI();
+}
+async function openProgress(){
+  if(window.showOpenFilePicker){
+    try{
+      const hs=await window.showOpenFilePicker({
+        types:[{description:"Kuvert progress",accept:{"application/json":[".json"]}}]
+      });
+      const h=hs[0];
+      const f=await h.getFile();
+      applyLoaded(JSON.parse(await f.text()));
+      fileHandle=h;idbSet("handle",h);
+      autosaveWarn=false;showState();
+      return;
+    }catch(e){
+      if(e&&e.name==="AbortError")return;
+    }
+  }
+  $("fileInput").click();
+}
+function loadFromFile(file){
+  const r=new FileReader();
+  r.onload=()=>{
+    try{ applyLoaded(JSON.parse(r.result)); }
+    catch(e){ alert("That file didn't read. Pick the envelope-progress.json you saved earlier."); }
+  };
+  r.readAsText(file);
+}
+async function tryReconnect(){
+  if(!window.showSaveFilePicker||fileHandle)return;
+  const h=await idbGet("handle");
+  if(!h)return;
+  storedHandle=h;
+  const b=$("reconnect");
+  b.textContent="Reconnect "+(h.name||"saved file");
+  b.hidden=false;
+}
+function showState(){
+  const el=$("saveState");
+  el.classList.remove("warn");
+  if(fileHandle&&!autosaveWarn){
+    el.textContent="Auto-saving to "+(fileHandle.name||"your file")+" · "+seen.size+" marked";
+  }else if(fileHandle&&autosaveWarn){
+    el.textContent="Couldn't write to "+(fileHandle.name||"the file")+" — click Save progress";
+    el.classList.add("warn");
+  }else if(storageOK){
+    el.textContent="Saved in this browser · "+seen.size+" marked";
+  }else if(dirty){
+    el.textContent="Unsaved changes · "+seen.size+" marked — click Save progress";
+    el.classList.add("warn");
+  }else{
+    el.textContent=seen.size+" marked · save to a file to keep it";
+  }
+  $("code").value=encode();
+}
+
+/* ---------- portable progress code ---------- */
+function encode(){
+  const bits=FILMS.map(f=>seen.has(f.id)?"1":"0").join("");
+  return BigInt("0b"+bits).toString(36).toUpperCase();
+}
+function decode(code){
+  let n=0n;
+  for(const ch of code.trim().toLowerCase()){
+    const d=parseInt(ch,36);
+    if(Number.isNaN(d))throw new Error("bad character");
+    n=n*36n+BigInt(d);
+  }
+  const bits=n.toString(2).padStart(FILMS.length,"0").slice(-FILMS.length);
+  const s=new Set();
+  for(let i=0;i<bits.length;i++)if(bits[i]==="1")s.add(i);
+  return s;
+}
+
+/* ---------------- TMDB ---------------- */
+function tmdbAuth(){
+  const t=(tmdbTok||"").trim();
+  if(!t)return null;
+  if(t.startsWith("eyJ")||t.length>40)return{mode:"bearer",t};
+  return{mode:"key",t};
+}
+async function tmdb(path,params){
+  const a=tmdbAuth();
+  if(!a)throw new Error("no credential");
+  const u=new URL("https://api.themoviedb.org/3"+path);
+  Object.entries(params||{}).forEach(([k,v])=>u.searchParams.set(k,v));
+  const opt={headers:{}};
+  if(a.mode==="bearer")opt.headers.Authorization="Bearer "+a.t;
+  else u.searchParams.set("api_key",a.t);
+  const r=await fetch(u,opt);
+  if(!r.ok)throw new Error("tmdb "+r.status);
+  return r.json();
+}
+function fmtMoney(n){
+  if(!n)return null;
+  if(n>=1e9)return "$"+(n/1e9).toFixed(1).replace(/\.0$/,"")+"B";
+  if(n>=1e6){const m=n/1e6;return "$"+(m>=100?Math.round(m):+m.toFixed(1))+"M";}
+  return "$"+Math.round(n/1e3)+"K";
+}
+const infoCache={};
+async function fetchInfo(film){
+  if(infoCache[film.id])return infoCache[film.id];
+  let s=await tmdb("/search/movie",{query:film.t,primary_release_year:String(film.y),include_adult:"false"});
+  let hit=s&&s.results&&s.results[0];
+  if(!hit){
+    s=await tmdb("/search/movie",{query:film.t,include_adult:"false"});
+    hit=s&&s.results&&s.results[0];
+  }
+  if(!hit)return null;
+  const d=await tmdb("/movie/"+hit.id,{append_to_response:"credits,watch/providers,release_dates"});
+  const dir=((d.credits&&d.credits.crew)||[]).filter(c=>c.job==="Director").map(c=>c.name).join(", ");
+  const cast=((d.credits&&d.credits.cast)||[]).slice(0,4).map(c=>c.name);
+  const us=(((d["watch/providers"]||{}).results)||{}).US||{};
+  const names=a=>(a||[]).map(p=>p.provider_name)
+    .filter((v,i,arr)=>arr.indexOf(v)===i).slice(0,5);
+  let cert=null;
+  const rd=((d.release_dates&&d.release_dates.results)||[]).find(r=>r.iso_3166_1==="US");
+  if(rd)for(const e of rd.release_dates||[]){if(e.certification){cert=e.certification;break;}}
+  const info={
+    tmdbId:d.id,
+    poster:d.poster_path?"https://image.tmdb.org/t/p/w342"+d.poster_path:null,
+    posterBig:d.poster_path?"https://image.tmdb.org/t/p/w780"+d.poster_path:null,
+    backdrop:d.backdrop_path?"https://image.tmdb.org/t/p/w780"+d.backdrop_path:null,
+    backdropBig:d.backdrop_path?"https://image.tmdb.org/t/p/w1280"+d.backdrop_path:null,
+    tagline:d.tagline||null,
+    runtime:d.runtime||null,
+    dir:dir||null,
+    cast,
+    genres:(d.genres||[]).map(g=>g.name).slice(0,3),
+    cert,
+    budget:d.budget||0,
+    revenue:d.revenue||0,
+    stream:names(us.flatrate),
+    rent:names(us.rent)
+  };
+  infoCache[film.id]=info;
+  return info;
+}
+let infoReq=0;
+function showInfo(film){
+  const my=++infoReq;
+  ["poster","backdrop","pickTag","pickFacts","pickCredits","pickMoney","pickProv","lbxBtn"]
+    .forEach(id=>$(id).hidden=true);
+  $("poster").dataset.big="";$("backdrop").dataset.big="";
+  if(!film||!tmdbAuth())return;
+  fetchInfo(film).then(info=>{
+    if(my!==infoReq||!info)return;
+    if(info.backdrop){$("backdrop").src=info.backdrop;$("backdrop").dataset.big=info.backdropBig||"";$("backdrop").hidden=false;}
+    if(info.poster){$("poster").src=info.poster;$("poster").alt=film.t+" poster";$("poster").dataset.big=info.posterBig||"";$("poster").hidden=false;}
+    if(info.tagline){$("pickTag").textContent=info.tagline;$("pickTag").hidden=false;}
+    const bits=[];
+    if(info.cert)bits.push(info.cert);
+    if(info.runtime)bits.push(info.runtime+" min");
+    if(info.genres.length)bits.push(info.genres.join(", "));
+    if(info.runtime>=160)bits.push("planera en fika");
+    if(bits.length){$("pickFacts").textContent=bits.join(" · ");$("pickFacts").hidden=false;}
+    const cr=[];
+    if(info.dir)cr.push("dir. "+info.dir);
+    if(info.cast.length)cr.push("with "+info.cast.join(", "));
+    if(cr.length){$("pickCredits").textContent=cr.join(" · ");$("pickCredits").hidden=false;}
+    const mo=[];
+    const b=fmtMoney(info.budget),g=fmtMoney(info.revenue);
+    if(b)mo.push("budget "+b);
+    if(g)mo.push("box office "+g);
+    if(mo.length){$("pickMoney").textContent=mo.join(" · ");$("pickMoney").hidden=false;}
+    const p=[];
+    if(info.stream.length)p.push("Stream: "+info.stream.join(", "));
+    if(info.rent.length)p.push("Rent: "+info.rent.join(", "));
+    if(p.length){$("pickProv").textContent=p.join("   ·   ");$("pickProv").hidden=false;}
+    if(info.tmdbId){$("lbxBtn").href="https://letterboxd.com/tmdb/"+info.tmdbId;$("lbxBtn").hidden=false;}
+  }).catch(()=>{/* offline, preview, or an odd title — the draw still stands */});
+}
+function updateTmdbUI(){
+  const on=!!tmdbTok;
+  $("tmdbSave").hidden=on;
+  $("tmdbClear").hidden=!on;
+  $("tmdbTok").hidden=on;
+  if(on){
+    $("tmdbState").textContent="Connected. Posters load with each draw; streaming availability comes from JustWatch via TMDB.";
+  }
+}
+async function connectTmdb(){
+  const v=$("tmdbTok").value.trim();
+  if(!v)return;
+  tmdbTok=v;
+  $("tmdbState").textContent="Checking…";
+  try{
+    await tmdb("/configuration",{});
+    if(storageOK){try{window.localStorage.setItem(TKEY,tmdbTok);}catch(e){}}
+    if(fileHandle)queueWrite(); else dirty=true;
+    updateTmdbUI();showState();
+    if(current)showInfo(current);
+  }catch(e){
+    tmdbTok=null;
+    $("tmdbState").textContent="Couldn't connect. Check the credential — and note TMDB only reachable once this file is open on your computer, not in the Claude preview.";
+  }
+}
+
+/* ---------------- drawing ---------------- */
+function drawFilm(){
+  const unseen=FILMS.filter(f=>!seen.has(f.id));
+  if(!unseen.length)return null;
+  /* each trilogy is one ticket in the hat, not three */
+  const units=[],series={};
+  unseen.forEach(f=>{
+    if(f.tri){(series[f.tri]=series[f.tri]||[]).push(f);}
+    else units.push({film:f,tri:null});
+  });
+  Object.keys(series).forEach(k=>{
+    series[k].sort((a,b)=>a.ord-b.ord);
+    units.push({film:series[k][0],tri:k});
+  });
+  const u=units[Math.floor(Math.random()*units.length)];
+  return{film:u.film,series:u.tri};
+}
+
+function reveal(){
+  const res=drawFilm();
+  if(!res){
+    $("pickTitle").textContent="Slut";
+    $("pickMeta").textContent="det var hela listan · every film watched";
+    $("pickNote").hidden=false;
+    $("pickNote").textContent="Så slutar varje svensk film — 'Slut' is just Swedish for 'The End'.";
+    $("markBtn").hidden=true;
+    $("againBtn").hidden=true;
+    showInfo(null);
+    $("pickEyebrow").textContent="Kvällens film";
+    $("pickEyebrow").classList.remove("win");
+    $("slip").classList.add("win");
+    $("env").classList.add("open");
+    return;
+  }
+  current=res.film;
+  $("markBtn").hidden=false;
+  $("againBtn").hidden=false;
+  $("pickTitle").textContent=current.t;
+  const label=current.s==="W"?"Best Picture winner":current.s==="N"?"Nominated":"Never nominated";
+  $("pickMeta").textContent=current.y+" · "+label;
+  const win=current.s==="W";
+  $("pickEyebrow").textContent=win?"Kvällens vinnare":"Kvällens film";
+  $("pickEyebrow").title=win?"Tonight's winner":"Tonight's film";
+  $("pickEyebrow").classList.toggle("win",win);
+  $("slip").classList.toggle("win",win);
+  if(res.series){
+    const total=FILMS.filter(f=>f.tri===res.series).length;
+    $("pickNote").hidden=false;
+    $("pickNote").textContent=TRI_NAME[res.series]+" counts as one entry in the draw, and plays in order. This is part "+current.ord+" of "+total+".";
+  }else{
+    $("pickNote").hidden=true;
+  }
+  showInfo(current);
+  $("env").classList.remove("open");
+  requestAnimationFrame(()=>requestAnimationFrame(()=>$("env").classList.add("open")));
+  $("drawBtn").textContent="Dra en ny film";
+  render();
+}
+
+/* ---------------- render ---------------- */
+function render(){
+  const reel=$("reel");
+  reel.innerHTML="";
+  const strip=[...FILMS].sort((a,b)=>a.y-b.y||(a.ord||0)-(b.ord||0)||a.t.localeCompare(b.t));
+  strip.forEach(f=>{
+    const i=document.createElement("i");
+    if(seen.has(f.id))i.className="seen";
+    else if(current&&current.id===f.id)i.className="now";
+    i.title=f.t;
+    reel.appendChild(i);
+  });
+  const n=seen.size,total=FILMS.length;
+  $("tally").innerHTML="<b>"+n+"</b> of "+total+" watched · "+(total-n)+" left";
+
+  const decs=$("decs");
+  decs.innerHTML="";
+  const byDec={};
+  FILMS.forEach(f=>{
+    const dk=Math.floor(f.y/10)*10;
+    (byDec[dk]=byDec[dk]||{t:0,w:0}).t++;
+    if(seen.has(f.id))byDec[dk].w++;
+  });
+  Object.keys(byDec).map(Number).sort((a,b)=>a-b).forEach(dk=>{
+    const c=byDec[dk];
+    const btn=document.createElement("button");
+    btn.className="dec";
+    btn.style.setProperty("--p",Math.round(c.w/c.t*100)+"%");
+    btn.setAttribute("aria-pressed",decadeFilter===dk?"true":"false");
+    btn.innerHTML="<span>"+String(dk).slice(2)+"s</span><b>"+c.w+"/"+c.t+"</b>";
+    btn.title=dk+"s — "+c.w+" of "+c.t+" watched. Click to filter the list.";
+    btn.onclick=()=>{decadeFilter=(decadeFilter===dk?null:dk);render();};
+    decs.appendChild(btn);
+  });
+  let wl=0,nl=0,xl=0;
+  FILMS.forEach(f=>{if(!seen.has(f.id)){if(f.s==="W")wl++;else if(f.s==="N")nl++;else xl++;}});
+  $("leftline").textContent="left: "+wl+" winners · "+nl+" nominees"+(xl?" · "+xl+" other":"");
+
+  const sl=$("seenList");
+  sl.innerHTML="";
+  $("seenCount").textContent=n;
+  const watched=FILMS.filter(f=>seen.has(f.id))
+    .sort((a,b)=>{
+      const da=dates[a.id]||"",db=dates[b.id]||"";
+      if(da!==db)return db.localeCompare(da);
+      return a.y-b.y||(a.ord||0)-(b.ord||0)||a.t.localeCompare(b.t);
+    });
+  if(!watched.length){
+    const e=document.createElement("li");
+    e.className="empty";
+    e.textContent="Nothing marked yet.";
+    sl.appendChild(e);
+  }else{
+    watched.forEach(f=>{
+      const li=document.createElement("li");
+      const b=document.createElement("button");
+      b.className="tick";
+      b.setAttribute("aria-pressed","true");
+      b.setAttribute("aria-label","Mark unwatched: "+f.t);
+      b.onclick=()=>{toggle(f.id);};
+      const t=document.createElement("span");t.className="t";t.textContent=f.t;
+      const y=document.createElement("span");y.className="yr";y.textContent=f.y;
+      const w=document.createElement("button");w.className="when";
+      w.textContent=dates[f.id]?fmtWhen(dates[f.id]):"+ date";
+      w.title="Edit watch date";
+      w.onclick=()=>{editDate(f.id);};
+      li.append(b,t,y,w);
+      sl.appendChild(li);
+    });
+  }
+
+  const q=query.trim().toLowerCase();
+  const rows=FILMS.filter(f=>{
+    if(filter==="unseen"&&seen.has(f.id))return false;
+    if(filter==="seen"&&!seen.has(f.id))return false;
+    if(statusFilter&&f.s!==statusFilter)return false;
+    if(decadeFilter!==null&&Math.floor(f.y/10)*10!==decadeFilter)return false;
+    if(q&&!f.t.toLowerCase().includes(q))return false;
+    return true;
+  }).sort((a,b)=>a.y-b.y||(a.ord||0)-(b.ord||0)||a.t.localeCompare(b.t));
+
+  const ul=$("list");
+  ul.innerHTML="";
+  if(!rows.length){
+    const p=document.createElement("li");
+    p.className="empty";
+    p.textContent=q?"No title matches that.":filter==="seen"?"Nothing watched yet.":"Nothing left here.";
+    ul.appendChild(p);
+    return;
+  }
+  rows.forEach(f=>{
+    const li=document.createElement("li");
+    if(seen.has(f.id))li.classList.add("done");
+    const b=document.createElement("button");
+    b.className="tick";
+    b.setAttribute("aria-pressed",seen.has(f.id)?"true":"false");
+    b.setAttribute("aria-label",(seen.has(f.id)?"Mark unwatched: ":"Mark watched: ")+f.t);
+    b.onclick=()=>{toggle(f.id);};
+    const t=document.createElement("span");t.className="t";t.textContent=f.t;
+    const c=document.createElement("span");
+    c.className="chip "+f.s.toLowerCase();
+    c.textContent=f.s==="W"?"Won":f.s==="N"?"Nom":"—";
+    const y=document.createElement("span");y.className="yr";y.textContent=f.y;
+    li.append(b,t,c,y);
+    ul.appendChild(li);
+  });
+}
+
+function todayISO(){
+  const d=new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function fmtWhen(iso){
+  if(!iso)return "";
+  const d=new Date(iso+"T12:00:00");
+  if(isNaN(d))return "";
+  return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"2-digit"});
+}
+function markSeen(id,on){
+  if(on){seen.add(id);dates[id]=todayISO();}
+  else{seen.delete(id);delete dates[id];}
+  save();
+}
+function editDate(id){
+  const cur=dates[id]||"";
+  const v=prompt("Date watched (YYYY-MM-DD) — leave blank to clear:",cur||todayISO());
+  if(v===null)return;
+  const t=v.trim();
+  if(!t){delete dates[id];save();render();return;}
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(t)||isNaN(new Date(t+"T12:00:00").getTime())){
+    alert("Use YYYY-MM-DD, e.g. 2026-03-14.");
+    return;
+  }
+  dates[id]=t;save();render();
+}
+function toggle(id){
+  markSeen(id,!seen.has(id));
+  render();
+}
+
+/* ---------------- events ---------------- */
+$("drawBtn").onclick=reveal;
+$("againBtn").onclick=reveal;
+function markWatchedAction(){
+  if(!current)return;
+  markSeen(current.id,true);
+  $("env").classList.remove("open");
+  $("drawBtn").textContent="Öppna kuvertet";
+  current=null;render();
+}
+$("markBtn").onclick=markWatchedAction;
+document.querySelectorAll(".tab[data-f]").forEach(t=>{
+  t.onclick=()=>{
+    filter=t.dataset.f;
+    document.querySelectorAll(".tab[data-f]").forEach(x=>x.setAttribute("aria-pressed",x===t?"true":"false"));
+    render();
+  };
+});
+document.querySelectorAll(".tab.stat").forEach(t=>{
+  t.onclick=()=>{
+    statusFilter=(statusFilter===t.dataset.s?null:t.dataset.s);
+    document.querySelectorAll(".tab.stat").forEach(x=>x.setAttribute("aria-pressed",x.dataset.s===statusFilter?"true":"false"));
+    render();
+  };
+});
+$("search").oninput=e=>{query=e.target.value;render();};
+$("resetBtn").onclick=()=>{
+  if(!confirm("Clear every watched mark and start over?"))return;
+  seen=new Set();dates={};current=null;
+  $("env").classList.remove("open");
+  $("drawBtn").textContent="Öppna kuvertet";
+  save();render();
+};
+$("saveFile").onclick=saveToFile;
+$("openFile").onclick=openProgress;
+$("fileInput").onchange=e=>{
+  const f=e.target.files&&e.target.files[0];
+  if(f)loadFromFile(f);
+  e.target.value="";
+};
+$("reconnect").onclick=async()=>{
+  if(!storedHandle)return;
+  try{
+    if(storedHandle.requestPermission){
+      const perm=await storedHandle.requestPermission({mode:"readwrite"});
+      if(perm!=="granted")return;
+    }
+    const f=await storedHandle.getFile();
+    applyLoaded(JSON.parse(await f.text()));
+    fileHandle=storedHandle;
+    $("reconnect").hidden=true;
+    showState();
+  }catch(e){
+    $("reconnect").hidden=true;
+    idbDel("handle");
+  }
+};
+$("tmdbSave").onclick=connectTmdb;
+$("tmdbTok").addEventListener("keydown",e=>{if(e.key==="Enter")connectTmdb();});
+$("tmdbClear").onclick=()=>{
+  tmdbTok=null;
+  if(storageOK){try{window.localStorage.removeItem(TKEY);}catch(e){}}
+  $("tmdbTok").value="";
+  $("tmdbSave").hidden=false;$("tmdbClear").hidden=true;$("tmdbTok").hidden=false;
+  $("tmdbState").textContent="Disconnected. Your credential was removed from this browser; re-save your progress file to remove it there too.";
+  if(fileHandle)queueWrite();
+};
+window.addEventListener("beforeunload",e=>{
+  if(dirty){e.preventDefault();e.returnValue="";}
+});
+$("copyCode").onclick=()=>{
+  const el=$("code");
+  el.select();el.setSelectionRange(0,99999);
+  navigator.clipboard.writeText(el.value).then(
+    ()=>{$("copyCode").textContent="Copied";setTimeout(()=>$("copyCode").textContent="Copy code",1600);},
+    ()=>{$("copyCode").textContent="Select and copy it";}
+  );
+};
+$("loadCode").onclick=()=>{
+  const v=prompt("Paste a progress code:");
+  if(!v)return;
+  try{
+    seen=decode(v);
+    dates=Object.fromEntries(Object.entries(dates).filter(([k])=>seen.has(+k)));
+    save();render();showState();
+  }catch(e){
+    alert("That code didn't read. Check for a missing or extra character.");
+  }
+};
+
+$("poster").onclick=()=>{const b=$("poster").dataset.big;if(b)openLight(b);};
+$("backdrop").onclick=()=>{const b=$("backdrop").dataset.big;if(b)openLight(b);};
+function openLight(src){$("lightImg").src=src;$("lightbox").hidden=false;}
+function closeLight(){$("lightbox").hidden=true;$("lightImg").src="";}
+$("lightbox").onclick=closeLight;
+document.addEventListener("keydown",e=>{
+  if(!$("lightbox").hidden){
+    if(e.key==="Escape")closeLight();
+    return;
+  }
+  const t=e.target;
+  const typing=t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA"||t.isContentEditable);
+  if(e.key==="/"&&!typing){e.preventDefault();$("search").focus();return;}
+  if(typing){if(e.key==="Escape")t.blur();return;}
+  if(t&&(t.tagName==="BUTTON"||t.tagName==="A"))return;
+  if(e.key==="Enter"){e.preventDefault();reveal();}
+  else if(e.key==="w"||e.key==="W"){markWatchedAction();}
+});
+
+load();
+render();
+tryReconnect();
+</script>
+</body>
+</html>

@@ -248,7 +248,7 @@
   }
   .chip.w{color:var(--brass);border-color:var(--brass-dim);}
   .chip.n{color:#6E7A88;border-color:#2C3642;}
-  .chip.x{color:#8A6070;border-color:#4A3038;}
+  .chip.x,.chip.h{color:#8A6070;border-color:#4A3038;}
   .empty{padding:26px 2px;color:var(--dim);font-size:14px;}
 
   footer{margin-top:34px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;}
@@ -357,7 +357,7 @@
     <svg viewBox="0 0 100 90" width="52" height="47" aria-hidden="true"><path fill="var(--velvet)" d="M8 30 L12 20 L20 10 L24 4 L28 9 C40 10 50 18 54 30 L68 27 C78 28 83 32 84 36 L92 42 L87 54 L79 50 L84 84 L73 84 L71 53 L46 54 L49 84 L38 84 L38 50 L33 45 C28 40 26 34 24 30 L14 34 Z"/></svg>
   </div>
     </div>
-    <p class="sub">Best Picture winners &amp; chosen nominees · drawn at random</p>
+    <p class="sub">Best Picture winners, nominees &amp; honorable mentions · drawn at random</p>
   </header>
 
   <div class="stage">
@@ -411,6 +411,7 @@
       <span class="tabdiv"></span>
       <button class="tab stat" data-s="W" aria-pressed="false">Won</button>
       <button class="tab stat" data-s="N" aria-pressed="false">Nom</button>
+      <button class="tab stat" data-s="H" aria-pressed="false">HM</button>
     </div>
   </div>
   <p class="tally" id="tally">Loading…</p>
@@ -457,12 +458,12 @@
 
 <script>
 /* ---------------- data ----------------
-   s: W = Best Picture winner, N = nominated, X = not nominated
+   s: W = Best Picture winner, N = nominated, H = honorable mention (never nominated)
    tri/ord: trilogy grouping so they always play in order          */
 const FILMS = [
   {t:"Wings",y:1927,s:"W"},
   {t:"The Broadway Melody",y:1929,s:"W"},
-  {t:"Hell's Angels",y:1930,s:"X"},
+  {t:"Hell's Angels",y:1930,s:"H"},
   {t:"All Quiet on the Western Front",y:1930,s:"W"},
   {t:"Cimarron",y:1931,s:"W"},
   {t:"Grand Hotel",y:1932,s:"W"},
@@ -642,7 +643,12 @@ const FILMS = [
   {t:"Dune: Part Two",y:2024,s:"N",tri:"dune",ord:2},
   {t:"One Battle After Another",y:2025,s:"W"},
   {t:"Marty Supreme",y:2025,s:"N"},
-  {t:"Dune",y:2021,s:"N",tri:"dune",ord:1}
+  {t:"Dune",y:2021,s:"N",tri:"dune",ord:1},
+  {t:"Seven Samurai",y:1954,s:"H"},
+  {t:"The Good, the Bad and the Ugly",y:1966,s:"H"},
+  {t:"Das Boot",y:1981,s:"H"},
+  {t:"Scarface",y:1983,s:"H"},
+  {t:"Do the Right Thing",y:1989,s:"H"}
 ];
 FILMS.forEach((f,i)=>f.id=i);
 
@@ -1035,7 +1041,7 @@ function reveal(){
   $("markBtn").hidden=false;
   $("againBtn").hidden=false;
   $("pickTitle").textContent=current.t;
-  const label=current.s==="W"?"Best Picture winner":current.s==="N"?"Nominated":"Never nominated";
+  const label=current.s==="W"?"Best Picture winner":current.s==="N"?"Nominated":"Honorable mention";
   $("pickMeta").textContent=current.y+" · "+label;
   const win=current.s==="W";
   $("pickEyebrow").textContent=win?"Kvällens vinnare":"Kvällens film";
@@ -1092,7 +1098,7 @@ function render(){
   });
   let wl=0,nl=0,xl=0;
   FILMS.forEach(f=>{if(!seen.has(f.id)){if(f.s==="W")wl++;else if(f.s==="N")nl++;else xl++;}});
-  $("leftline").textContent="left: "+wl+" winners · "+nl+" nominees"+(xl?" · "+xl+" other":"");
+  $("leftline").textContent="left: "+wl+" winners · "+nl+" nominees"+(xl?" · "+xl+" HM":"");
 
   const sl=$("seenList");
   sl.innerHTML="";
@@ -1157,7 +1163,7 @@ function render(){
     const t=document.createElement("span");t.className="t";t.textContent=f.t;
     const c=document.createElement("span");
     c.className="chip "+f.s.toLowerCase();
-    c.textContent=f.s==="W"?"Won":f.s==="N"?"Nom":"—";
+    c.textContent=f.s==="W"?"Won":f.s==="N"?"Nom":"HM";
     const y=document.createElement("span");y.className="yr";y.textContent=f.y;
     li.append(b,t,c,y);
     ul.appendChild(li);

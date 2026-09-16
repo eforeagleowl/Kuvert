@@ -4,13 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kuvert — Best Picture watchthrough</title>
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#121821">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Kuvert">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;600;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -37,7 +30,7 @@
     font-size:15px;
     line-height:1.5;
     min-height:100vh;
-    padding:env(safe-area-inset-top) 18px calc(64px + env(safe-area-inset-bottom));
+    padding:0 18px 64px;
   }
   .wrap{max-width:760px;margin:0 auto;}
 
@@ -336,19 +329,121 @@
     .colA{position:sticky;top:24px;}
   }
 
-  @media (pointer:coarse){
-    .search,#code,#tmdbTok{font-size:16px;}
-  }
-
   @media (prefers-reduced-motion:reduce){
     .flap,.slip,.seal{transition:none;}
   }
+  [hidden]{display:none!important;}
+  body{font-size:16px;}
+  .sub,.tally,.meta,.facts,.money,.keys,.status,.leftline,.seencount,.blabel,.eyebrow,.dec,.chip{font-size:12px;}
+  .ghost,.tab,.slip .solid,.when{font-size:13px;}
+  .leftline,.status,.keys{color:#95A0AF;}
+  .search::placeholder{color:#95A0AF;}
+  li.done .t{color:#98A2AF;}
+  .eyebrow{color:#6E5A3A;}
+  .eyebrow.win{color:#795522;}
+  .tick{width:44px;height:44px;border:0;top:0;align-self:center;}
+  .tick::before{content:"";position:absolute;inset:13px;border:1px solid #8592A2;border-radius:2px;}
+  .tick[aria-pressed="true"]{background:transparent;}
+  .tick[aria-pressed="true"]::before{background:var(--brass);border-color:var(--brass);}
+  .tick[aria-pressed="true"]::after{left:19px;top:14px;}
+  li{align-items:center;gap:8px;padding:4px 0;}
+  li .t{min-width:0;overflow-wrap:anywhere;}
+  button.when{min-height:44px;min-width:70px;color:#A4AFBC;}
+  .tab,.dec,.ghost,.slip .solid{min-height:44px;}
+  .tabs{flex-wrap:wrap;}
+  .drawscope{text-align:center;font-size:14px;margin:12px 0;}
+  .drawscope label{display:flex;gap:8px;align-items:center;justify-content:center;min-height:44px;}
+  .drawscope span{display:block;font-size:12px;color:#A4AFBC;}
+  input[type="checkbox"]{width:20px;height:20px;accent-color:var(--brass);}
+  summary{cursor:pointer;min-height:44px;padding:10px 0;}
+  .backup>summary{color:var(--brass);font-size:16px;}
+  .backup>label{display:block;margin-top:12px;}
+  select,input[type="date"],#tmdbTok{max-width:100%;width:100%;background:#161D27;color:#D6DDE5;border:1px solid #596676;padding:12px;font:inherit;margin:6px 0 12px;}
+  #code{font-size:12px;}
+  #moreDetails{margin-top:12px;border-top:1px solid #B3A488;font-size:14px;}
+  #matchChoices button{display:block;text-align:left;margin:6px 0;width:100%;}
+  :focus-visible{outline:2px solid var(--brass);outline-offset:3px;}
+  .search:focus,#code:focus{outline:2px solid var(--brass);outline-offset:2px;}
+  .poster:focus-visible,.backdrop:focus-visible{outline:3px solid var(--velvet);}
+  .toast{position:fixed;z-index:80;bottom:20px;left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100vw - 24px);display:flex;align-items:center;gap:12px;padding:12px 16px;background:#202B39;border:1px solid var(--brass);box-shadow:0 8px 30px #0008;flex-wrap:wrap;}
+  dialog{background:#141B25;color:#D6DDE5;border:1px solid var(--brass-dim);border-radius:4px;padding:24px;width:min(560px,calc(100vw - 24px));max-height:90vh;overflow:auto;}
+  dialog::backdrop{background:rgba(8,11,16,.9);}
+  .lightbox{width:100vw;height:100dvh;max-width:100vw;max-height:100dvh;border:0;margin:0;background:#080B10;display:none;}
+  .lightbox[open]{display:flex;}
+  .lightbox img{object-fit:contain;max-height:calc(100dvh - 100px);}
+  #closeLight{position:absolute;right:20px;top:16px;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+  @media(max-width:540px){.slipbody{flex-direction:column;}.poster{width:88px;}.slip{padding:20px 18px;}.backdrop{width:calc(100% + 36px);margin:-20px -18px 16px;}.pick{font-size:clamp(30px,9vw,42px);}.colA{min-width:0;}.when{font-size:12px;}.listhead{margin-top:28px;}.slipacts>*{flex:1;justify-content:center;text-align:center;}.chip{font-size:12px;letter-spacing:0;}.yr{font-size:12px;}}
+
+
+  /* Centered watchthrough: the envelope is a reveal, the card is the reading surface. */
+  .wrap{max-width:820px!important;}
+  header{text-align:center;padding:30px 0 0;}
+  .titlerow{justify-content:center;align-items:center;gap:12px;}
+  .marquee{font-size:clamp(46px,10vw,64px);}
+  .hast{margin:0;}.hast svg{width:38px;height:35px;}
+  .sub{max-width:550px;margin:12px auto 0;font-size:12px;letter-spacing:.07em;}
+  .tally{margin:16px 0 0;font-size:14px;letter-spacing:.04em;}
+  .reel{max-width:420px;margin:12px auto 0;grid-template-columns:repeat(auto-fill,minmax(5px,1fr));gap:2px;}
+  .reel i{height:6px;}
+  .stage{margin:24px 0 30px;perspective:none;gap:0;}
+  .env{width:100%;max-width:680px;min-height:430px;display:grid;align-items:center;justify-items:center;perspective:1200px;}
+  .env::before{width:min(440px,90%);left:50%;right:auto;bottom:auto;top:100px;transform:translateX(-50%);height:232px;transition:opacity .3s .18s,transform .45s;}
+  .flap{width:min(440px,90%);left:50%;right:auto;bottom:auto;top:100px;height:118px;transform:translateX(-50%) rotateX(0deg);transition:transform .45s,opacity .3s .18s;}
+  .pocket{width:min(440px,90%);left:50%;right:auto;bottom:auto;top:200px;transform:translateX(-50%);height:132px;transition:opacity .3s .18s,transform .45s;}
+  .seal{top:169px;bottom:auto;transform:translate(-50%,0);transition:opacity .2s;}
+  .env.open::before,.env.open .pocket{opacity:0;transform:translate(-50%,36px);pointer-events:none;}
+  .env.open .flap{transform:translateX(-50%) rotateX(-172deg);opacity:0;pointer-events:none;}
+  .env.open .seal{pointer-events:none;}
+  .slip{width:100%;margin:0;padding:30px;transform:none;display:none;opacity:0;transition:none;box-shadow:0 12px 40px #0005;text-align:left;}
+  .env.open .slip{display:block;transform:none;opacity:1;z-index:6;animation:cardReveal .52s cubic-bezier(.2,.8,.2,1) both;}
+  @keyframes cardReveal{from{opacity:0;transform:translateY(65px) scale(.95);}to{opacity:1;transform:translateY(0) scale(1);}}
+  .env.closing .slip{display:block;animation:cardClose .24s ease-in both;pointer-events:none;}
+  @keyframes cardClose{from{opacity:1;transform:translateY(0) scale(1);}to{opacity:0;transform:translateY(65px) scale(.95);}}
+  .slipbody{gap:24px;min-height:260px;}
+  .posterwell{position:relative;flex:0 0 108px;align-self:flex-start;width:108px;height:162px;background:#DED3BC;border:1px solid #C9BA9F;border-radius:2px;display:grid;place-items:center;overflow:hidden;}
+  .posterwell>span{font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:29px;line-height:.85;letter-spacing:.08em;color:#99815B;text-align:center;}
+  .poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;box-shadow:none;}
+  .pick{font-size:clamp(32px,6vw,46px);line-height:1.03;overflow-wrap:anywhere;}
+  .facts{font-size:13px;letter-spacing:0;min-height:20px;}
+  .prov{font-size:14px;min-height:42px;}
+  #infoStatus{font-size:13px;min-height:20px;margin:8px 0 0;}
+  #infoStatus:empty{visibility:hidden;}
+  #pickProv a{color:#674415;}
+  .slipacts{padding-top:18px;margin-top:16px;border-top:1px solid #C9BA9F;gap:10px;}
+  .slipacts .solid{flex:1;}
+  #lbxBtn{margin-left:auto;}
+  #moreDetails{width:100%;margin-top:16px;}
+  #moreDetails summary{color:#5A4E3C;}
+  .backdrop{width:100%;margin:4px 0 16px;aspect-ratio:21/9;object-fit:cover;}
+  .drawscope{order:2;margin:8px 0 0;}
+  .draw{margin-top:18px;min-width:225px;}
+  .draw[hidden]{display:block!important;visibility:hidden;pointer-events:none;}
+  .keys{order:3;margin:10px 0 0;}
+  .library{border-top:1px solid var(--house-line);border-bottom:1px solid var(--house-line);padding:4px 0;}
+  .library>summary{font-family:'Big Shoulders Display',sans-serif;font-weight:600;font-size:25px;color:#D6DDE5;letter-spacing:.03em;padding:16px 4px;}
+  .summaryhint{display:block;font-family:'IBM Plex Sans',sans-serif;font-size:13px;letter-spacing:0;font-weight:400;color:#98A5B5;margin:2px 0 0 23px;}
+  .listhead{margin:10px 0 0;}
+  #list{max-height:520px;overflow-y:auto;}
+  .watchedArchive{margin:16px 0;}
+  .watchedArchive>summary{font-size:15px;color:#C7D0DA;}
+  .seenbox{margin-top:10px;}
+  footer{margin-top:18px;}
+  .backup{margin-top:16px;padding:6px 14px;}
+  .chip.h{color:#C398A7;border-color:#78505D;}
+  @media(max-width:540px){body{padding-left:14px;padding-right:14px;}.env{min-height:430px;}.slip{padding:22px 18px;}.slipbody{flex-direction:row;gap:14px;min-height:280px;}.posterwell{flex-basis:72px;width:72px;height:108px;}.posterwell>span{font-size:23px;}.pick{font-size:32px;}.meta{letter-spacing:.02em;}.slipacts>*{flex:1 1 40%;}.slipacts .solid{flex:1 1 100%;}#lbxBtn{margin:0;}.summaryhint{font-size:12px;}.backdrop{width:100%;margin:4px 0 12px;}.note{font-size:12px;}}
+  @media(max-width:360px){.slipbody{flex-direction:column;}.posterwell{flex-basis:auto;width:60px;height:90px;}.pick{font-size:30px;}}
+  @media(prefers-reduced-motion:reduce){.env.open .slip,.env.closing .slip{animation:none;}.env::before,.flap,.pocket,.seal{transition:none;}}
+
+
+.envelopeHit{position:absolute;top:100px;left:50%;transform:translateX(-50%);width:min(440px,90%);height:232px;z-index:7;background:transparent;border:0;cursor:pointer;}.pickOptions{order:2;width:min(100%,480px);text-align:center;margin:12px 0 0;}.pickOptions>label{font-size:13px;color:#A4AFBC;}.pickOptions select{width:auto;max-width:100%;margin:6px 8px;font-size:14px;}.filterLine{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;font-size:13px;color:#BBC5D1;}#runtimeHint,#runtimeStatus{font-size:12px;color:#A4AFBC;}#runtimeStatus:empty{display:none;}#shortcutsList li{flex-wrap:wrap;gap:10px;padding:12px 0;}.archiveMain{flex:1;min-width:160px;}.filmLink{display:block;padding:8px 0;background:none;border:0;color:#D6DDE5;text-align:left;font:inherit;}.filmLink:hover{color:var(--brass);}.archiveMeta{font-size:12px;color:#A4AFBC;}.reviewButton{font-size:12px;padding:6px;}#seenList li{flex-wrap:wrap;}#reviewNote{width:100%;padding:12px;background:#161D27;color:#D6DDE5;border:1px solid #596676;font:inherit;resize:vertical;}#backupStatus{max-width:560px;line-height:1.6;}#backupStatus.warn{color:#D6AA68;}.slipacts>*{flex:1 1 auto;}
+
+.viewNav{display:flex;justify-content:center;gap:8px;margin:20px 0 0;}.viewNav [aria-pressed="true"]{background:var(--brass);color:var(--house-deep);}.challenges{margin:22px 0 0;border-bottom:1px solid var(--house-line);}.challenges>summary{font-family:'Big Shoulders Display',sans-serif;font-size:24px;}.challenges>summary span{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--brass);margin-left:12px;}#challengeGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0 24px;}.challengeCard{padding:16px;border:1px solid var(--house-line);background:#131C27;border-radius:3px;}.challengeCard.earned{border-color:var(--brass);}.challengeCard h3{font-family:'Big Shoulders Display',sans-serif;font-size:23px;font-weight:600;margin:0;}.challengeCard p{font-size:14px;color:#B1BECD;margin:8px 0;}.challengeCard small{font-size:12px;color:#A4AFBC;}.challengeCard .challengeCount{color:var(--brass);font-family:'IBM Plex Mono',monospace;}progress{width:100%;height:8px;accent-color:var(--brass);border:0;border-radius:3px;background:#263241;}progress::-webkit-progress-bar{background:#263241;border-radius:3px;}progress::-webkit-progress-value{background:var(--brass);border-radius:3px;}progress::-moz-progress-bar{background:var(--brass);border-radius:3px;}.moodSource{font-size:12px;color:#6B6153;margin:10px 0 6px;}#moodTags{display:flex;flex-wrap:wrap;gap:5px;}.moodTag{padding:3px 8px;border:1px solid #B6A17D;border-radius:20px;font-size:12px;color:#59452C;}#editMoods{font-size:12px;margin:6px 0 0;padding:5px 9px;}#moodChoices{display:grid;grid-template-columns:1fr 1fr;gap:8px;}#moodChoices label{display:flex;align-items:center;gap:10px;min-height:44px;}#statsPage{padding:26px 0;}#statsHeading{font-family:'Big Shoulders Display',sans-serif;font-size:36px;margin:0;}#statsMetrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:22px 0;}.statMetric{padding:18px;background:#131C27;border:1px solid var(--house-line);}.statMetric p{margin:0 0 8px;color:#B1BECD;font-size:14px;}.statMetric strong{display:block;font-family:'Big Shoulders Display',sans-serif;font-size:36px;color:var(--brass);}.statMetric small{display:block;color:#A4AFBC;font-size:12px;}.shelfStat{display:grid;gap:7px;margin:14px 0;font-size:14px;}.statsTable{border-collapse:collapse;width:100%;font-size:14px;}.statsTable th,.statsTable td{text-align:left;padding:12px 8px;border-bottom:1px solid var(--house-line);}.statsTable th{color:var(--brass);font-weight:500;}@media(max-width:500px){#challengeGrid{grid-template-columns:1fr;}.statsTable{font-size:12px;}.statsTable th,.statsTable td{padding:10px 4px;}.statMetric{padding:12px;}.statMetric strong{font-size:30px;}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<div class="cols">
-<div class="colA">
+<main>
 
   <header>
     <div class="titlerow">
@@ -358,74 +453,98 @@
   </div>
     </div>
     <p class="sub">Best Picture winners, nominees &amp; honorable mentions · drawn at random</p>
+    <p class="tally" id="tally">Loading…</p>
+    <div class="reel" id="reel" aria-hidden="true"></div>
+    <nav class="viewNav" aria-label="App views"><button class="ghost" id="tonightTab" aria-pressed="true" aria-controls="tonightPage">Tonight</button><button class="ghost" id="statsTab" aria-pressed="false" aria-controls="statsPage">Stats</button></nav>
   </header>
+<section id="tonightPage" aria-label="Movie picker"><details class="challenges" id="challenges"><summary>Challenges <span id="challengeSummary"></span></summary><p class="bhint">Badges track your whole watchthrough, including existing progress. They never change the draw. Series count once after every part is watched, using the first film’s decade and award shelf; series runtimes are added together.</p><div id="challengeGrid"></div></details>
 
   <div class="stage">
     <div class="env" id="env">
-      <div class="flap"></div>
+      <button id="envelopeOpen" class="envelopeHit" aria-label="Öppna kuvertet — draw a movie" aria-controls="slip"></button>
+      <div class="flap" aria-hidden="true"></div>
       <div class="seal" title="Tre kronor"><svg viewBox="0 0 24 20" width="18" height="15" aria-hidden="true" fill="#F2DFC6"><path d="m1 8 v-5 l2.5 2 L6 1 l2.5 4 2.5-2 v5 z"/><path d="m13 8 v-5 l2.5 2 L18 1 l2.5 4 2.5-2 v5 z"/><path d="m7 18 v-5 l2.5 2 L12 11 l2.5 4 2.5-2 v5 z"/></svg></div>
-      <div class="slip" id="slip" role="status" aria-live="polite">
-        <img class="backdrop" id="backdrop" alt="" hidden>
+      <div class="slip" id="slip" tabindex="-1" aria-label="Tonight’s film">
+
         <div class="slipbody">
-          <img class="poster" id="poster" alt="" hidden>
+          <div class="posterwell"><span aria-hidden="true">KU<br>VERT</span><img class="poster" id="poster" alt="" hidden></div>
           <div class="slipmain">
             <p class="eyebrow" id="pickEyebrow" title="Tonight's film">Kv&auml;llens film</p>
             <h2 class="pick" id="pickTitle">—</h2>
             <p class="meta" id="pickMeta"></p>
-            <p class="tagline" id="pickTag" hidden></p>
-            <p class="facts" id="pickFacts" hidden></p>
-            <p class="credits" id="pickCredits" hidden></p>
-            <p class="money" id="pickMoney" hidden></p>
+            
+            <p class="facts" id="pickFacts" hidden></p><div id="moodArea" hidden><p id="moodSource" class="moodSource"></p><div id="moodTags"></div><button class="ghost" id="editMoods">Edit moods</button></div>
+            
             <div class="note" id="pickNote" hidden></div>
             <p class="prov" id="pickProv" hidden></p>
+            <p id="infoStatus" class="prov" role="status"></p>
+            <button class="ghost" id="retryInfo" hidden>Retry details</button>
+            <div id="matchChoices" hidden></div>
+
           </div>
         </div>
         <div class="slipacts">
           <button class="solid" id="markBtn">Mark as watched</button>
           <button class="ghost" id="againBtn">Draw again</button>
+          <button class="ghost" id="skipBtn">Not tonight</button><button class="ghost" id="cardNote" hidden>My note</button>
+          <button class="ghost" id="closeEnvelopeBtn">Close envelope</button>
           <a class="ghost" id="lbxBtn" target="_blank" rel="noopener" hidden>Letterboxd</a>
         </div>
+            <details id="moreDetails" hidden><summary>More details</summary>
+              <img class="backdrop" id="backdrop" alt="" hidden>
+              <p class="tagline" id="pickTag" hidden></p>
+              <p class="credits" id="pickCredits" hidden></p>
+              <p class="money" id="pickMoney" hidden></p>
+              <button id="changeMatch" class="ghost">Change movie match</button>
+            </details>
       </div>
-      <div class="pocket"></div>
+      <div class="pocket" aria-hidden="true"></div>
     </div>
-    <button class="draw" id="drawBtn">Öppna kuvertet</button>
+    <p class="drawscope"><label><input type="checkbox" id="drawSelection"> Draw from this selection</label><span id="eligibleCount"></span></p>
+    <button class="draw" id="drawBtn" aria-controls="slip" aria-expanded="false">Öppna kuvertet</button>
+    <div class="pickOptions"><label for="runtimeLimit">Time for a movie</label><select id="runtimeLimit"><option value="0">Any length</option><option value="120">2 hours or less</option><option value="-120">Over 2 hours</option></select><div class="filterLine"><span id="filterSummary"></span><button class="ghost" id="clearFilters" hidden>Clear filters</button></div><div id="runtimeTools" hidden><p id="runtimeHint"></p><button class="ghost" id="checkRuntimes">Check unknown runtimes</button><p id="runtimeStatus" role="status"></p></div></div>
     <p class="keys">enter — dra &nbsp;·&nbsp; w — sedd &nbsp;·&nbsp; / — sök</p>
   </div>
 
-  <div class="reel" id="reel" aria-hidden="true"></div>
 
-  <div class="seenbox">
-    <div class="seenhead"><h2 lang="sv" title="Watched">Sedda</h2><span class="seencount" id="seenCount">0</span></div>
-    <ul id="seenList"></ul>
-  </div>
 
-</div>
 
-<div class="colB">
+
+<details class="library" id="library"><summary>Browse films <span class="summaryhint">Search, filter &amp; track your watchthrough</span></summary>
 
   <div class="listhead">
     <h2 lang="sv">Listan</h2>
     <div class="tabs">
       <button class="tab" data-f="unseen" aria-pressed="true">Unseen</button>
       <button class="tab" data-f="all" aria-pressed="false">All</button>
+      <button class="tab" data-f="skipped" id="skippedTab" aria-pressed="false">Skipped (0)</button><button class="tab" data-f="recent" aria-pressed="false">Recent</button><button class="tab" data-f="missing" id="missingTab" aria-pressed="false" hidden>Missing runtimes (0)</button>
       <span class="tabdiv"></span>
       <button class="tab stat" data-s="W" aria-pressed="false">Won</button>
       <button class="tab stat" data-s="N" aria-pressed="false">Nom</button>
-      <button class="tab stat" data-s="H" aria-pressed="false">HM</button>
+      <button class="tab stat" data-s="H" aria-pressed="false" aria-label="Honorable mentions">HM</button>
     </div>
   </div>
-  <p class="tally" id="tally">Loading…</p>
+
   <div class="decs" id="decs" aria-label="Coverage by decade"></div>
   <p class="leftline" id="leftline"></p>
   <input class="search" id="search" type="search" placeholder="Sök en titel…" aria-label="Find a title">
-  <ul id="list"></ul>
+  <ul id="list"></ul><p id="archiveHint" class="bhint" hidden></p><ul id="shortcutsList" hidden></ul>
 
+  <details class="watchedArchive"><summary>Watched films</summary>
+  <div class="seenbox">
+    <div class="seenhead"><h2 lang="sv" title="Watched">Sedda</h2><span class="seencount" id="seenCount">0</span></div>
+    <ul id="seenList"></ul>
+  </div>
+  </details>
+</details>
+</section><section id="statsPage" hidden aria-labelledby="statsHeading"><h2 id="statsHeading" tabindex="-1">Your watchthrough</h2><p class="bhint">Stats count individual films. Challenges count completed series as one entry. Unknown runtimes and unrated films are left out of averages.</p><div id="statsMetrics"></div><h3>By award shelf</h3><div id="statsShelves"></div><h3>By decade</h3><table class="statsTable"><thead><tr><th scope="col">Decade</th><th scope="col">Watched</th><th scope="col">Your average rating</th></tr></thead><tbody id="statsDecades"></tbody></table></section>
   <footer>
-    <span class="status" id="saveState"></span>
+    <div><span class="status" id="saveState"></span><p id="backupStatus" class="status"></p><button class="ghost" id="backupNow">Back up now</button></div>
     <button class="ghost" id="resetBtn">Clear all progress</button>
   </footer>
 
-  <div class="backup" id="backup">
+  <details class="backup" id="backup"><summary>Settings &amp; backups</summary>
+    <label for="country">Streaming country</label><select id="country"><option value="US">United States</option><option value="SE">Sweden</option><option value="GB">United Kingdom</option><option value="CA">Canada</option><option value="AU">Australia</option><option value="DE">Germany</option><option value="FR">France</option></select>
     <p class="blabel">Your progress file</p>
     <div class="bacts">
       <button class="ghost" id="saveFile">Save progress</button>
@@ -440,637 +559,1262 @@
       <button class="ghost" id="tmdbSave">Connect</button>
       <button class="ghost" id="tmdbClear" hidden>Disconnect</button>
     </div>
-    <p class="bhint" id="tmdbState">Optional. Adds the poster, runtime, director, and where to stream each draw. Your credential stays in this file's saved data on your computer.</p>
+    <p class="bhint" id="tmdbState">Optional. Adds the poster, runtime, director, and where to stream each draw. Your credential is stored only in this browser and is never included in progress backups.</p>
     <p class="blabel" style="margin-top:16px">Or copy a text code</p>
     <input id="code" readonly aria-label="Progress code">
     <div class="bacts">
       <button class="ghost" id="copyCode">Copy code</button>
       <button class="ghost" id="loadCode">Restore from a code</button>
     </div>
-  </div>
+  </details>
+</main></div>
+<div class="toast" id="toast" hidden><span id="toastText" role="status"></span><button class="ghost" id="undoBtn">Undo</button><button class="ghost" id="noteOffer" hidden>Add a note</button><button class="ghost" id="dismissToast" aria-label="Dismiss notification">Close</button></div>
+<p class="sr-only" id="announcement" aria-live="polite"></p>
+<dialog class="lightbox" id="lightbox" aria-label="Movie image"><button id="closeLight" class="ghost">Close image</button><img id="lightImg" alt=""></dialog>
+<dialog id="restoreDialog" aria-labelledby="restoreTitle"><h2 id="restoreTitle">Restore progress</h2><p id="restoreSummary"></p><p id="restoreNote"></p><div class="bacts"><button class="ghost" id="mergeProgress">Merge progress</button><button class="ghost" id="replaceProgress">Replace progress</button><button class="ghost" id="cancelRestore">Cancel</button></div><p class="bhint">Merge keeps your watched marks and existing dates. Replace uses the backup. You can undo either choice.</p></dialog>
+<dialog id="dateDialog" aria-labelledby="dateTitle"><h2 id="dateTitle">Watch date</h2><label for="watchDate" id="dateLabel">Date watched</label><input type="date" id="watchDate"><div class="bacts"><button class="ghost" id="saveDate">Save date</button><button class="ghost" id="clearDate">Clear date</button><button class="ghost" id="cancelDate">Cancel</button></div></dialog>
 
-</div>
-</div>
 
-</div>
-
-<div class="lightbox" id="lightbox" hidden><img id="lightImg" alt=""></div>
-
+<dialog id="legacyDialog" aria-labelledby="legacyTitle"><h2 id="legacyTitle">Which list made this code?</h2><p>Older codes do not identify their movie list. Choose the version you copied it from so watched marks match the right films.</p><label for="legacyCatalogue">Movie list</label><select id="legacyCatalogue"><option value="local">Updated list — five added films, including Seven Samurai</option><option value="original">Original list — before the five added films</option></select><div class="bacts"><button class="ghost" id="confirmLegacy">Preview progress</button><button class="ghost" id="cancelLegacy">Cancel</button></div><p id="legacyError" role="alert"></p></dialog>
+<dialog id="reviewDialog" aria-labelledby="reviewTitle"><h2 id="reviewTitle">Your movie note</h2><label for="reviewRating">Your rating (optional)</label><select id="reviewRating"><option value="">No rating</option><option value="1">1 / 5</option><option value="2">2 / 5</option><option value="3">3 / 5</option><option value="4">4 / 5</option><option value="5">5 / 5</option></select><label for="reviewNote">Your thoughts (optional)</label><textarea id="reviewNote" maxlength="500" rows="4" placeholder="What stayed with you?"></textarea><p class="bhint">Up to 500 characters. Included in your progress backups.</p><div class="bacts"><button class="ghost" id="saveReview">Save note</button><button class="ghost" id="cancelReview">Cancel</button></div></dialog>
+<dialog id="moodDialog" aria-labelledby="moodTitle"><h2 id="moodTitle">Mood tags</h2><p class="bhint">Choose what fits. Tags describe the film and do not influence random draws.</p><div id="moodChoices"></div><div class="bacts"><button class="ghost" id="saveMoods">Save moods</button><button class="ghost" id="cancelMoods">Cancel</button></div></dialog>
 <script>
-/* ---------------- data ----------------
-   s: W = Best Picture winner, N = nominated, H = honorable mention (never nominated)
-   tri/ord: trilogy grouping so they always play in order          */
+// Permanent film IDs and two frozen legacy catalogue orderings.
 const FILMS = [
-  {t:"Wings",y:1927,s:"W"},
-  {t:"The Broadway Melody",y:1929,s:"W"},
-  {t:"Hell's Angels",y:1930,s:"H"},
-  {t:"All Quiet on the Western Front",y:1930,s:"W"},
-  {t:"Cimarron",y:1931,s:"W"},
-  {t:"Grand Hotel",y:1932,s:"W"},
-  {t:"Cavalcade",y:1933,s:"W"},
-  {t:"It Happened One Night",y:1934,s:"W"},
-  {t:"Mutiny on the Bounty",y:1935,s:"W"},
-  {t:"A Midsummer Night's Dream",y:1935,s:"N"},
-  {t:"A Tale of Two Cities",y:1935,s:"N"},
-  {t:"The Great Ziegfeld",y:1936,s:"W"},
-  {t:"The Life of Emile Zola",y:1937,s:"W"},
-  {t:"You Can't Take It with You",y:1938,s:"W"},
-  {t:"Gone with the Wind",y:1939,s:"W"},
-  {t:"Rebecca",y:1940,s:"W"},
-  {t:"How Green Was My Valley",y:1941,s:"W"},
-  {t:"Mrs. Miniver",y:1942,s:"W"},
-  {t:"Casablanca",y:1942,s:"W"},
-  {t:"Going My Way",y:1944,s:"W"},
-  {t:"The Lost Weekend",y:1945,s:"W"},
-  {t:"The Best Years of Our Lives",y:1946,s:"W"},
-  {t:"Gentleman's Agreement",y:1947,s:"W"},
-  {t:"Hamlet",y:1948,s:"W"},
-  {t:"All the King's Men",y:1949,s:"W"},
-  {t:"All About Eve",y:1950,s:"W"},
-  {t:"An American in Paris",y:1951,s:"W"},
-  {t:"The Greatest Show on Earth",y:1952,s:"W"},
-  {t:"From Here to Eternity",y:1953,s:"W"},
-  {t:"Julius Caesar",y:1953,s:"N"},
-  {t:"On the Waterfront",y:1954,s:"W"},
-  {t:"Marty",y:1955,s:"W"},
-  {t:"Around the World in 80 Days",y:1956,s:"W"},
-  {t:"The Bridge on the River Kwai",y:1957,s:"W"},
-  {t:"12 Angry Men",y:1957,s:"N"},
-  {t:"Gigi",y:1958,s:"W"},
-  {t:"Ben-Hur",y:1959,s:"W"},
-  {t:"The Nun's Story",y:1959,s:"N"},
-  {t:"The Apartment",y:1960,s:"W"},
-  {t:"The Alamo",y:1960,s:"N"},
-  {t:"West Side Story",y:1961,s:"W"},
-  {t:"The Guns of Navarone",y:1961,s:"N"},
-  {t:"Lawrence of Arabia",y:1962,s:"W"},
-  {t:"The Longest Day",y:1962,s:"N"},
-  {t:"Tom Jones",y:1963,s:"W"},
-  {t:"Cleopatra",y:1963,s:"N"},
-  {t:"My Fair Lady",y:1964,s:"W"},
-  {t:"Dr. Strangelove",y:1964,s:"N"},
-  {t:"The Sound of Music",y:1965,s:"W"},
-  {t:"Doctor Zhivago",y:1965,s:"N"},
-  {t:"A Man for All Seasons",y:1966,s:"W"},
-  {t:"In the Heat of the Night",y:1967,s:"W"},
-  {t:"Oliver!",y:1968,s:"W"},
-  {t:"Midnight Cowboy",y:1969,s:"W"},
-  {t:"Patton",y:1970,s:"W"},
-  {t:"The French Connection",y:1971,s:"W"},
-  {t:"The Godfather",y:1972,s:"W",tri:"gf",ord:1},
-  {t:"Cabaret",y:1972,s:"N"},
-  {t:"Deliverance",y:1972,s:"N"},
-  {t:"The Sting",y:1973,s:"W"},
-  {t:"The Exorcist",y:1973,s:"N"},
-  {t:"The Godfather Part II",y:1974,s:"W",tri:"gf",ord:2},
-  {t:"Chinatown",y:1974,s:"N"},
-  {t:"One Flew Over the Cuckoo's Nest",y:1975,s:"W"},
-  {t:"Dog Day Afternoon",y:1975,s:"N"},
-  {t:"Jaws",y:1975,s:"N"},
-  {t:"Barry Lyndon",y:1975,s:"N"},
-  {t:"Rocky",y:1976,s:"W"},
-  {t:"Taxi Driver",y:1976,s:"N"},
-  {t:"All the President's Men",y:1976,s:"N"},
-  {t:"Annie Hall",y:1977,s:"W"},
-  {t:"Star Wars",y:1977,s:"N"},
-  {t:"The Deer Hunter",y:1978,s:"W"},
-  {t:"Kramer vs. Kramer",y:1979,s:"W"},
-  {t:"Apocalypse Now",y:1979,s:"N"},
-  {t:"Ordinary People",y:1980,s:"W"},
-  {t:"Raging Bull",y:1980,s:"N"},
-  {t:"Chariots of Fire",y:1981,s:"W"},
-  {t:"Raiders of the Lost Ark",y:1981,s:"N"},
-  {t:"Gandhi",y:1982,s:"W"},
-  {t:"E.T. the Extra-Terrestrial",y:1982,s:"N"},
-  {t:"Terms of Endearment",y:1983,s:"W"},
-  {t:"Amadeus",y:1984,s:"W"},
-  {t:"Out of Africa",y:1985,s:"W"},
-  {t:"The Color Purple",y:1985,s:"N"},
-  {t:"Platoon",y:1986,s:"W"},
-  {t:"The Last Emperor",y:1987,s:"W"},
-  {t:"Rain Man",y:1988,s:"W"},
-  {t:"Driving Miss Daisy",y:1989,s:"W"},
-  {t:"Field of Dreams",y:1989,s:"N"},
-  {t:"Dances With Wolves",y:1990,s:"W"},
-  {t:"Goodfellas",y:1990,s:"N"},
-  {t:"The Godfather Part III",y:1990,s:"N",tri:"gf",ord:3},
-  {t:"The Silence of the Lambs",y:1991,s:"W"},
-  {t:"JFK",y:1991,s:"N"},
-  {t:"Unforgiven",y:1992,s:"W"},
-  {t:"A Few Good Men",y:1992,s:"N"},
-  {t:"Schindler's List",y:1993,s:"W"},
-  {t:"The Fugitive",y:1993,s:"N"},
-  {t:"Forrest Gump",y:1994,s:"W"},
-  {t:"Pulp Fiction",y:1994,s:"N"},
-  {t:"The Shawshank Redemption",y:1994,s:"N"},
-  {t:"Braveheart",y:1995,s:"W"},
-  {t:"Apollo 13",y:1995,s:"N"},
-  {t:"The English Patient",y:1996,s:"W"},
-  {t:"Fargo",y:1996,s:"N"},
-  {t:"Titanic",y:1997,s:"W"},
-  {t:"Good Will Hunting",y:1997,s:"N"},
-  {t:"L.A. Confidential",y:1997,s:"N"},
-  {t:"Shakespeare in Love",y:1998,s:"W"},
-  {t:"Saving Private Ryan",y:1998,s:"N"},
-  {t:"The Thin Red Line",y:1998,s:"N"},
-  {t:"American Beauty",y:1999,s:"W"},
-  {t:"The Sixth Sense",y:1999,s:"N"},
-  {t:"Gladiator",y:2000,s:"W"},
-  {t:"Crouching Tiger, Hidden Dragon",y:2000,s:"N"},
-  {t:"A Beautiful Mind",y:2001,s:"W"},
-  {t:"The Lord of the Rings: The Fellowship of the Ring",y:2001,s:"N",tri:"lotr",ord:1},
-  {t:"Chicago",y:2002,s:"W"},
-  {t:"The Lord of the Rings: The Two Towers",y:2002,s:"N",tri:"lotr",ord:2},
-  {t:"Gangs of New York",y:2002,s:"N"},
-  {t:"The Lord of the Rings: The Return of the King",y:2003,s:"W",tri:"lotr",ord:3},
-  {t:"Master and Commander: The Far Side of the World",y:2003,s:"N"},
-  {t:"Million Dollar Baby",y:2004,s:"W"},
-  {t:"The Aviator",y:2004,s:"N"},
-  {t:"Crash",y:2005,s:"W"},
-  {t:"Brokeback Mountain",y:2005,s:"N"},
-  {t:"The Departed",y:2006,s:"W"},
-  {t:"Letters from Iwo Jima",y:2006,s:"N"},
-  {t:"No Country for Old Men",y:2007,s:"W"},
-  {t:"There Will Be Blood",y:2007,s:"N"},
-  {t:"Slumdog Millionaire",y:2008,s:"W"},
-  {t:"The Hurt Locker",y:2009,s:"W"},
-  {t:"Avatar",y:2009,s:"N"},
-  {t:"The King's Speech",y:2010,s:"W"},
-  {t:"Inception",y:2010,s:"N"},
-  {t:"Black Swan",y:2010,s:"N"},
-  {t:"True Grit",y:2010,s:"N"},
-  {t:"The Artist",y:2011,s:"W"},
-  {t:"War Horse",y:2011,s:"N"},
-  {t:"Argo",y:2012,s:"W"},
-  {t:"Zero Dark Thirty",y:2012,s:"N"},
-  {t:"Django Unchained",y:2012,s:"N"},
-  {t:"12 Years a Slave",y:2013,s:"W"},
-  {t:"The Wolf of Wall Street",y:2013,s:"N"},
-  {t:"Birdman or (The Unexpected Virtue of Ignorance)",y:2014,s:"W"},
-  {t:"Whiplash",y:2014,s:"N"},
-  {t:"Spotlight",y:2015,s:"W"},
-  {t:"The Revenant",y:2015,s:"N"},
-  {t:"Bridge of Spies",y:2015,s:"N"},
-  {t:"Moonlight",y:2016,s:"W"},
-  {t:"Arrival",y:2016,s:"N"},
-  {t:"Hell or High Water",y:2016,s:"N"},
-  {t:"Hacksaw Ridge",y:2016,s:"N"},
-  {t:"Manchester by the Sea",y:2016,s:"N"},
-  {t:"The Shape of Water",y:2017,s:"W"},
-  {t:"Dunkirk",y:2017,s:"N"},
-  {t:"Get Out",y:2017,s:"N"},
-  {t:"Darkest Hour",y:2017,s:"N"},
-  {t:"Green Book",y:2018,s:"W"},
-  {t:"Parasite",y:2019,s:"W"},
-  {t:"Ford v Ferrari",y:2019,s:"N"},
-  {t:"1917",y:2019,s:"N"},
-  {t:"Little Women",y:2019,s:"N"},
-  {t:"The Irishman",y:2019,s:"N"},
-  {t:"Jojo Rabbit",y:2019,s:"N"},
-  {t:"Once Upon a Time in Hollywood",y:2019,s:"N"},
-  {t:"Joker",y:2019,s:"N"},
-  {t:"Nomadland",y:2020,s:"W"},
-  {t:"Judas and the Black Messiah",y:2020,s:"N"},
-  {t:"CODA",y:2021,s:"W"},
-  {t:"Everything Everywhere All at Once",y:2022,s:"W"},
-  {t:"All Quiet on the Western Front",y:2022,s:"N"},
-  {t:"Top Gun: Maverick",y:2022,s:"N"},
-  {t:"Elvis",y:2022,s:"N"},
-  {t:"Oppenheimer",y:2023,s:"W"},
-  {t:"Killers of the Flower Moon",y:2023,s:"N"},
-  {t:"Barbie",y:2023,s:"N"},
-  {t:"Anora",y:2024,s:"W"},
-  {t:"Dune: Part Two",y:2024,s:"N",tri:"dune",ord:2},
-  {t:"One Battle After Another",y:2025,s:"W"},
-  {t:"Marty Supreme",y:2025,s:"N"},
-  {t:"Dune",y:2021,s:"N",tri:"dune",ord:1},
-  {t:"Seven Samurai",y:1954,s:"H"},
-  {t:"The Good, the Bad and the Ugly",y:1966,s:"H"},
-  {t:"Das Boot",y:1981,s:"H"},
-  {t:"Scarface",y:1983,s:"H"},
-  {t:"Do the Right Thing",y:1989,s:"H"}
+  {
+    "t": "Wings",
+    "y": 1927,
+    "s": "W",
+    "id": "1927-wings"
+  },
+  {
+    "t": "The Broadway Melody",
+    "y": 1929,
+    "s": "W",
+    "id": "1929-the-broadway-melody"
+  },
+  {
+    "t": "Hell's Angels",
+    "y": 1930,
+    "s": "H",
+    "id": "1930-hell-s-angels"
+  },
+  {
+    "t": "All Quiet on the Western Front",
+    "y": 1930,
+    "s": "W",
+    "id": "1930-all-quiet-on-the-western-front"
+  },
+  {
+    "t": "Cimarron",
+    "y": 1931,
+    "s": "W",
+    "id": "1931-cimarron"
+  },
+  {
+    "t": "Grand Hotel",
+    "y": 1932,
+    "s": "W",
+    "id": "1932-grand-hotel"
+  },
+  {
+    "t": "Cavalcade",
+    "y": 1933,
+    "s": "W",
+    "id": "1933-cavalcade"
+  },
+  {
+    "t": "It Happened One Night",
+    "y": 1934,
+    "s": "W",
+    "id": "1934-it-happened-one-night"
+  },
+  {
+    "t": "Mutiny on the Bounty",
+    "y": 1935,
+    "s": "W",
+    "id": "1935-mutiny-on-the-bounty"
+  },
+  {
+    "t": "A Midsummer Night's Dream",
+    "y": 1935,
+    "s": "N",
+    "id": "1935-a-midsummer-night-s-dream"
+  },
+  {
+    "t": "A Tale of Two Cities",
+    "y": 1935,
+    "s": "N",
+    "id": "1935-a-tale-of-two-cities"
+  },
+  {
+    "t": "The Great Ziegfeld",
+    "y": 1936,
+    "s": "W",
+    "id": "1936-the-great-ziegfeld"
+  },
+  {
+    "t": "The Life of Emile Zola",
+    "y": 1937,
+    "s": "W",
+    "id": "1937-the-life-of-emile-zola"
+  },
+  {
+    "t": "You Can't Take It with You",
+    "y": 1938,
+    "s": "W",
+    "id": "1938-you-can-t-take-it-with-you"
+  },
+  {
+    "t": "Gone with the Wind",
+    "y": 1939,
+    "s": "W",
+    "id": "1939-gone-with-the-wind"
+  },
+  {
+    "t": "Rebecca",
+    "y": 1940,
+    "s": "W",
+    "id": "1940-rebecca"
+  },
+  {
+    "t": "How Green Was My Valley",
+    "y": 1941,
+    "s": "W",
+    "id": "1941-how-green-was-my-valley"
+  },
+  {
+    "t": "Mrs. Miniver",
+    "y": 1942,
+    "s": "W",
+    "id": "1942-mrs-miniver"
+  },
+  {
+    "t": "Casablanca",
+    "y": 1942,
+    "s": "W",
+    "id": "1942-casablanca"
+  },
+  {
+    "t": "Going My Way",
+    "y": 1944,
+    "s": "W",
+    "id": "1944-going-my-way"
+  },
+  {
+    "t": "The Lost Weekend",
+    "y": 1945,
+    "s": "W",
+    "id": "1945-the-lost-weekend"
+  },
+  {
+    "t": "The Best Years of Our Lives",
+    "y": 1946,
+    "s": "W",
+    "id": "1946-the-best-years-of-our-lives"
+  },
+  {
+    "t": "Gentleman's Agreement",
+    "y": 1947,
+    "s": "W",
+    "id": "1947-gentleman-s-agreement"
+  },
+  {
+    "t": "Hamlet",
+    "y": 1948,
+    "s": "W",
+    "id": "1948-hamlet"
+  },
+  {
+    "t": "All the King's Men",
+    "y": 1949,
+    "s": "W",
+    "id": "1949-all-the-king-s-men"
+  },
+  {
+    "t": "All About Eve",
+    "y": 1950,
+    "s": "W",
+    "id": "1950-all-about-eve"
+  },
+  {
+    "t": "An American in Paris",
+    "y": 1951,
+    "s": "W",
+    "id": "1951-an-american-in-paris"
+  },
+  {
+    "t": "The Greatest Show on Earth",
+    "y": 1952,
+    "s": "W",
+    "id": "1952-the-greatest-show-on-earth"
+  },
+  {
+    "t": "From Here to Eternity",
+    "y": 1953,
+    "s": "W",
+    "id": "1953-from-here-to-eternity"
+  },
+  {
+    "t": "Julius Caesar",
+    "y": 1953,
+    "s": "N",
+    "id": "1953-julius-caesar"
+  },
+  {
+    "t": "On the Waterfront",
+    "y": 1954,
+    "s": "W",
+    "id": "1954-on-the-waterfront"
+  },
+  {
+    "t": "Marty",
+    "y": 1955,
+    "s": "W",
+    "id": "1955-marty"
+  },
+  {
+    "t": "Around the World in 80 Days",
+    "y": 1956,
+    "s": "W",
+    "id": "1956-around-the-world-in-80-days"
+  },
+  {
+    "t": "The Bridge on the River Kwai",
+    "y": 1957,
+    "s": "W",
+    "id": "1957-the-bridge-on-the-river-kwai"
+  },
+  {
+    "t": "12 Angry Men",
+    "y": 1957,
+    "s": "N",
+    "id": "1957-12-angry-men"
+  },
+  {
+    "t": "Gigi",
+    "y": 1958,
+    "s": "W",
+    "id": "1958-gigi"
+  },
+  {
+    "t": "Ben-Hur",
+    "y": 1959,
+    "s": "W",
+    "id": "1959-ben-hur"
+  },
+  {
+    "t": "The Nun's Story",
+    "y": 1959,
+    "s": "N",
+    "id": "1959-the-nun-s-story"
+  },
+  {
+    "t": "The Apartment",
+    "y": 1960,
+    "s": "W",
+    "id": "1960-the-apartment"
+  },
+  {
+    "t": "The Alamo",
+    "y": 1960,
+    "s": "N",
+    "id": "1960-the-alamo"
+  },
+  {
+    "t": "West Side Story",
+    "y": 1961,
+    "s": "W",
+    "id": "1961-west-side-story"
+  },
+  {
+    "t": "The Guns of Navarone",
+    "y": 1961,
+    "s": "N",
+    "id": "1961-the-guns-of-navarone"
+  },
+  {
+    "t": "Lawrence of Arabia",
+    "y": 1962,
+    "s": "W",
+    "id": "1962-lawrence-of-arabia"
+  },
+  {
+    "t": "The Longest Day",
+    "y": 1962,
+    "s": "N",
+    "id": "1962-the-longest-day"
+  },
+  {
+    "t": "Tom Jones",
+    "y": 1963,
+    "s": "W",
+    "id": "1963-tom-jones"
+  },
+  {
+    "t": "Cleopatra",
+    "y": 1963,
+    "s": "N",
+    "id": "1963-cleopatra"
+  },
+  {
+    "t": "My Fair Lady",
+    "y": 1964,
+    "s": "W",
+    "id": "1964-my-fair-lady"
+  },
+  {
+    "t": "Dr. Strangelove",
+    "y": 1964,
+    "s": "N",
+    "id": "1964-dr-strangelove"
+  },
+  {
+    "t": "The Sound of Music",
+    "y": 1965,
+    "s": "W",
+    "id": "1965-the-sound-of-music"
+  },
+  {
+    "t": "Doctor Zhivago",
+    "y": 1965,
+    "s": "N",
+    "id": "1965-doctor-zhivago"
+  },
+  {
+    "t": "A Man for All Seasons",
+    "y": 1966,
+    "s": "W",
+    "id": "1966-a-man-for-all-seasons"
+  },
+  {
+    "t": "In the Heat of the Night",
+    "y": 1967,
+    "s": "W",
+    "id": "1967-in-the-heat-of-the-night"
+  },
+  {
+    "t": "Oliver!",
+    "y": 1968,
+    "s": "W",
+    "id": "1968-oliver"
+  },
+  {
+    "t": "Midnight Cowboy",
+    "y": 1969,
+    "s": "W",
+    "id": "1969-midnight-cowboy"
+  },
+  {
+    "t": "Patton",
+    "y": 1970,
+    "s": "W",
+    "id": "1970-patton"
+  },
+  {
+    "t": "The French Connection",
+    "y": 1971,
+    "s": "W",
+    "id": "1971-the-french-connection"
+  },
+  {
+    "t": "The Godfather",
+    "y": 1972,
+    "s": "W",
+    "tri": "gf",
+    "ord": 1,
+    "id": "1972-the-godfather"
+  },
+  {
+    "t": "Cabaret",
+    "y": 1972,
+    "s": "N",
+    "id": "1972-cabaret"
+  },
+  {
+    "t": "Deliverance",
+    "y": 1972,
+    "s": "N",
+    "id": "1972-deliverance"
+  },
+  {
+    "t": "The Sting",
+    "y": 1973,
+    "s": "W",
+    "id": "1973-the-sting"
+  },
+  {
+    "t": "The Exorcist",
+    "y": 1973,
+    "s": "N",
+    "id": "1973-the-exorcist"
+  },
+  {
+    "t": "The Godfather Part II",
+    "y": 1974,
+    "s": "W",
+    "tri": "gf",
+    "ord": 2,
+    "id": "1974-the-godfather-part-ii"
+  },
+  {
+    "t": "Chinatown",
+    "y": 1974,
+    "s": "N",
+    "id": "1974-chinatown"
+  },
+  {
+    "t": "One Flew Over the Cuckoo's Nest",
+    "y": 1975,
+    "s": "W",
+    "id": "1975-one-flew-over-the-cuckoo-s-nest"
+  },
+  {
+    "t": "Dog Day Afternoon",
+    "y": 1975,
+    "s": "N",
+    "id": "1975-dog-day-afternoon"
+  },
+  {
+    "t": "Jaws",
+    "y": 1975,
+    "s": "N",
+    "id": "1975-jaws"
+  },
+  {
+    "t": "Barry Lyndon",
+    "y": 1975,
+    "s": "N",
+    "id": "1975-barry-lyndon"
+  },
+  {
+    "t": "Rocky",
+    "y": 1976,
+    "s": "W",
+    "id": "1976-rocky"
+  },
+  {
+    "t": "Taxi Driver",
+    "y": 1976,
+    "s": "N",
+    "id": "1976-taxi-driver"
+  },
+  {
+    "t": "All the President's Men",
+    "y": 1976,
+    "s": "N",
+    "id": "1976-all-the-president-s-men"
+  },
+  {
+    "t": "Annie Hall",
+    "y": 1977,
+    "s": "W",
+    "id": "1977-annie-hall"
+  },
+  {
+    "t": "Star Wars",
+    "y": 1977,
+    "s": "N",
+    "id": "1977-star-wars"
+  },
+  {
+    "t": "The Deer Hunter",
+    "y": 1978,
+    "s": "W",
+    "id": "1978-the-deer-hunter"
+  },
+  {
+    "t": "Kramer vs. Kramer",
+    "y": 1979,
+    "s": "W",
+    "id": "1979-kramer-vs-kramer"
+  },
+  {
+    "t": "Apocalypse Now",
+    "y": 1979,
+    "s": "N",
+    "id": "1979-apocalypse-now"
+  },
+  {
+    "t": "Ordinary People",
+    "y": 1980,
+    "s": "W",
+    "id": "1980-ordinary-people"
+  },
+  {
+    "t": "Raging Bull",
+    "y": 1980,
+    "s": "N",
+    "id": "1980-raging-bull"
+  },
+  {
+    "t": "Chariots of Fire",
+    "y": 1981,
+    "s": "W",
+    "id": "1981-chariots-of-fire"
+  },
+  {
+    "t": "Raiders of the Lost Ark",
+    "y": 1981,
+    "s": "N",
+    "id": "1981-raiders-of-the-lost-ark"
+  },
+  {
+    "t": "Gandhi",
+    "y": 1982,
+    "s": "W",
+    "id": "1982-gandhi"
+  },
+  {
+    "t": "E.T. the Extra-Terrestrial",
+    "y": 1982,
+    "s": "N",
+    "id": "1982-e-t-the-extra-terrestrial"
+  },
+  {
+    "t": "Terms of Endearment",
+    "y": 1983,
+    "s": "W",
+    "id": "1983-terms-of-endearment"
+  },
+  {
+    "t": "Amadeus",
+    "y": 1984,
+    "s": "W",
+    "id": "1984-amadeus"
+  },
+  {
+    "t": "Out of Africa",
+    "y": 1985,
+    "s": "W",
+    "id": "1985-out-of-africa"
+  },
+  {
+    "t": "The Color Purple",
+    "y": 1985,
+    "s": "N",
+    "id": "1985-the-color-purple"
+  },
+  {
+    "t": "Platoon",
+    "y": 1986,
+    "s": "W",
+    "id": "1986-platoon"
+  },
+  {
+    "t": "The Last Emperor",
+    "y": 1987,
+    "s": "W",
+    "id": "1987-the-last-emperor"
+  },
+  {
+    "t": "Rain Man",
+    "y": 1988,
+    "s": "W",
+    "id": "1988-rain-man"
+  },
+  {
+    "t": "Driving Miss Daisy",
+    "y": 1989,
+    "s": "W",
+    "id": "1989-driving-miss-daisy"
+  },
+  {
+    "t": "Field of Dreams",
+    "y": 1989,
+    "s": "N",
+    "id": "1989-field-of-dreams"
+  },
+  {
+    "t": "Dances With Wolves",
+    "y": 1990,
+    "s": "W",
+    "id": "1990-dances-with-wolves"
+  },
+  {
+    "t": "Goodfellas",
+    "y": 1990,
+    "s": "N",
+    "id": "1990-goodfellas"
+  },
+  {
+    "t": "The Godfather Part III",
+    "y": 1990,
+    "s": "N",
+    "tri": "gf",
+    "ord": 3,
+    "id": "1990-the-godfather-part-iii"
+  },
+  {
+    "t": "The Silence of the Lambs",
+    "y": 1991,
+    "s": "W",
+    "id": "1991-the-silence-of-the-lambs"
+  },
+  {
+    "t": "JFK",
+    "y": 1991,
+    "s": "N",
+    "id": "1991-jfk"
+  },
+  {
+    "t": "Unforgiven",
+    "y": 1992,
+    "s": "W",
+    "id": "1992-unforgiven"
+  },
+  {
+    "t": "A Few Good Men",
+    "y": 1992,
+    "s": "N",
+    "id": "1992-a-few-good-men"
+  },
+  {
+    "t": "Schindler's List",
+    "y": 1993,
+    "s": "W",
+    "id": "1993-schindler-s-list"
+  },
+  {
+    "t": "The Fugitive",
+    "y": 1993,
+    "s": "N",
+    "id": "1993-the-fugitive"
+  },
+  {
+    "t": "Forrest Gump",
+    "y": 1994,
+    "s": "W",
+    "id": "1994-forrest-gump"
+  },
+  {
+    "t": "Pulp Fiction",
+    "y": 1994,
+    "s": "N",
+    "id": "1994-pulp-fiction"
+  },
+  {
+    "t": "The Shawshank Redemption",
+    "y": 1994,
+    "s": "N",
+    "id": "1994-the-shawshank-redemption"
+  },
+  {
+    "t": "Braveheart",
+    "y": 1995,
+    "s": "W",
+    "id": "1995-braveheart"
+  },
+  {
+    "t": "Apollo 13",
+    "y": 1995,
+    "s": "N",
+    "id": "1995-apollo-13"
+  },
+  {
+    "t": "The English Patient",
+    "y": 1996,
+    "s": "W",
+    "id": "1996-the-english-patient"
+  },
+  {
+    "t": "Fargo",
+    "y": 1996,
+    "s": "N",
+    "id": "1996-fargo"
+  },
+  {
+    "t": "Titanic",
+    "y": 1997,
+    "s": "W",
+    "id": "1997-titanic"
+  },
+  {
+    "t": "Good Will Hunting",
+    "y": 1997,
+    "s": "N",
+    "id": "1997-good-will-hunting"
+  },
+  {
+    "t": "L.A. Confidential",
+    "y": 1997,
+    "s": "N",
+    "id": "1997-l-a-confidential"
+  },
+  {
+    "t": "Shakespeare in Love",
+    "y": 1998,
+    "s": "W",
+    "id": "1998-shakespeare-in-love"
+  },
+  {
+    "t": "Saving Private Ryan",
+    "y": 1998,
+    "s": "N",
+    "id": "1998-saving-private-ryan"
+  },
+  {
+    "t": "The Thin Red Line",
+    "y": 1998,
+    "s": "N",
+    "id": "1998-the-thin-red-line"
+  },
+  {
+    "t": "American Beauty",
+    "y": 1999,
+    "s": "W",
+    "id": "1999-american-beauty"
+  },
+  {
+    "t": "The Sixth Sense",
+    "y": 1999,
+    "s": "N",
+    "id": "1999-the-sixth-sense"
+  },
+  {
+    "t": "Gladiator",
+    "y": 2000,
+    "s": "W",
+    "id": "2000-gladiator"
+  },
+  {
+    "t": "Crouching Tiger, Hidden Dragon",
+    "y": 2000,
+    "s": "N",
+    "id": "2000-crouching-tiger-hidden-dragon"
+  },
+  {
+    "t": "A Beautiful Mind",
+    "y": 2001,
+    "s": "W",
+    "id": "2001-a-beautiful-mind"
+  },
+  {
+    "t": "The Lord of the Rings: The Fellowship of the Ring",
+    "y": 2001,
+    "s": "N",
+    "tri": "lotr",
+    "ord": 1,
+    "id": "2001-the-lord-of-the-rings-the-fellowship-of-the-ring"
+  },
+  {
+    "t": "Chicago",
+    "y": 2002,
+    "s": "W",
+    "id": "2002-chicago"
+  },
+  {
+    "t": "The Lord of the Rings: The Two Towers",
+    "y": 2002,
+    "s": "N",
+    "tri": "lotr",
+    "ord": 2,
+    "id": "2002-the-lord-of-the-rings-the-two-towers"
+  },
+  {
+    "t": "Gangs of New York",
+    "y": 2002,
+    "s": "N",
+    "id": "2002-gangs-of-new-york"
+  },
+  {
+    "t": "The Lord of the Rings: The Return of the King",
+    "y": 2003,
+    "s": "W",
+    "tri": "lotr",
+    "ord": 3,
+    "id": "2003-the-lord-of-the-rings-the-return-of-the-king"
+  },
+  {
+    "t": "Master and Commander: The Far Side of the World",
+    "y": 2003,
+    "s": "N",
+    "id": "2003-master-and-commander-the-far-side-of-the-world"
+  },
+  {
+    "t": "Million Dollar Baby",
+    "y": 2004,
+    "s": "W",
+    "id": "2004-million-dollar-baby"
+  },
+  {
+    "t": "The Aviator",
+    "y": 2004,
+    "s": "N",
+    "id": "2004-the-aviator"
+  },
+  {
+    "t": "Crash",
+    "y": 2005,
+    "s": "W",
+    "id": "2005-crash"
+  },
+  {
+    "t": "Brokeback Mountain",
+    "y": 2005,
+    "s": "N",
+    "id": "2005-brokeback-mountain"
+  },
+  {
+    "t": "The Departed",
+    "y": 2006,
+    "s": "W",
+    "id": "2006-the-departed"
+  },
+  {
+    "t": "Letters from Iwo Jima",
+    "y": 2006,
+    "s": "N",
+    "id": "2006-letters-from-iwo-jima"
+  },
+  {
+    "t": "No Country for Old Men",
+    "y": 2007,
+    "s": "W",
+    "id": "2007-no-country-for-old-men"
+  },
+  {
+    "t": "There Will Be Blood",
+    "y": 2007,
+    "s": "N",
+    "id": "2007-there-will-be-blood"
+  },
+  {
+    "t": "Slumdog Millionaire",
+    "y": 2008,
+    "s": "W",
+    "id": "2008-slumdog-millionaire"
+  },
+  {
+    "t": "The Hurt Locker",
+    "y": 2009,
+    "s": "W",
+    "id": "2009-the-hurt-locker"
+  },
+  {
+    "t": "Avatar",
+    "y": 2009,
+    "s": "N",
+    "id": "2009-avatar"
+  },
+  {
+    "t": "The King's Speech",
+    "y": 2010,
+    "s": "W",
+    "id": "2010-the-king-s-speech"
+  },
+  {
+    "t": "Inception",
+    "y": 2010,
+    "s": "N",
+    "id": "2010-inception"
+  },
+  {
+    "t": "Black Swan",
+    "y": 2010,
+    "s": "N",
+    "id": "2010-black-swan"
+  },
+  {
+    "t": "True Grit",
+    "y": 2010,
+    "s": "N",
+    "id": "2010-true-grit"
+  },
+  {
+    "t": "The Artist",
+    "y": 2011,
+    "s": "W",
+    "id": "2011-the-artist"
+  },
+  {
+    "t": "War Horse",
+    "y": 2011,
+    "s": "N",
+    "id": "2011-war-horse"
+  },
+  {
+    "t": "Argo",
+    "y": 2012,
+    "s": "W",
+    "id": "2012-argo"
+  },
+  {
+    "t": "Zero Dark Thirty",
+    "y": 2012,
+    "s": "N",
+    "id": "2012-zero-dark-thirty"
+  },
+  {
+    "t": "Django Unchained",
+    "y": 2012,
+    "s": "N",
+    "id": "2012-django-unchained"
+  },
+  {
+    "t": "12 Years a Slave",
+    "y": 2013,
+    "s": "W",
+    "id": "2013-12-years-a-slave"
+  },
+  {
+    "t": "The Wolf of Wall Street",
+    "y": 2013,
+    "s": "N",
+    "id": "2013-the-wolf-of-wall-street"
+  },
+  {
+    "t": "Birdman or (The Unexpected Virtue of Ignorance)",
+    "y": 2014,
+    "s": "W",
+    "id": "2014-birdman-or-the-unexpected-virtue-of-ignorance"
+  },
+  {
+    "t": "Whiplash",
+    "y": 2014,
+    "s": "N",
+    "id": "2014-whiplash"
+  },
+  {
+    "t": "Spotlight",
+    "y": 2015,
+    "s": "W",
+    "id": "2015-spotlight"
+  },
+  {
+    "t": "The Revenant",
+    "y": 2015,
+    "s": "N",
+    "id": "2015-the-revenant"
+  },
+  {
+    "t": "Bridge of Spies",
+    "y": 2015,
+    "s": "N",
+    "id": "2015-bridge-of-spies"
+  },
+  {
+    "t": "Moonlight",
+    "y": 2016,
+    "s": "W",
+    "id": "2016-moonlight"
+  },
+  {
+    "t": "Arrival",
+    "y": 2016,
+    "s": "N",
+    "id": "2016-arrival"
+  },
+  {
+    "t": "Hell or High Water",
+    "y": 2016,
+    "s": "N",
+    "id": "2016-hell-or-high-water"
+  },
+  {
+    "t": "Hacksaw Ridge",
+    "y": 2016,
+    "s": "N",
+    "id": "2016-hacksaw-ridge"
+  },
+  {
+    "t": "Manchester by the Sea",
+    "y": 2016,
+    "s": "N",
+    "id": "2016-manchester-by-the-sea"
+  },
+  {
+    "t": "The Shape of Water",
+    "y": 2017,
+    "s": "W",
+    "id": "2017-the-shape-of-water"
+  },
+  {
+    "t": "Dunkirk",
+    "y": 2017,
+    "s": "N",
+    "id": "2017-dunkirk"
+  },
+  {
+    "t": "Get Out",
+    "y": 2017,
+    "s": "N",
+    "id": "2017-get-out"
+  },
+  {
+    "t": "Darkest Hour",
+    "y": 2017,
+    "s": "N",
+    "id": "2017-darkest-hour"
+  },
+  {
+    "t": "Green Book",
+    "y": 2018,
+    "s": "W",
+    "id": "2018-green-book"
+  },
+  {
+    "t": "Parasite",
+    "y": 2019,
+    "s": "W",
+    "id": "2019-parasite"
+  },
+  {
+    "t": "Ford v Ferrari",
+    "y": 2019,
+    "s": "N",
+    "id": "2019-ford-v-ferrari"
+  },
+  {
+    "t": "1917",
+    "y": 2019,
+    "s": "N",
+    "id": "2019-1917"
+  },
+  {
+    "t": "Little Women",
+    "y": 2019,
+    "s": "N",
+    "id": "2019-little-women"
+  },
+  {
+    "t": "The Irishman",
+    "y": 2019,
+    "s": "N",
+    "id": "2019-the-irishman"
+  },
+  {
+    "t": "Jojo Rabbit",
+    "y": 2019,
+    "s": "N",
+    "id": "2019-jojo-rabbit"
+  },
+  {
+    "t": "Once Upon a Time in Hollywood",
+    "y": 2019,
+    "s": "N",
+    "id": "2019-once-upon-a-time-in-hollywood"
+  },
+  {
+    "t": "Joker",
+    "y": 2019,
+    "s": "N",
+    "id": "2019-joker"
+  },
+  {
+    "t": "Nomadland",
+    "y": 2020,
+    "s": "W",
+    "id": "2020-nomadland"
+  },
+  {
+    "t": "Judas and the Black Messiah",
+    "y": 2020,
+    "s": "N",
+    "id": "2020-judas-and-the-black-messiah"
+  },
+  {
+    "t": "CODA",
+    "y": 2021,
+    "s": "W",
+    "id": "2021-coda"
+  },
+  {
+    "t": "Everything Everywhere All at Once",
+    "y": 2022,
+    "s": "W",
+    "id": "2022-everything-everywhere-all-at-once"
+  },
+  {
+    "t": "All Quiet on the Western Front",
+    "y": 2022,
+    "s": "N",
+    "id": "2022-all-quiet-on-the-western-front"
+  },
+  {
+    "t": "Top Gun: Maverick",
+    "y": 2022,
+    "s": "N",
+    "id": "2022-top-gun-maverick"
+  },
+  {
+    "t": "Elvis",
+    "y": 2022,
+    "s": "N",
+    "id": "2022-elvis"
+  },
+  {
+    "t": "Oppenheimer",
+    "y": 2023,
+    "s": "W",
+    "id": "2023-oppenheimer"
+  },
+  {
+    "t": "Killers of the Flower Moon",
+    "y": 2023,
+    "s": "N",
+    "id": "2023-killers-of-the-flower-moon"
+  },
+  {
+    "t": "Barbie",
+    "y": 2023,
+    "s": "N",
+    "id": "2023-barbie"
+  },
+  {
+    "t": "Anora",
+    "y": 2024,
+    "s": "W",
+    "id": "2024-anora"
+  },
+  {
+    "t": "Dune: Part Two",
+    "y": 2024,
+    "s": "N",
+    "tri": "dune",
+    "ord": 2,
+    "id": "2024-dune-part-two"
+  },
+  {
+    "t": "One Battle After Another",
+    "y": 2025,
+    "s": "W",
+    "id": "2025-one-battle-after-another"
+  },
+  {
+    "t": "Marty Supreme",
+    "y": 2025,
+    "s": "N",
+    "id": "2025-marty-supreme"
+  },
+  {
+    "t": "Dune",
+    "y": 2021,
+    "s": "N",
+    "tri": "dune",
+    "ord": 1,
+    "id": "2021-dune"
+  },
+  {
+    "t": "Seven Samurai",
+    "y": 1954,
+    "s": "H",
+    "id": "1954-seven-samurai"
+  },
+  {
+    "t": "The Good, the Bad and the Ugly",
+    "y": 1966,
+    "s": "H",
+    "id": "1966-the-good-the-bad-and-the-ugly"
+  },
+  {
+    "t": "Das Boot",
+    "y": 1981,
+    "s": "H",
+    "id": "1981-das-boot"
+  },
+  {
+    "t": "Scarface",
+    "y": 1983,
+    "s": "H",
+    "id": "1983-scarface"
+  },
+  {
+    "t": "Do the Right Thing",
+    "y": 1989,
+    "s": "H",
+    "id": "1989-do-the-right-thing"
+  },
+  {
+    "t": "Once Upon a Time in the West",
+    "y": 1968,
+    "s": "H",
+    "id": "1968-once-upon-a-time-in-the-west"
+  },
+  {
+    "t": "Double Indemnity",
+    "y": 1944,
+    "s": "N",
+    "id": "1944-double-indemnity"
+  },
+  {
+    "t": "The Maltese Falcon",
+    "y": 1941,
+    "s": "N",
+    "id": "1941-the-maltese-falcon"
+  },
+  {
+    "t": "Sunset Boulevard",
+    "y": 1950,
+    "s": "N",
+    "id": "1950-sunset-boulevard"
+  },
+  {
+    "t": "High Noon",
+    "y": 1952,
+    "s": "N",
+    "id": "1952-high-noon"
+  },
+  {
+    "t": "The Hustler",
+    "y": 1961,
+    "s": "N",
+    "id": "1961-the-hustler"
+  },
+  {
+    "t": "The Graduate",
+    "y": 1967,
+    "s": "N",
+    "id": "1967-the-graduate"
+  },
+  {
+    "t": "The Right Stuff",
+    "y": 1983,
+    "s": "N",
+    "id": "1983-the-right-stuff"
+  },
+  {
+    "t": "The Searchers",
+    "y": 1956,
+    "s": "H",
+    "id": "1956-the-searchers"
+  },
+  {
+    "t": "Heat",
+    "y": 1995,
+    "s": "H",
+    "id": "1995-heat"
+  },
+  {
+    "t": "The Night of the Hunter",
+    "y": 1955,
+    "s": "H",
+    "id": "1955-the-night-of-the-hunter"
+  },
+  {
+    "t": "Rear Window",
+    "y": 1954,
+    "s": "H",
+    "id": "1954-rear-window"
+  },
+  {
+    "t": "Blow Out",
+    "y": 1981,
+    "s": "H",
+    "id": "1981-blow-out"
+  }
 ];
-FILMS.forEach((f,i)=>f.id=i);
+const LEGACY_IDS = ["1927-wings","1929-the-broadway-melody","1930-hell-s-angels","1930-all-quiet-on-the-western-front","1931-cimarron","1932-grand-hotel","1933-cavalcade","1934-it-happened-one-night","1935-mutiny-on-the-bounty","1935-a-midsummer-night-s-dream","1935-a-tale-of-two-cities","1936-the-great-ziegfeld","1937-the-life-of-emile-zola","1938-you-can-t-take-it-with-you","1939-gone-with-the-wind","1940-rebecca","1941-how-green-was-my-valley","1942-mrs-miniver","1942-casablanca","1944-going-my-way","1945-the-lost-weekend","1946-the-best-years-of-our-lives","1947-gentleman-s-agreement","1948-hamlet","1949-all-the-king-s-men","1950-all-about-eve","1951-an-american-in-paris","1952-the-greatest-show-on-earth","1953-from-here-to-eternity","1953-julius-caesar","1954-on-the-waterfront","1955-marty","1956-around-the-world-in-80-days","1957-the-bridge-on-the-river-kwai","1957-12-angry-men","1958-gigi","1959-ben-hur","1959-the-nun-s-story","1960-the-apartment","1960-the-alamo","1961-west-side-story","1961-the-guns-of-navarone","1962-lawrence-of-arabia","1962-the-longest-day","1963-tom-jones","1963-cleopatra","1964-my-fair-lady","1964-dr-strangelove","1965-the-sound-of-music","1965-doctor-zhivago","1966-a-man-for-all-seasons","1967-in-the-heat-of-the-night","1968-oliver","1969-midnight-cowboy","1970-patton","1971-the-french-connection","1972-the-godfather","1972-cabaret","1972-deliverance","1973-the-sting","1973-the-exorcist","1974-the-godfather-part-ii","1974-chinatown","1975-one-flew-over-the-cuckoo-s-nest","1975-dog-day-afternoon","1975-jaws","1975-barry-lyndon","1976-rocky","1976-taxi-driver","1976-all-the-president-s-men","1977-annie-hall","1977-star-wars","1978-the-deer-hunter","1979-kramer-vs-kramer","1979-apocalypse-now","1980-ordinary-people","1980-raging-bull","1981-chariots-of-fire","1981-raiders-of-the-lost-ark","1982-gandhi","1982-e-t-the-extra-terrestrial","1983-terms-of-endearment","1984-amadeus","1985-out-of-africa","1985-the-color-purple","1986-platoon","1987-the-last-emperor","1988-rain-man","1989-driving-miss-daisy","1989-field-of-dreams","1990-dances-with-wolves","1990-goodfellas","1990-the-godfather-part-iii","1991-the-silence-of-the-lambs","1991-jfk","1992-unforgiven","1992-a-few-good-men","1993-schindler-s-list","1993-the-fugitive","1994-forrest-gump","1994-pulp-fiction","1994-the-shawshank-redemption","1995-braveheart","1995-apollo-13","1996-the-english-patient","1996-fargo","1997-titanic","1997-good-will-hunting","1997-l-a-confidential","1998-shakespeare-in-love","1998-saving-private-ryan","1998-the-thin-red-line","1999-american-beauty","1999-the-sixth-sense","2000-gladiator","2000-crouching-tiger-hidden-dragon","2001-a-beautiful-mind","2001-the-lord-of-the-rings-the-fellowship-of-the-ring","2002-chicago","2002-the-lord-of-the-rings-the-two-towers","2002-gangs-of-new-york","2003-the-lord-of-the-rings-the-return-of-the-king","2003-master-and-commander-the-far-side-of-the-world","2004-million-dollar-baby","2004-the-aviator","2005-crash","2005-brokeback-mountain","2006-the-departed","2006-letters-from-iwo-jima","2007-no-country-for-old-men","2007-there-will-be-blood","2008-slumdog-millionaire","2009-the-hurt-locker","2009-avatar","2010-the-king-s-speech","2010-inception","2010-black-swan","2010-true-grit","2011-the-artist","2011-war-horse","2012-argo","2012-zero-dark-thirty","2012-django-unchained","2013-12-years-a-slave","2013-the-wolf-of-wall-street","2014-birdman-or-the-unexpected-virtue-of-ignorance","2014-whiplash","2015-spotlight","2015-the-revenant","2015-bridge-of-spies","2016-moonlight","2016-arrival","2016-hell-or-high-water","2016-hacksaw-ridge","2016-manchester-by-the-sea","2017-the-shape-of-water","2017-dunkirk","2017-get-out","2017-darkest-hour","2018-green-book","2019-parasite","2019-ford-v-ferrari","2019-1917","2019-little-women","2019-the-irishman","2019-jojo-rabbit","2019-once-upon-a-time-in-hollywood","2019-joker","2020-nomadland","2020-judas-and-the-black-messiah","2021-coda","2022-everything-everywhere-all-at-once","2022-all-quiet-on-the-western-front","2022-top-gun-maverick","2022-elvis","2023-oppenheimer","2023-killers-of-the-flower-moon","2023-barbie","2024-anora","2024-dune-part-two","2025-one-battle-after-another","2025-marty-supreme","2021-dune"];
+const LOCAL_LEGACY_IDS = ["1927-wings","1929-the-broadway-melody","1930-hell-s-angels","1930-all-quiet-on-the-western-front","1931-cimarron","1932-grand-hotel","1933-cavalcade","1934-it-happened-one-night","1935-mutiny-on-the-bounty","1935-a-midsummer-night-s-dream","1935-a-tale-of-two-cities","1936-the-great-ziegfeld","1937-the-life-of-emile-zola","1938-you-can-t-take-it-with-you","1939-gone-with-the-wind","1940-rebecca","1941-how-green-was-my-valley","1942-mrs-miniver","1942-casablanca","1944-going-my-way","1945-the-lost-weekend","1946-the-best-years-of-our-lives","1947-gentleman-s-agreement","1948-hamlet","1949-all-the-king-s-men","1950-all-about-eve","1951-an-american-in-paris","1952-the-greatest-show-on-earth","1953-from-here-to-eternity","1953-julius-caesar","1954-on-the-waterfront","1955-marty","1956-around-the-world-in-80-days","1957-the-bridge-on-the-river-kwai","1957-12-angry-men","1958-gigi","1959-ben-hur","1959-the-nun-s-story","1960-the-apartment","1960-the-alamo","1961-west-side-story","1961-the-guns-of-navarone","1962-lawrence-of-arabia","1962-the-longest-day","1963-tom-jones","1963-cleopatra","1964-my-fair-lady","1964-dr-strangelove","1965-the-sound-of-music","1965-doctor-zhivago","1966-a-man-for-all-seasons","1967-in-the-heat-of-the-night","1968-oliver","1969-midnight-cowboy","1970-patton","1971-the-french-connection","1972-the-godfather","1972-cabaret","1972-deliverance","1973-the-sting","1973-the-exorcist","1974-the-godfather-part-ii","1974-chinatown","1975-one-flew-over-the-cuckoo-s-nest","1975-dog-day-afternoon","1975-jaws","1975-barry-lyndon","1976-rocky","1976-taxi-driver","1976-all-the-president-s-men","1977-annie-hall","1977-star-wars","1978-the-deer-hunter","1979-kramer-vs-kramer","1979-apocalypse-now","1980-ordinary-people","1980-raging-bull","1981-chariots-of-fire","1981-raiders-of-the-lost-ark","1982-gandhi","1982-e-t-the-extra-terrestrial","1983-terms-of-endearment","1984-amadeus","1985-out-of-africa","1985-the-color-purple","1986-platoon","1987-the-last-emperor","1988-rain-man","1989-driving-miss-daisy","1989-field-of-dreams","1990-dances-with-wolves","1990-goodfellas","1990-the-godfather-part-iii","1991-the-silence-of-the-lambs","1991-jfk","1992-unforgiven","1992-a-few-good-men","1993-schindler-s-list","1993-the-fugitive","1994-forrest-gump","1994-pulp-fiction","1994-the-shawshank-redemption","1995-braveheart","1995-apollo-13","1996-the-english-patient","1996-fargo","1997-titanic","1997-good-will-hunting","1997-l-a-confidential","1998-shakespeare-in-love","1998-saving-private-ryan","1998-the-thin-red-line","1999-american-beauty","1999-the-sixth-sense","2000-gladiator","2000-crouching-tiger-hidden-dragon","2001-a-beautiful-mind","2001-the-lord-of-the-rings-the-fellowship-of-the-ring","2002-chicago","2002-the-lord-of-the-rings-the-two-towers","2002-gangs-of-new-york","2003-the-lord-of-the-rings-the-return-of-the-king","2003-master-and-commander-the-far-side-of-the-world","2004-million-dollar-baby","2004-the-aviator","2005-crash","2005-brokeback-mountain","2006-the-departed","2006-letters-from-iwo-jima","2007-no-country-for-old-men","2007-there-will-be-blood","2008-slumdog-millionaire","2009-the-hurt-locker","2009-avatar","2010-the-king-s-speech","2010-inception","2010-black-swan","2010-true-grit","2011-the-artist","2011-war-horse","2012-argo","2012-zero-dark-thirty","2012-django-unchained","2013-12-years-a-slave","2013-the-wolf-of-wall-street","2014-birdman-or-the-unexpected-virtue-of-ignorance","2014-whiplash","2015-spotlight","2015-the-revenant","2015-bridge-of-spies","2016-moonlight","2016-arrival","2016-hell-or-high-water","2016-hacksaw-ridge","2016-manchester-by-the-sea","2017-the-shape-of-water","2017-dunkirk","2017-get-out","2017-darkest-hour","2018-green-book","2019-parasite","2019-ford-v-ferrari","2019-1917","2019-little-women","2019-the-irishman","2019-jojo-rabbit","2019-once-upon-a-time-in-hollywood","2019-joker","2020-nomadland","2020-judas-and-the-black-messiah","2021-coda","2022-everything-everywhere-all-at-once","2022-all-quiet-on-the-western-front","2022-top-gun-maverick","2022-elvis","2023-oppenheimer","2023-killers-of-the-flower-moon","2023-barbie","2024-anora","2024-dune-part-two","2025-one-battle-after-another","2025-marty-supreme","2021-dune","1954-seven-samurai","1966-the-good-the-bad-and-the-ugly","1981-das-boot","1983-scarface","1989-do-the-right-thing"];
 
-const TRI_NAME={gf:"The Godfather",lotr:"The Lord of the Rings",dune:"Dune"};
-const KEY="envelope:v1";
-const PROBE="envelope:probe";
-const TKEY="envelope:tmdb";
-
-let seen=new Set();
-let current=null;
-let filter="unseen";
-let query="";
-let storageOK=false;
-let dirty=false;
-let fileHandle=null;
-let storedHandle=null;
-let autosaveWarn=false;
-let tmdbTok=null;
-let dates={};
-let statusFilter=null;
-let decadeFilter=null;
-
-const $=id=>document.getElementById(id);
-
-/* ---------------- tiny IndexedDB helpers (for remembering the file) ---------------- */
-function idbOpen(){
-  return new Promise((res,rej)=>{
-    if(!("indexedDB" in window))return rej(new Error("no idb"));
-    const q=indexedDB.open("kuvert",1);
-    q.onupgradeneeded=()=>q.result.createObjectStore("handles");
-    q.onsuccess=()=>res(q.result);
-    q.onerror=()=>rej(q.error);
-  });
-}
-async function idbSet(k,v){
-  try{
-    const db=await idbOpen();
-    await new Promise((res,rej)=>{
-      const tx=db.transaction("handles","readwrite");
-      tx.objectStore("handles").put(v,k);
-      tx.oncomplete=res;tx.onerror=()=>rej(tx.error);
-    });
-  }catch(e){/* fine — reconnect just won't be offered */}
-}
-async function idbGet(k){
-  try{
-    const db=await idbOpen();
-    return await new Promise((res,rej)=>{
-      const tx=db.transaction("handles","readonly");
-      const q=tx.objectStore("handles").get(k);
-      q.onsuccess=()=>res(q.result);
-      q.onerror=()=>rej(q.error);
-    });
-  }catch(e){return null;}
-}
-async function idbDel(k){
-  try{
-    const db=await idbOpen();
-    await new Promise((res,rej)=>{
-      const tx=db.transaction("handles","readwrite");
-      tx.objectStore("handles").delete(k);
-      tx.oncomplete=res;tx.onerror=()=>rej(tx.error);
-    });
-  }catch(e){}
-}
-
-/* ---------------- storage ---------------- */
-function checkStorage(){
-  try{
-    window.localStorage.setItem(PROBE,"ok");
-    storageOK = window.localStorage.getItem(PROBE)==="ok";
-    window.localStorage.removeItem(PROBE);
-  }catch(e){storageOK=false;}
-}
-function load(){
-  checkStorage();
-  if(storageOK){
-    try{
-      const v=window.localStorage.getItem(KEY);
-      if(v){const d=JSON.parse(v);seen=new Set(d.seen||[]);dates=d.dates||{};}
-      const t=window.localStorage.getItem(TKEY);
-      if(t)tmdbTok=t;
-    }catch(e){/* first run */}
-  }
-  $("fhint").textContent = window.showSaveFilePicker
-    ? "First save asks where to keep envelope-progress.json. After that, every mark writes to it automatically, and next visit one click reconnects it."
-    : "Saves a small file called envelope-progress.json to your Downloads. Keep it next to this page and load it when you come back.";
-  showState();
-  updateTmdbUI();
-}
-function payload(){
-  return JSON.stringify({app:"envelope",v:3,saved:new Date().toISOString(),
-    seen:[...seen].sort((a,b)=>a-b),dates,code:encode(),
-    tmdb:tmdbTok||undefined},null,2);
-}
-function save(){
-  dirty=true;
-  if(storageOK){
-    try{ window.localStorage.setItem(KEY,JSON.stringify({seen:[...seen],dates})); dirty=false; }
-    catch(e){ storageOK=false; }
-  }
-  if(fileHandle)queueWrite();
-  showState();
-}
-let writeChain=Promise.resolve();
-function queueWrite(){
-  writeChain=writeChain
-    .then(()=>writeHandle())
-    .then(()=>{autosaveWarn=false;dirty=false;showState();})
-    .catch(()=>{autosaveWarn=true;showState();});
-}
-async function writeHandle(){
-  const w=await fileHandle.createWritable();
-  await w.write(payload());
-  await w.close();
-}
-function downloadFile(){
-  const blob=new Blob([payload()],{type:"application/json"});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");
-  a.href=url;a.download="envelope-progress.json";
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(url),500);
-  dirty=false;showState();
-}
-async function saveToFile(){
-  if(window.showSaveFilePicker){
-    try{
-      if(!fileHandle){
-        fileHandle=await window.showSaveFilePicker({
-          suggestedName:"envelope-progress.json",
-          types:[{description:"Kuvert progress",accept:{"application/json":[".json"]}}]
-        });
-        idbSet("handle",fileHandle);
-      }
-      await writeHandle();
-      autosaveWarn=false;dirty=false;showState();
-      return;
-    }catch(e){
-      if(e&&e.name==="AbortError")return;
-      fileHandle=null;
-    }
-  }
-  downloadFile();
-}
-function applyLoaded(d){
-  if(Array.isArray(d.seen)) seen=new Set(d.seen);
-  else if(d.code) seen=decode(d.code);
-  else throw new Error("no data");
-  dates=(d.dates&&typeof d.dates==="object")?d.dates:{};
-  if(d.tmdb){
-    tmdbTok=d.tmdb;
-    if(storageOK){try{window.localStorage.setItem(TKEY,tmdbTok);}catch(e){}}
-  }
-  dirty=false;
-  if(storageOK){try{window.localStorage.setItem(KEY,JSON.stringify({seen:[...seen],dates}));}catch(e){}}
-  render();showState();updateTmdbUI();
-}
-async function openProgress(){
-  if(window.showOpenFilePicker){
-    try{
-      const hs=await window.showOpenFilePicker({
-        types:[{description:"Kuvert progress",accept:{"application/json":[".json"]}}]
-      });
-      const h=hs[0];
-      const f=await h.getFile();
-      applyLoaded(JSON.parse(await f.text()));
-      fileHandle=h;idbSet("handle",h);
-      autosaveWarn=false;showState();
-      return;
-    }catch(e){
-      if(e&&e.name==="AbortError")return;
-    }
-  }
-  $("fileInput").click();
-}
-function loadFromFile(file){
-  const r=new FileReader();
-  r.onload=()=>{
-    try{ applyLoaded(JSON.parse(r.result)); }
-    catch(e){ alert("That file didn't read. Pick the envelope-progress.json you saved earlier."); }
-  };
-  r.readAsText(file);
-}
-async function tryReconnect(){
-  if(!window.showSaveFilePicker||fileHandle)return;
-  const h=await idbGet("handle");
-  if(!h)return;
-  storedHandle=h;
-  const b=$("reconnect");
-  b.textContent="Reconnect "+(h.name||"saved file");
-  b.hidden=false;
-}
-function showState(){
-  const el=$("saveState");
-  el.classList.remove("warn");
-  if(fileHandle&&!autosaveWarn){
-    el.textContent="Auto-saving to "+(fileHandle.name||"your file")+" · "+seen.size+" marked";
-  }else if(fileHandle&&autosaveWarn){
-    el.textContent="Couldn't write to "+(fileHandle.name||"the file")+" — click Save progress";
-    el.classList.add("warn");
-  }else if(storageOK){
-    el.textContent="Saved in this browser · "+seen.size+" marked";
-  }else if(dirty){
-    el.textContent="Unsaved changes · "+seen.size+" marked — click Save progress";
-    el.classList.add("warn");
-  }else{
-    el.textContent=seen.size+" marked · save to a file to keep it";
-  }
-  $("code").value=encode();
-}
-
-/* ---------- portable progress code ---------- */
-function encode(){
-  const bits=FILMS.map(f=>seen.has(f.id)?"1":"0").join("");
-  return BigInt("0b"+bits).toString(36).toUpperCase();
-}
-function decode(code){
-  let n=0n;
-  for(const ch of code.trim().toLowerCase()){
-    const d=parseInt(ch,36);
-    if(Number.isNaN(d))throw new Error("bad character");
-    n=n*36n+BigInt(d);
-  }
-  const bits=n.toString(2).padStart(FILMS.length,"0").slice(-FILMS.length);
-  const s=new Set();
-  for(let i=0;i<bits.length;i++)if(bits[i]==="1")s.add(i);
-  return s;
-}
-
-/* ---------------- TMDB ---------------- */
-function tmdbAuth(){
-  const t=(tmdbTok||"").trim();
-  if(!t)return null;
-  if(t.startsWith("eyJ")||t.length>40)return{mode:"bearer",t};
-  return{mode:"key",t};
-}
-async function tmdb(path,params){
-  const a=tmdbAuth();
-  if(!a)throw new Error("no credential");
-  const u=new URL("https://api.themoviedb.org/3"+path);
-  Object.entries(params||{}).forEach(([k,v])=>u.searchParams.set(k,v));
-  const opt={headers:{}};
-  if(a.mode==="bearer")opt.headers.Authorization="Bearer "+a.t;
-  else u.searchParams.set("api_key",a.t);
-  const r=await fetch(u,opt);
-  if(!r.ok)throw new Error("tmdb "+r.status);
-  return r.json();
-}
-function fmtMoney(n){
-  if(!n)return null;
-  if(n>=1e9)return "$"+(n/1e9).toFixed(1).replace(/\.0$/,"")+"B";
-  if(n>=1e6){const m=n/1e6;return "$"+(m>=100?Math.round(m):+m.toFixed(1))+"M";}
-  return "$"+Math.round(n/1e3)+"K";
-}
-const infoCache={};
-async function fetchInfo(film){
-  if(infoCache[film.id])return infoCache[film.id];
-  let s=await tmdb("/search/movie",{query:film.t,primary_release_year:String(film.y),include_adult:"false"});
-  let hit=s&&s.results&&s.results[0];
-  if(!hit){
-    s=await tmdb("/search/movie",{query:film.t,include_adult:"false"});
-    hit=s&&s.results&&s.results[0];
-  }
-  if(!hit)return null;
-  const d=await tmdb("/movie/"+hit.id,{append_to_response:"credits,watch/providers,release_dates"});
-  const dir=((d.credits&&d.credits.crew)||[]).filter(c=>c.job==="Director").map(c=>c.name).join(", ");
-  const cast=((d.credits&&d.credits.cast)||[]).slice(0,4).map(c=>c.name);
-  const us=(((d["watch/providers"]||{}).results)||{}).US||{};
-  const names=a=>(a||[]).map(p=>p.provider_name)
-    .filter((v,i,arr)=>arr.indexOf(v)===i).slice(0,5);
-  let cert=null;
-  const rd=((d.release_dates&&d.release_dates.results)||[]).find(r=>r.iso_3166_1==="US");
-  if(rd)for(const e of rd.release_dates||[]){if(e.certification){cert=e.certification;break;}}
-  const info={
-    tmdbId:d.id,
-    poster:d.poster_path?"https://image.tmdb.org/t/p/w342"+d.poster_path:null,
-    posterBig:d.poster_path?"https://image.tmdb.org/t/p/w780"+d.poster_path:null,
-    backdrop:d.backdrop_path?"https://image.tmdb.org/t/p/w780"+d.backdrop_path:null,
-    backdropBig:d.backdrop_path?"https://image.tmdb.org/t/p/w1280"+d.backdrop_path:null,
-    tagline:d.tagline||null,
-    runtime:d.runtime||null,
-    dir:dir||null,
-    cast,
-    genres:(d.genres||[]).map(g=>g.name).slice(0,3),
-    cert,
-    budget:d.budget||0,
-    revenue:d.revenue||0,
-    stream:names(us.flatrate),
-    rent:names(us.rent)
-  };
-  infoCache[film.id]=info;
-  return info;
-}
-let infoReq=0;
-function showInfo(film){
-  const my=++infoReq;
-  ["poster","backdrop","pickTag","pickFacts","pickCredits","pickMoney","pickProv","lbxBtn"]
-    .forEach(id=>$(id).hidden=true);
-  $("poster").dataset.big="";$("backdrop").dataset.big="";
-  if(!film||!tmdbAuth())return;
-  fetchInfo(film).then(info=>{
-    if(my!==infoReq||!info)return;
-    if(info.backdrop){$("backdrop").src=info.backdrop;$("backdrop").dataset.big=info.backdropBig||"";$("backdrop").hidden=false;}
-    if(info.poster){$("poster").src=info.poster;$("poster").alt=film.t+" poster";$("poster").dataset.big=info.posterBig||"";$("poster").hidden=false;}
-    if(info.tagline){$("pickTag").textContent=info.tagline;$("pickTag").hidden=false;}
-    const bits=[];
-    if(info.cert)bits.push(info.cert);
-    if(info.runtime)bits.push(info.runtime+" min");
-    if(info.genres.length)bits.push(info.genres.join(", "));
-    if(info.runtime>=160)bits.push("planera en fika");
-    if(bits.length){$("pickFacts").textContent=bits.join(" · ");$("pickFacts").hidden=false;}
-    const cr=[];
-    if(info.dir)cr.push("dir. "+info.dir);
-    if(info.cast.length)cr.push("with "+info.cast.join(", "));
-    if(cr.length){$("pickCredits").textContent=cr.join(" · ");$("pickCredits").hidden=false;}
-    const mo=[];
-    const b=fmtMoney(info.budget),g=fmtMoney(info.revenue);
-    if(b)mo.push("budget "+b);
-    if(g)mo.push("box office "+g);
-    if(mo.length){$("pickMoney").textContent=mo.join(" · ");$("pickMoney").hidden=false;}
-    const p=[];
-    if(info.stream.length)p.push("Stream: "+info.stream.join(", "));
-    if(info.rent.length)p.push("Rent: "+info.rent.join(", "));
-    if(p.length){$("pickProv").textContent=p.join("   ·   ");$("pickProv").hidden=false;}
-    if(info.tmdbId){$("lbxBtn").href="https://letterboxd.com/tmdb/"+info.tmdbId;$("lbxBtn").hidden=false;}
-  }).catch(()=>{/* offline, preview, or an odd title — the draw still stands */});
-}
-function updateTmdbUI(){
-  const on=!!tmdbTok;
-  $("tmdbSave").hidden=on;
-  $("tmdbClear").hidden=!on;
-  $("tmdbTok").hidden=on;
-  if(on){
-    $("tmdbState").textContent="Connected. Posters load with each draw; streaming availability comes from JustWatch via TMDB.";
-  }
-}
-async function connectTmdb(){
-  const v=$("tmdbTok").value.trim();
-  if(!v)return;
-  tmdbTok=v;
-  $("tmdbState").textContent="Checking…";
-  try{
-    await tmdb("/configuration",{});
-    if(storageOK){try{window.localStorage.setItem(TKEY,tmdbTok);}catch(e){}}
-    if(fileHandle)queueWrite(); else dirty=true;
-    updateTmdbUI();showState();
-    if(current)showInfo(current);
-  }catch(e){
-    tmdbTok=null;
-    $("tmdbState").textContent="Couldn't connect. Check the credential — and note TMDB only reachable once this file is open on your computer, not in the Claude preview.";
-  }
-}
-
-/* ---------------- drawing ---------------- */
-function drawFilm(){
-  const unseen=FILMS.filter(f=>!seen.has(f.id));
-  if(!unseen.length)return null;
-  /* each trilogy is one ticket in the hat, not three */
-  const units=[],series={};
-  unseen.forEach(f=>{
-    if(f.tri){(series[f.tri]=series[f.tri]||[]).push(f);}
-    else units.push({film:f,tri:null});
-  });
-  Object.keys(series).forEach(k=>{
-    series[k].sort((a,b)=>a.ord-b.ord);
-    units.push({film:series[k][0],tri:k});
-  });
-  const u=units[Math.floor(Math.random()*units.length)];
-  return{film:u.film,series:u.tri};
-}
-
-function reveal(){
-  const res=drawFilm();
-  if(!res){
-    $("pickTitle").textContent="Slut";
-    $("pickMeta").textContent="det var hela listan · every film watched";
-    $("pickNote").hidden=false;
-    $("pickNote").textContent="Så slutar varje svensk film — 'Slut' is just Swedish for 'The End'.";
-    $("markBtn").hidden=true;
-    $("againBtn").hidden=true;
-    showInfo(null);
-    $("pickEyebrow").textContent="Kvällens film";
-    $("pickEyebrow").classList.remove("win");
-    $("slip").classList.add("win");
-    $("env").classList.add("open");
-    return;
-  }
-  current=res.film;
-  $("markBtn").hidden=false;
-  $("againBtn").hidden=false;
-  $("pickTitle").textContent=current.t;
-  const label=current.s==="W"?"Best Picture winner":current.s==="N"?"Nominated":"Honorable mention";
-  $("pickMeta").textContent=current.y+" · "+label;
-  const win=current.s==="W";
-  $("pickEyebrow").textContent=win?"Kvällens vinnare":"Kvällens film";
-  $("pickEyebrow").title=win?"Tonight's winner":"Tonight's film";
-  $("pickEyebrow").classList.toggle("win",win);
-  $("slip").classList.toggle("win",win);
-  if(res.series){
-    const total=FILMS.filter(f=>f.tri===res.series).length;
-    $("pickNote").hidden=false;
-    $("pickNote").textContent=TRI_NAME[res.series]+" counts as one entry in the draw, and plays in order. This is part "+current.ord+" of "+total+".";
-  }else{
-    $("pickNote").hidden=true;
-  }
-  showInfo(current);
-  $("env").classList.remove("open");
-  requestAnimationFrame(()=>requestAnimationFrame(()=>$("env").classList.add("open")));
-  $("drawBtn").textContent="Dra en ny film";
-  render();
-}
-
-/* ---------------- render ---------------- */
-function render(){
+function renderView(){
   const reel=$("reel");
   reel.innerHTML="";
   const strip=[...FILMS].sort((a,b)=>a.y-b.y||(a.ord||0)-(b.ord||0)||a.t.localeCompare(b.t));
   strip.forEach(f=>{
     const i=document.createElement("i");
     if(seen.has(f.id))i.className="seen";
-    else if(current&&current.id===f.id)i.className="now";
+    else if($("env").classList.contains("open")&&current&&current.id===f.id)i.className="now";
     i.title=f.t;
     reel.appendChild(i);
   });
@@ -1088,17 +1832,17 @@ function render(){
   Object.keys(byDec).map(Number).sort((a,b)=>a-b).forEach(dk=>{
     const c=byDec[dk];
     const btn=document.createElement("button");
-    btn.className="dec";
+    btn.className="dec"; btn.dataset.focus="dec-"+dk;
     btn.style.setProperty("--p",Math.round(c.w/c.t*100)+"%");
     btn.setAttribute("aria-pressed",decadeFilter===dk?"true":"false");
     btn.innerHTML="<span>"+String(dk).slice(2)+"s</span><b>"+c.w+"/"+c.t+"</b>";
     btn.title=dk+"s — "+c.w+" of "+c.t+" watched. Click to filter the list.";
-    btn.onclick=()=>{decadeFilter=(decadeFilter===dk?null:dk);render();};
+    btn.onclick=()=>{decadeFilter=(decadeFilter===dk?null:dk);save();render();};
     decs.appendChild(btn);
   });
   let wl=0,nl=0,xl=0;
   FILMS.forEach(f=>{if(!seen.has(f.id)){if(f.s==="W")wl++;else if(f.s==="N")nl++;else xl++;}});
-  $("leftline").textContent="left: "+wl+" winners · "+nl+" nominees"+(xl?" · "+xl+" HM":"");
+  $("leftline").textContent="left: "+wl+" winners · "+nl+" nominees"+(xl?" · "+xl+" honorable mentions":"");
 
   const sl=$("seenList");
   sl.innerHTML="";
@@ -1118,13 +1862,13 @@ function render(){
     watched.forEach(f=>{
       const li=document.createElement("li");
       const b=document.createElement("button");
-      b.className="tick";
+      b.className="tick"; b.dataset.focus="tick-"+f.id;
       b.setAttribute("aria-pressed","true");
       b.setAttribute("aria-label","Mark unwatched: "+f.t);
       b.onclick=()=>{toggle(f.id);};
-      const t=document.createElement("span");t.className="t";t.textContent=f.t;
+      const t=document.createElement("button");t.className="t filmLink";t.textContent=f.t;t.dataset.focus="title-"+f.id;t.onclick=()=>openFilm(f.id);
       const y=document.createElement("span");y.className="yr";y.textContent=f.y;
-      const w=document.createElement("button");w.className="when";
+      const w=document.createElement("button");w.className="when"; w.dataset.focus="date-"+f.id; w.setAttribute("aria-label","Edit watch date for "+f.t);
       w.textContent=dates[f.id]?fmtWhen(dates[f.id]):"+ date";
       w.title="Edit watch date";
       w.onclick=()=>{editDate(f.id);};
@@ -1135,7 +1879,7 @@ function render(){
 
   const q=query.trim().toLowerCase();
   const rows=FILMS.filter(f=>{
-    if(filter==="unseen"&&seen.has(f.id))return false;
+    if(filter==="unseen"&&(seen.has(f.id)||skipped.has(f.id)))return false;
     if(filter==="seen"&&!seen.has(f.id))return false;
     if(statusFilter&&f.s!==statusFilter)return false;
     if(decadeFilter!==null&&Math.floor(f.y/10)*10!==decadeFilter)return false;
@@ -1156,11 +1900,11 @@ function render(){
     const li=document.createElement("li");
     if(seen.has(f.id))li.classList.add("done");
     const b=document.createElement("button");
-    b.className="tick";
+    b.className="tick"; b.dataset.focus="tick-"+f.id;
     b.setAttribute("aria-pressed",seen.has(f.id)?"true":"false");
     b.setAttribute("aria-label",(seen.has(f.id)?"Mark unwatched: ":"Mark watched: ")+f.t);
     b.onclick=()=>{toggle(f.id);};
-    const t=document.createElement("span");t.className="t";t.textContent=f.t;
+    const t=document.createElement("button");t.className="t filmLink";t.textContent=f.t;t.dataset.focus="title-"+f.id;t.onclick=()=>openFilm(f.id);
     const c=document.createElement("span");
     c.className="chip "+f.s.toLowerCase();
     c.textContent=f.s==="W"?"Won":f.s==="N"?"Nom":"HM";
@@ -1170,150 +1914,241 @@ function render(){
   });
 }
 
-function todayISO(){
-  const d=new Date();
-  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+
+// Personal watchthrough state; saved independently of presentation and metadata.
+let skipped=new Set(),reviews={},recent=[],runtimeLimit=0,runtimes={},lastBackup=null;
+let reviewId=null,noteOfferId=null,runtimeController=null,runtimeBusy=false,runtimeRun=0;
+function copyReviews(value=reviews){return Object.fromEntries(Object.entries(value).map(([id,r])=>[id,{...r}]));}
+function validateExtras(d){
+  const skip=d.skipped??[],hist=d.recent??[],notes=d.reviews??{};
+  if(!Array.isArray(skip)||skip.some(id=>!IDS.has(id))||!Array.isArray(hist)||hist.length>5||hist.some(id=>!IDS.has(id))||new Set(hist).size!==hist.length)throw Error('Invalid skipped movies or recent picks.');
+  if(!notes||typeof notes!=='object'||Array.isArray(notes))throw Error('Invalid movie notes.');
+  const clean={};for(const [id,r]of Object.entries(notes)){if(!IDS.has(id)||!r||typeof r!=='object'||Array.isArray(r)||typeof r.note!=='string'||r.note.length>500||(r.rating!==null&&(!Number.isInteger(r.rating)||r.rating<1||r.rating>5)))throw Error('Invalid movie note or rating.');clean[id]={note:r.note,rating:r.rating};}
+  return {skipped:new Set(skip),recent:[...hist],reviews:clean,moods:validateMoods(d.moods),runtimes:validateRuntimes(d.runtimes)};
 }
-function fmtWhen(iso){
-  if(!iso)return "";
-  const d=new Date(iso+"T12:00:00");
-  if(isNaN(d))return "";
-  return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"2-digit"});
+function restoreExtras(data,merge=false){
+  skipped=merge?new Set([...skipped,...(data.skipped||[])]):new Set(data.skipped||[]);
+  reviews=merge?{...copyReviews(data.reviews||{}),...reviews}:copyReviews(data.reviews||{});
+  recent=merge?[...new Set([...recent,...(data.recent||[])])].slice(0,5):[...(data.recent||[])];
+  moodTags=merge?{...cloneMoods(data.moods||{}),...moodTags}:cloneMoods(data.moods||{});runtimes={...(data.runtimes||{}),...runtimes};for(const id of seen)skipped.delete(id);
 }
-function markSeen(id,on){
-  if(on){seen.add(id);dates[id]=todayISO();}
-  else{seen.delete(id);delete dates[id];}
-  save();
+function recordPick(id){recent=[id,...recent.filter(x=>x!==id)].slice(0,5);}
+function openFilm(id){const film=BY_ID.get(id);if(!film)return;current=film;recordPick(id);save();displayCurrent();render();$('env').scrollIntoView?.({behavior:'auto',block:'start'});}
+function skipCurrent(){if(!current||seen.has(current.id)||skipped.has(current.id))return;const previous=snapshot(),id=current.id;skipped.add(id);current=null;save();syncPick();render();notify(BY_ID.get(id).t+' moved to Skipped.',previous);$('drawBtn').focus();}
+function returnToDraw(id){if(!skipped.has(id))return;const previous=snapshot();skipped.delete(id);save();render();if(current?.id===id)$('skipBtn').disabled=false;notify(BY_ID.get(id).t+' returned to the draw.',previous);}
+function editReview(id){if(!IDS.has(id))return;reviewId=id;$('reviewTitle').textContent=BY_ID.get(id).t;$('reviewRating').value=reviews[id]?.rating??'';$('reviewNote').value=reviews[id]?.note||'';$('reviewDialog').showModal();}
+function saveReview(){if(!reviewId)return;const previous=snapshot(),note=$('reviewNote').value.trim().slice(0,500),rating=$('reviewRating').value?Number($('reviewRating').value):null;if(rating!==null&&(!Number.isInteger(rating)||rating<1||rating>5))return;if(note||rating)reviews[reviewId]={note,rating};else delete reviews[reviewId];$('reviewDialog').close();save();render();notify('Your movie note was saved.',previous);}
+function progressSignature(data=stateData()){const sorted=o=>Object.fromEntries(Object.entries(o||{}).sort(([a],[b])=>a.localeCompare(b)));return checksum(JSON.stringify({seen:[...data.seen].sort(),dates:sorted(data.dates),skipped:[...(data.skipped||[])].sort(),reviews:sorted(data.reviews),recent:data.recent||[],current:data.current||null,moods:sorted(data.moods),runtimes:sorted(data.runtimes)}));}
+function recordBackup(data,kind='file'){lastBackup={at:new Date().toISOString(),signature:progressSignature(data),kind};persistBrowser();}
+function backupMessage(){if(!lastBackup)return 'No file backup yet. Save progress to keep an extra copy.';const when=new Date(lastBackup.at).toLocaleString();return (lastBackup.kind==='download'?'Last backup download: ':'Last file backup: ')+when+(lastBackup.signature!==progressSignature()?' · Your progress has newer changes.':' · Up to date.');}
+function runtimeMatches(f){const n=runtimes[f.id];return !runtimeLimit||(Number.isFinite(n)&&n>0&&(runtimeLimit===-120?n>120:n<=120));}
+function activeFilters(){const parts=[];if(drawSelection){if(decadeFilter!==null)parts.push(decadeFilter+'s');if(statusFilter)parts.push({W:'Winners',N:'Nominees',H:'Honorable mentions'}[statusFilter]);if(query.trim())parts.push('“'+query.trim()+'”');}if(runtimeLimit)parts.push(runtimeLimit===-120?'Over 2 hours':'2 hours or less');return parts;}
+function clearDrawFilters(){runtimeLimit=0;statusFilter=null;decadeFilter=null;query='';$('runtimeLimit').value='0';$('search').value='';save();render();}
+async function checkRuntimes(){
+  if(runtimeBusy){runtimeController?.abort();return;}
+  if(!tmdbAuth()){$('backup').open=true;$('tmdbTok').focus();notify('Connect TMDB in Settings to check movie lengths.');return;}
+  const pending=getUnits({ignoreRuntime:true}).map(u=>u.film).filter(f=>!runtimes[f.id]);
+  if(!pending.length){notify('All eligible movie lengths are already known.');return;}
+  runtimeController=new AbortController();const signal=runtimeController.signal,run=++runtimeRun;runtimeBusy=true;let completed=0,unresolved=0,next=0,failed=0;
+  $('checkRuntimes').textContent='Stop checking';
+  async function worker(){while(next<pending.length&&!signal.aborted){const f=pending[next++];try{const d=await fetchInfo(f,signal);if(!d?.runtime)unresolved++;}catch(e){if(!signal.aborted){unresolved++;failed++;if(failed>=3)runtimeController.abort();}}completed++;if(run===runtimeRun){$('runtimeStatus').textContent='Checked '+completed+' of '+pending.length+' movies…';render();}}}
+  await Promise.all([worker(),worker(),worker()]);if(run!==runtimeRun)return;runtimeBusy=false;$('checkRuntimes').textContent='Check unknown runtimes';$('runtimeStatus').textContent=(signal.aborted?'Stopped. ':'Finished. ')+completed+' checked'+(unresolved?' · '+unresolved+' unresolved. Open those films to check their movie match.':'.');persistBrowser();render();
 }
-function editDate(id){
-  const cur=dates[id]||"";
-  const v=prompt("Date watched (YYYY-MM-DD) — leave blank to clear:",cur||todayISO());
-  if(v===null)return;
-  const t=v.trim();
-  if(!t){delete dates[id];save();render();return;}
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(t)||isNaN(new Date(t+"T12:00:00").getTime())){
-    alert("Use YYYY-MM-DD, e.g. 2026-03-14.");
-    return;
-  }
-  dates[id]=t;save();render();
+function makeButton(label,action){const b=document.createElement('button');b.className='ghost';b.textContent=label;b.onclick=action;return b;}
+function unknownRuntimeIds(){return FILMS.filter(f=>!runtimes[f.id]).map(f=>f.id);}
+function renderShortcuts(){const isArchive=['skipped','recent','missing'].includes(filter);$('list').hidden=isArchive;$('shortcutsList').hidden=!isArchive;$('decs').hidden=isArchive;document.querySelectorAll('.tab.stat,.tabdiv').forEach(el=>el.hidden=isArchive);if(!isArchive)return;
+  const list=$('shortcutsList');list.replaceChildren();const source=filter==='skipped'?FILMS.filter(f=>skipped.has(f.id)).map(f=>f.id):filter==='recent'?recent:unknownRuntimeIds();
+  const ids=source.filter(id=>!query.trim()||BY_ID.get(id).t.toLowerCase().includes(query.trim().toLowerCase()));
+  $('archiveHint').textContent=filter==='skipped'?'Skipped movies stay here until you return them to the draw or mark them watched. Open any one directly.':filter==='recent'?'Your last five picks. Open a movie to return to it directly.':'These movies do not yet have a saved runtime, including watched films. Open one to fetch its details, then use Change movie match if TMDB chose the wrong film.';
+  if(!ids.length){const li=document.createElement('li');li.className='empty';li.textContent=query.trim()?'No titles match your search.':filter==='skipped'?'No skipped movies yet.':filter==='recent'?'Your recent picks will appear here.':'Every available movie has a saved runtime.';list.append(li);return;}
+  for(const id of ids){const f=BY_ID.get(id),li=document.createElement('li'),title=makeButton(f.t,()=>openFilm(id));title.className='filmLink';title.dataset.focus='open-'+id;const description=document.createElement('span');description.className='archiveMeta';description.textContent=f.y+(seen.has(id)?' · Watched':skipped.has(id)?' · Skipped':'')+(runtimes[id]?' · '+runtimes[id]+' min':'');const main=document.createElement('div');main.className='archiveMain';main.append(title,description);li.append(main);const open=makeButton('Open',()=>openFilm(id));open.setAttribute('aria-label','Open '+f.t);open.dataset.focus='direct-'+id;li.append(open);if(skipped.has(id)){const restore=makeButton('Return to draw',()=>returnToDraw(id));restore.dataset.focus='return-'+id;li.append(restore);}if(seen.has(id))li.append(makeButton(reviews[id]?'Edit note':'Add note',()=>editReview(id)));list.append(li);}
 }
-function toggle(id){
-  markSeen(id,!seen.has(id));
-  render();
+function renderQol(){
+  renderJourney();renderShortcuts();$('archiveHint').hidden=!['skipped','recent','missing'].includes(filter);$('skippedTab').textContent='Skipped ('+skipped.size+')';$('missingTab').textContent='Missing runtimes ('+unknownRuntimeIds().length+')';
+  const parts=activeFilters();$('filterSummary').textContent=parts.length?parts.join(' · '):'All unseen movies';$('clearFilters').hidden=!parts.length;
+  const drawUnknown=getUnits({ignoreRuntime:true}).filter(u=>!runtimes[u.film.id]).length;$('runtimeHint').textContent=runtimeLimit?(drawUnknown+' movies have unknown lengths and are excluded from this draw.'+($('missingTab').hidden?'':' The Missing runtimes tab also includes watched films.')):'';$('runtimeTools').hidden=!runtimeLimit;
+  $('envelopeOpen').hidden=$('env').classList.contains('open');$('envelopeOpen').disabled=$('drawBtn').disabled;
+  $('skipBtn').hidden=!current||seen.has(current.id);$('skipBtn').disabled=!!current&&skipped.has(current.id);
+  $('skipBtn').textContent=current&&skipped.has(current.id)?'In Skipped':'Not tonight';
+  $('markBtn').hidden=!current||seen.has(current.id);$('cardNote').hidden=!current||!seen.has(current.id);
+  $('backupStatus').textContent=backupMessage();$('backupStatus').classList.toggle('warn',!lastBackup||lastBackup.signature!==progressSignature());
+  for(const f of FILMS.filter(f=>seen.has(f.id))){const row=[...$('seenList').querySelectorAll('li')].find(li=>li.querySelector('[data-focus="tick-'+f.id+'"]'));if(row&&!row.querySelector('.reviewButton')){const b=makeButton(reviews[f.id]?(reviews[f.id].rating?'★ '+reviews[f.id].rating+' · Note':'Edit note'):'Add note',()=>editReview(f.id));b.classList.add('reviewButton');b.dataset.focus='review-'+f.id;b.setAttribute('aria-label','Movie note for '+f.t);row.append(b);}}
+}
+function wireQol(){
+  $('skipBtn').onclick=skipCurrent;$('envelopeOpen').onclick=handleDraw;
+  $('runtimeLimit').value=String(runtimeLimit);$('runtimeLimit').onchange=e=>{runtimeLimit=Number(e.target.value);save();render();};
+  $('checkRuntimes').onclick=checkRuntimes;$('clearFilters').onclick=clearDrawFilters;
+  $('saveReview').onclick=saveReview;$('cancelReview').onclick=()=>$('reviewDialog').close();$('cardNote').onclick=()=>current&&editReview(current.id);
+  $('noteOffer').onclick=()=>noteOfferId&&editReview(noteOfferId);$('backupNow').onclick=saveToFile;
 }
 
-/* ---------------- events ---------------- */
-$("drawBtn").onclick=reveal;
-$("againBtn").onclick=reveal;
-function markWatchedAction(){
-  if(!current)return;
-  markSeen(current.id,true);
-  $("env").classList.remove("open");
-  $("drawBtn").textContent="Öppna kuvertet";
-  current=null;render();
+// Challenges are derived scorecards. Nothing in this file changes draw tickets or odds.
+const MOODS=['Adventurous','Dark','Epic','Funny','Reflective','Romantic','Tense','Uplifting'];
+let moodTags={},moodSuggestions={},moodEditId=null;
+function cloneMoods(value=moodTags){return Object.fromEntries(Object.entries(value).map(([id,tags])=>[id,[...tags]]));}
+function validateMoods(value={}){if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Invalid mood tags.');const clean={};for(const [id,tags]of Object.entries(value)){if(!IDS.has(id)||!Array.isArray(tags)||tags.length>MOODS.length||tags.some(t=>!MOODS.includes(t))||new Set(tags).size!==tags.length)throw Error('Invalid mood tags.');clean[id]=[...tags];}return clean;}
+function validateRuntimes(value={}){if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Invalid runtimes.');const clean={};for(const [id,n]of Object.entries(value)){if(!IDS.has(id)||!Number.isFinite(n)||n<=0||n>=1500)throw Error('Invalid movie length.');clean[id]=n;}return clean;}
+function suggestMoods(genres=[]){const names=new Set(genres.map(g=>g.name));const tags=[];if(names.has('Adventure')||names.has('Fantasy'))tags.push('Adventurous');if(names.has('Horror')||names.has('Crime'))tags.push('Dark');if(names.has('History')||names.has('War'))tags.push('Epic');if(names.has('Comedy'))tags.push('Funny');if(names.has('Drama'))tags.push('Reflective');if(names.has('Romance'))tags.push('Romantic');if(names.has('Thriller')||names.has('Mystery'))tags.push('Tense');return tags.slice(0,3);}
+function moodsFor(id){return Object.hasOwn(moodTags,id)?moodTags[id]:moodSuggestions[id]||[];}
+function renderMoods(){const box=$('moodTags');box.replaceChildren();$('moodArea').hidden=!current;if(!current)return;const own=Object.hasOwn(moodTags,current.id),tags=moodsFor(current.id);$('moodSource').textContent=own?'Your mood tags':tags.length?'Suggested from genres · adjust to your taste':'Add mood tags to describe this film';for(const tag of tags){const span=document.createElement('span');span.className='moodTag';span.textContent=tag;box.append(span);}}
+function editMoods(){if(!current)return;moodEditId=current.id;$('moodTitle').textContent='Moods · '+current.t;const selection=new Set(moodsFor(moodEditId));const box=$('moodChoices');box.replaceChildren();for(const tag of MOODS){const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.value=tag;input.checked=selection.has(tag);label.append(input,document.createTextNode(tag));box.append(label);}$('moodDialog').showModal();}
+function saveMoods(){if(!moodEditId)return;const previous=snapshot();moodTags[moodEditId]=[...$('moodChoices').querySelectorAll('input:checked')].map(el=>el.value);$('moodDialog').close();save();render();notify('Mood tags saved.',previous);}
+function challengeUnits(){const groups=new Map();for(const f of FILMS){const key=f.tri||f.id;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(f);}return [...groups.entries()].map(([id,films])=>{films.sort((a,b)=>(a.ord||0)-(b.ord||0)||a.y-b.y);const first=films[0];return {id,films,title:first.tri?TRI_NAME[first.tri]:first.t,year:first.y,s:first.s,done:films.every(f=>seen.has(f.id)),runtime:films.every(f=>runtimes[f.id]>0)?films.reduce((n,f)=>n+runtimes[f.id],0):null};}).sort((a,b)=>a.year-b.year||a.title.localeCompare(b.title));}
+function computeChallenges(){
+  const units=challengeUnits(),done=units.filter(u=>u.done),cards=[];
+  const add=(id,title,description,n,target,detail='')=>{cards.push({id,title,description,n:Math.min(n,target),target,complete:n>=target,detail});};
+  const byStatus=s=>done.filter(u=>u.s===s).length;
+  const sweep=[['W',10],['N',10],['H',2]];add('sweep','Oscar sweep','10 winners · 10 nominees · 2 honorable mentions',sweep.reduce((n,[s,t])=>n+Math.min(byStatus(s),t),0),22,sweep.map(([s,t])=>({W:'Winners',N:'Nominees',H:'HM'}[s])+': '+Math.min(byStatus(s),t)+' / '+t).join(' · '));
+  const decades=[...new Set(units.map(u=>Math.floor(u.year/10)*10))];const covered=new Set(done.map(u=>Math.floor(u.year/10)*10));
+  add('decades','Across the decades','Complete an entry from every represented decade.',covered.size,decades.length);
+  const shelfKeys=[...new Set(units.map(u=>Math.floor(u.year/10)*10+'-'+u.s))],shelfDone=new Set(done.map(u=>Math.floor(u.year/10)*10+'-'+u.s));
+  add('shelves','One from each shelf','One winner, nominee and honorable mention per decade, wherever that shelf exists.',shelfDone.size,shelfKeys.length,'Only shelves present in this catalogue count.');
+  add('long','The long haul','Complete five entries lasting over two hours.',done.filter(u=>u.runtime>120).length,5,done.filter(u=>u.runtime===null).length+' completed entries still need runtimes.');
+  const era=y=>y<1950?0:y<1975?1:y<2000?2:3;add('century','Century club','One entry from before 1950, 1950–74, 1975–99 and 2000 onward.',new Set(done.map(u=>era(u.year))).size,4);
+  add('winners','Winner’s circle','Complete ten Best Picture winners.',byStatus('W'),10);
+  add('nominees','Nominee’s case','Complete ten nominated entries.',byStatus('N'),10);
+  add('mentions','Honorable mentions','Complete every honorable mention in the catalogue.',byStatus('H'),units.filter(u=>u.s==='H').length);
+  const earliest=units.slice(0,5);add('earliest','Silent beginning','Complete the five earliest entries in the catalogue.',earliest.filter(u=>u.done).length,earliest.length);
+  add('modern','Modern finish','Complete five entries from 2010 onward.',done.filter(u=>u.year>=2010).length,5);
+  add('five-decades','Five decades','Complete entries from five different decades.',covered.size,5);
+  for(const decade of decades){const available=units.filter(u=>Math.floor(u.year/10)*10===decade).length,target=Math.min(3,available);add('era-'+decade,'Era collector · '+decade+'s','Complete '+target+' '+(target===1?'entry':'entries')+' from this decade.',done.filter(u=>Math.floor(u.year/10)*10===decade).length,target);}
+  const earned=cards.filter(c=>c.complete).length;add('full','The full envelope','Earn every other challenge badge through your watchthrough.',earned,cards.length);
+  return cards;
 }
-$("markBtn").onclick=markWatchedAction;
-document.querySelectorAll(".tab[data-f]").forEach(t=>{
-  t.onclick=()=>{
-    filter=t.dataset.f;
-    document.querySelectorAll(".tab[data-f]").forEach(x=>x.setAttribute("aria-pressed",x===t?"true":"false"));
-    render();
-  };
-});
-document.querySelectorAll(".tab.stat").forEach(t=>{
-  t.onclick=()=>{
-    statusFilter=(statusFilter===t.dataset.s?null:t.dataset.s);
-    document.querySelectorAll(".tab.stat").forEach(x=>x.setAttribute("aria-pressed",x.dataset.s===statusFilter?"true":"false"));
-    render();
-  };
-});
-$("search").oninput=e=>{query=e.target.value;render();};
-$("resetBtn").onclick=()=>{
-  if(!confirm("Clear every watched mark and start over?"))return;
-  seen=new Set();dates={};current=null;
-  $("env").classList.remove("open");
-  $("drawBtn").textContent="Öppna kuvertet";
-  save();render();
-};
-$("saveFile").onclick=saveToFile;
-$("openFile").onclick=openProgress;
-$("fileInput").onchange=e=>{
-  const f=e.target.files&&e.target.files[0];
-  if(f)loadFromFile(f);
-  e.target.value="";
-};
-$("reconnect").onclick=async()=>{
-  if(!storedHandle)return;
-  try{
-    if(storedHandle.requestPermission){
-      const perm=await storedHandle.requestPermission({mode:"readwrite"});
-      if(perm!=="granted")return;
-    }
-    const f=await storedHandle.getFile();
-    applyLoaded(JSON.parse(await f.text()));
-    fileHandle=storedHandle;
-    $("reconnect").hidden=true;
-    showState();
-  }catch(e){
-    $("reconnect").hidden=true;
-    idbDel("handle");
-  }
-};
-$("tmdbSave").onclick=connectTmdb;
-$("tmdbTok").addEventListener("keydown",e=>{if(e.key==="Enter")connectTmdb();});
-$("tmdbClear").onclick=()=>{
-  tmdbTok=null;
-  if(storageOK){try{window.localStorage.removeItem(TKEY);}catch(e){}}
-  $("tmdbTok").value="";
-  $("tmdbSave").hidden=false;$("tmdbClear").hidden=true;$("tmdbTok").hidden=false;
-  $("tmdbState").textContent="Disconnected. Your credential was removed from this browser; re-save your progress file to remove it there too.";
-  if(fileHandle)queueWrite();
-};
-window.addEventListener("beforeunload",e=>{
-  if(dirty){e.preventDefault();e.returnValue="";}
-});
-$("copyCode").onclick=()=>{
-  const el=$("code");
-  el.select();el.setSelectionRange(0,99999);
-  navigator.clipboard.writeText(el.value).then(
-    ()=>{$("copyCode").textContent="Copied";setTimeout(()=>$("copyCode").textContent="Copy code",1600);},
-    ()=>{$("copyCode").textContent="Select and copy it";}
-  );
-};
-$("loadCode").onclick=()=>{
-  const v=prompt("Paste a progress code:");
-  if(!v)return;
-  try{
-    seen=decode(v);
-    dates=Object.fromEntries(Object.entries(dates).filter(([k])=>seen.has(+k)));
-    save();render();showState();
-  }catch(e){
-    alert("That code didn't read. Check for a missing or extra character.");
-  }
-};
+function statsData(){const watched=FILMS.filter(f=>seen.has(f.id)),known=watched.filter(f=>runtimes[f.id]>0),rated=watched.filter(f=>reviews[f.id]?.rating);const minutes=known.reduce((n,f)=>n+runtimes[f.id],0);const decades=[...new Set(FILMS.map(f=>Math.floor(f.y/10)*10))].sort((a,b)=>a-b).map(decade=>{const all=FILMS.filter(f=>Math.floor(f.y/10)*10===decade),films=all.filter(f=>seen.has(f.id)),ratings=films.filter(f=>reviews[f.id]?.rating);return {decade,total:all.length,watched:films.length,average:ratings.length?ratings.reduce((n,f)=>n+reviews[f.id].rating,0)/ratings.length:null};});return {total:FILMS.length,watched:watched.length,remaining:FILMS.length-watched.length,skipped:skipped.size,known:known.length,missing:watched.length-known.length,minutes,averageRuntime:known.length?minutes/known.length:null,rated:rated.length,averageRating:rated.length?rated.reduce((n,f)=>n+reviews[f.id].rating,0)/rated.length:null,decades,shelves:['W','N','H'].map(s=>({s,total:FILMS.filter(f=>f.s===s).length,watched:watched.filter(f=>f.s===s).length}))};}
+function renderChallenges(){const cards=computeChallenges();$('challengeSummary').textContent=cards.filter(c=>c.complete).length+' / '+cards.length+' badges';const grid=$('challengeGrid');grid.replaceChildren();for(const c of cards){const article=document.createElement('article');article.className='challengeCard'+(c.complete?' earned':'');const title=document.createElement('h3');title.textContent=(c.complete?'✓ ':'')+c.title;const desc=document.createElement('p');desc.textContent=c.description;const progress=document.createElement('progress');progress.max=c.target;progress.value=c.n;progress.setAttribute('aria-label',c.title);const count=document.createElement('p');count.className='challengeCount';count.textContent=c.n+' / '+c.target+(c.complete?' · Earned':'');article.append(title,desc,progress,count);if(c.detail){const detail=document.createElement('small');detail.textContent=c.detail;article.append(detail);}grid.append(article);}}
+function statMetric(title,value,detail){const article=document.createElement('article');article.className='statMetric';const label=document.createElement('p');label.textContent=title;const num=document.createElement('strong');num.textContent=value;const hint=document.createElement('small');hint.textContent=detail;article.append(label,num,hint);return article;}
+function renderStats(){const d=statsData(),grid=$('statsMetrics');grid.replaceChildren(statMetric('Watched',d.watched+' / '+d.total,d.remaining+' still to watch'),statMetric('Watch time',Math.floor(d.minutes/60)+'h '+(d.minutes%60)+'m',d.known+' films with known runtimes · '+d.missing+' unknown'),statMetric('Average length',d.averageRuntime===null?'—':Math.round(d.averageRuntime)+' min','Across watched films with known runtimes'),statMetric('Your average rating',d.averageRating===null?'—':d.averageRating.toFixed(1)+' / 5',d.rated+' watched films rated'),statMetric('Skipped',String(d.skipped),'Available in your Skipped tab'));
+  const shelves=$('statsShelves');shelves.replaceChildren();for(const shelf of d.shelves){const row=document.createElement('div');row.className='shelfStat';const label=document.createElement('span');label.textContent={W:'Winners',N:'Nominees',H:'Honorable mentions'}[shelf.s]+' · '+shelf.watched+' / '+shelf.total;const bar=document.createElement('progress');bar.max=shelf.total||1;bar.value=shelf.watched;bar.setAttribute('aria-label',label.textContent);row.append(label,bar);shelves.append(row);}
+  const tbody=$('statsDecades');tbody.replaceChildren();for(const row of d.decades){const tr=document.createElement('tr');for(const value of [row.decade+'s',row.watched+' / '+row.total,row.average===null?'—':row.average.toFixed(1)+' / 5']){const td=document.createElement('td');td.textContent=value;tr.append(td);}tbody.append(tr);}}
+function showPage(name){$('tonightPage').hidden=name!=='tonight';$('statsPage').hidden=name!=='stats';$('tonightTab').setAttribute('aria-pressed',String(name==='tonight'));$('statsTab').setAttribute('aria-pressed',String(name==='stats'));if(name==='stats'){renderStats();$('statsHeading').focus({preventScroll:true});}}
+function renderJourney(){renderMoods();renderChallenges();if(!$('statsPage').hidden)renderStats();}
+function wireJourney(){$('editMoods').onclick=editMoods;$('saveMoods').onclick=saveMoods;$('cancelMoods').onclick=()=>$('moodDialog').close();$('tonightTab').onclick=()=>showPage('tonight');$('statsTab').onclick=()=>showPage('stats');}
 
-$("poster").onclick=()=>{const b=$("poster").dataset.big;if(b)openLight(b);};
-$("backdrop").onclick=()=>{const b=$("backdrop").dataset.big;if(b)openLight(b);};
-function openLight(src){$("lightImg").src=src;$("lightbox").hidden=false;}
-function closeLight(){$("lightbox").hidden=true;$("lightImg").src="";}
-$("lightbox").onclick=closeLight;
-document.addEventListener("keydown",e=>{
-  if(!$("lightbox").hidden){
-    if(e.key==="Escape")closeLight();
-    return;
-  }
-  const t=e.target;
-  const typing=t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA"||t.isContentEditable);
-  if(e.key==="/"&&!typing){e.preventDefault();$("search").focus();return;}
-  if(typing){if(e.key==="Escape")t.blur();return;}
-  if(t&&(t.tagName==="BUTTON"||t.tagName==="A"))return;
-  if(e.key==="Enter"){e.preventDefault();reveal();}
-  else if(e.key==="w"||e.key==="W"){markWatchedAction();}
-});
+'use strict';
+const TRI_NAME={gf:'The Godfather',lotr:'The Lord of the Rings',dune:'Dune'};
+const KEY='kuvert:v4', OLD_KEY='envelope:v1', TKEY='envelope:tmdb', CATALOGUE='kuvert-2026-09-expanded-v4';
+const IDS=new Set(FILMS.map(f=>f.id)), BY_ID=new Map(FILMS.map(f=>[f.id,f]));
+const $=id=>document.getElementById(id);
+let seen=new Set(),dates={},current=null,filter='unseen',query='',statusFilter=null,decadeFilter=null;
+let country='US',drawSelection=false,tmdbTok=null,matches={},storageOK=false,dirty=false;
+let fileHandle=null,storedHandle=null,autosaveWarn=false,revision=0,fileRevision=-1,writeChain=Promise.resolve();
+let savedAt=null,undoState=null,pendingRestore=null,dateId=null,infoReq=0,infoController=null;
+const infoCache=new Map();
+function todayISO(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function validDate(s){if(typeof s!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;const d=new Date(s+'T12:00:00Z');return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===s;}
+function fmtWhen(s){return validDate(s)?new Date(s+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'}):'';}
+function snapshot(){return {seen:[...seen],dates:{...dates},current:current?.id||null,skipped:[...skipped],reviews:copyReviews(),recent:[...recent],moods:cloneMoods(),runtimes:{...runtimes}};}
+function notify(message,previous=null){noteOfferId=null;$('noteOffer').hidden=true;undoState=previous;$('toastText').textContent=message;$('undoBtn').hidden=!previous;$('toast').hidden=false;}
+function announce(message){$('announcement').textContent=message;}
+function stateData(){return {app:'kuvert',v:6,catalogue:CATALOGUE,saved:savedAt,seen:[...seen].sort(),dates:{...dates},current:current&&!seen.has(current.id)?current.id:null,skipped:[...skipped].sort(),reviews:copyReviews(),recent:[...recent],moods:cloneMoods(),runtimes:{...runtimes}};}
+function payload(){return JSON.stringify(stateData(),null,2);}
+function checksum(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(16).padStart(8,'0');}
+function encode(){const text=JSON.stringify(stateData());const b64=btoa(Array.from(new TextEncoder().encode(text),b=>String.fromCharCode(b)).join('')).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');return 'KU6.'+b64+'.'+checksum(b64);}
+function decodeLegacy(code,legacyIds=LEGACY_IDS){if(typeof code!=='string'||!/^[a-z0-9]+$/i.test(code.trim())||code.length>200)throw Error('Invalid legacy code.');let n=0n;for(const ch of code.trim().toLowerCase())n=n*36n+BigInt(parseInt(ch,36));if(n>=(1n<<BigInt(legacyIds.length)))throw Error('The legacy code is too long for the original catalogue.');const bits=n.toString(2).padStart(legacyIds.length,'0');return new Set(legacyIds.filter((_,i)=>bits[i]==='1'));}
+function parseCode(code,legacyIds=null){if(typeof code!=='string'||code.length>1000000)throw Error('Invalid progress code.');const v=code.trim();if(!/^KU[456]\./.test(v)){if(!legacyIds)throw Error('Choose the movie list for this older code.');return {seen:decodeLegacy(v,legacyIds),dates:{},current:null,saved:null,legacy:true};}const parts=v.split('.');if(parts.length!==3||checksum(parts[1])!==parts[2])throw Error('This code is incomplete or has a typo.');const obj=JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(parts[1].replaceAll('-','+').replaceAll('_','/')),c=>c.charCodeAt(0))));return validateProgress(obj);}
+function validateProgress(d,{browserLegacy=false,legacyIds=LOCAL_LEGACY_IDS}={}){
+  if(!d||typeof d!=='object'||Array.isArray(d))throw Error('This is not a progress file.');
+  const modern=d.app==='kuvert'&&[4,5,6].includes(d.v);
+  const legacy=(d.app==='envelope'&&[1,2,3].includes(d.v))||(browserLegacy&&!d.app&&!d.v);
+  if(!modern&&!legacy)throw Error('Unsupported progress file or version.');
+  if(modern&&![CATALOGUE,'kuvert-2026-09-expanded-v3','kuvert-2026-09-hm-v2','kuvert-2026-09-v1'].includes(d.catalogue))throw Error('This backup uses a different catalogue version.');
+  let marks;
+  if(Array.isArray(d.seen))marks=d.seen.map(id=>{if(legacy){if(!Number.isInteger(id)||id<0||id>=legacyIds.length)throw Error('Unknown film in backup.');return legacyIds[id];}if(typeof id!=='string'||!IDS.has(id))throw Error('Unknown film in backup.');return id;});
+  else if(legacy&&typeof d.code==='string')marks=[...decodeLegacy(d.code,legacyIds)];
+  else throw Error('The backup is missing watched films.');
+  const importedSeen=new Set(marks), importedDates={};
+  if(d.dates!==undefined){if(!d.dates||typeof d.dates!=='object'||Array.isArray(d.dates))throw Error('Invalid watch dates.');for(const [key,value]of Object.entries(d.dates)){const id=legacy&&/^\d+$/.test(key)?legacyIds[Number(key)]:key;if(!IDS.has(id)||!importedSeen.has(id)||!validDate(value))throw Error('Invalid watch date in backup.');importedDates[id]=value;}}
+  const pick=modern?d.current:null;if(pick!=null&&(!IDS.has(pick)||importedSeen.has(pick)))throw Error('Invalid saved movie selection.');
+  if(d.saved!=null&&(typeof d.saved!=='string'||!Number.isFinite(Date.parse(d.saved))))throw Error('Invalid backup timestamp.');
+  const extras=validateExtras(modern?d:{});if([...extras.skipped].some(id=>importedSeen.has(id)))throw Error('A movie cannot be watched and skipped.');return {seen:importedSeen,dates:importedDates,current:pick||null,saved:d.saved||null,legacy,...extras};
+}
+function persistBrowser(){if(!storageOK)return false;try{localStorage.setItem(KEY,JSON.stringify({...stateData(),settings:{country,drawSelection,filter,query,statusFilter,decadeFilter,runtimeLimit},matches,runtimes,moodSuggestions,lastBackup}));return true;}catch{storageOK=false;return false;}}
+function save(){revision++;savedAt=new Date().toISOString();dirty=!persistBrowser();if(fileHandle)queueWrite();showState();}
+function queueWrite(){const handle=fileHandle,rev=revision,body=payload();writeChain=writeChain.then(async()=>{if(handle!==fileHandle)return;try{const w=await handle.createWritable();try{await w.write(body);await w.close();}catch(e){try{await w.abort();}catch{}throw e;}if(handle===fileHandle){fileRevision=rev;autosaveWarn=false;recordBackup(JSON.parse(body));if(rev===revision)dirty=false;}}catch{if(handle===fileHandle){autosaveWarn=true;if(!storageOK)dirty=true;}}showState();});return writeChain;}
+function showState(){const el=$('saveState');el.classList.toggle('warn',autosaveWarn||dirty);el.textContent=autosaveWarn?'Couldn’t update your file. Try Save progress.':fileHandle?(fileRevision<revision?'Saving to ':'Saved to ')+fileHandle.name:storageOK?'Saved in this browser · '+seen.size+' watched':dirty?'Unsaved changes · Save progress to keep them':seen.size+' watched · Keep a backup';$('code').value=encode();$('backupStatus').textContent=backupMessage();$('backupStatus').classList.toggle('warn',!lastBackup||lastBackup.signature!==progressSignature());}
+async function idbStore(action,value){let db;try{db=await new Promise((resolve,reject)=>{const r=indexedDB.open('kuvert',1);r.onupgradeneeded=()=>r.result.createObjectStore('handles');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});return await new Promise((resolve,reject)=>{const tx=db.transaction('handles',action==='get'?'readonly':'readwrite');const store=tx.objectStore('handles');const req=action==='get'?store.get('handle'):action==='put'?store.put(value,'handle'):store.delete('handle');let result;req.onsuccess=()=>result=req.result;tx.oncomplete=()=>resolve(result);tx.onerror=()=>reject(tx.error);});}catch{return null;}finally{db?.close();}}
+function load(){try{localStorage.setItem('kuvert:probe','1');localStorage.removeItem('kuvert:probe');storageOK=true;const raw=localStorage.getItem(KEY),old=localStorage.getItem(OLD_KEY);if(raw||old){const obj=JSON.parse(raw||old),d=validateProgress(obj,{browserLegacy:!raw});seen=d.seen;dates=d.dates;restoreExtras(d);current=BY_ID.get(d.current)||null;savedAt=d.saved;const p=obj.settings||{};runtimeLimit=p.runtimeLimit===-120?-120:[90,120].includes(p.runtimeLimit)?120:0;moodSuggestions=validateMoods(obj.moodSuggestions||{});for(const [id,n]of Object.entries(obj.runtimes||{}))if(IDS.has(id)&&Number.isFinite(n)&&n>0&&n<1500)runtimes[id]=n;const backup=obj.lastBackup;if(backup&&typeof backup.signature==='string'&&Number.isFinite(Date.parse(backup.at)))lastBackup=backup;country=/^[A-Z]{2}$/.test(p.country)?p.country:'US';drawSelection=!!p.drawSelection;filter=['unseen','all','skipped','recent','missing'].includes(p.filter)?p.filter:'unseen';query=typeof p.query==='string'?p.query:'';statusFilter=['W','N','H'].includes(p.statusFilter)?p.statusFilter:null;decadeFilter=Number.isInteger(p.decadeFilter)?p.decadeFilter:null;for(const [id,m]of Object.entries(obj.matches||{}))if(IDS.has(id)&&Number.isSafeInteger(m)&&m>0)matches[id]=m;if(!raw)persistBrowser();}tmdbTok=localStorage.getItem(TKEY)||null;}catch{notify('Saved progress could not be read. You can restore a backup in Settings.');}
+  $('search').value=query;$('drawSelection').checked=drawSelection;$('runtimeLimit').value=String(runtimeLimit);
+  if(!$('country').querySelector('[value="'+country+'"]'))$('country').add(new Option(country,country));$('country').value=country;
+  $('fhint').textContent=window.showSaveFilePicker?'Save a progress file once to enable automatic file backups. Reconnecting previews differences before changing anything.':'Progress saves in this browser. Download a backup to move devices or keep an extra copy.';
+  updateTmdbUI();showState();$('env').classList.remove('open','closing');$('slip').inert=false;$('drawBtn').textContent='Öppna kuvertet';$('drawBtn').setAttribute('aria-expanded','false');
+}
+async function saveToFile(){if(window.showSaveFilePicker){try{if(!fileHandle){fileHandle=await window.showSaveFilePicker({suggestedName:'kuvert-progress.json',types:[{description:'Kuvert progress',accept:{'application/json':['.json']}}]});await idbStore('put',fileHandle);}await queueWrite();if(!autosaveWarn)return;}catch(e){if(e.name==='AbortError')return;}}const exported=stateData();const blob=new Blob([JSON.stringify(exported,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='kuvert-progress.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);dirty=false;recordBackup(exported,'download');showState();notify('Progress backup download requested.');}
+function requestRestore(data,handle=null){if(pendingRestore)return Promise.resolve(false);return new Promise(resolve=>{pendingRestore={data,handle,resolve};const added=[...data.seen].filter(id=>!seen.has(id)).length,removed=[...seen].filter(id=>!data.seen.has(id)).length;const dateChanges=[...data.seen].filter(id=>seen.has(id)&&(dates[id]||'')!==(data.dates[id]||'')).length;$('restoreSummary').textContent=`Your current progress: ${seen.size} watched. Backup: ${data.seen.size} watched. Merge adds ${added}. Replace removes ${removed} current marks and changes ${dateChanges} existing dates.`;$('restoreNote').textContent=(data.saved?'Backup saved '+new Date(data.saved).toLocaleString()+'. ':'')+(data.legacy?'Original-format backup: movie IDs will be migrated. Older text codes do not include watch dates. ':'')+'Skipped movies, notes and recent picks are included when present. Merge keeps your existing notes; Replace uses the backup. Credentials are never imported.';$('restoreDialog').showModal();});}
+function finishRestore(mode){const pending=pendingRestore;if(!pending)return;pendingRestore=null;$('restoreDialog').close();if(!mode){pending.resolve(false);return;}const previous=snapshot(),d=pending.data;if(mode==='merge'){for(const id of d.seen)seen.add(id);dates={...d.dates,...dates};if(!current)current=BY_ID.get(d.current)||null;}else{seen=new Set(d.seen);dates={...d.dates};current=BY_ID.get(d.current)||null;}restoreExtras(d,mode==='merge');if(current&&seen.has(current.id))current=null;if(pending.handle){fileHandle=pending.handle;fileRevision=-1;idbStore('put',fileHandle);$('reconnect').hidden=true;}save();syncPick();render();notify('Progress '+(mode==='merge'?'merged.':'replaced.'),previous);pending.resolve(true);}
+async function readProgress(file,handle=null){if(file.size>1000000)throw Error('That file is too large to be a Kuvert backup.');const obj=JSON.parse(await file.text());if(obj?.app==='envelope'&&[1,2,3].includes(obj.v)&&!Array.isArray(obj.seen)&&typeof obj.code==='string'){const data=await chooseLegacy(obj.code,obj);return data?requestRestore(data,handle):false;}const data=validateProgress(obj);return requestRestore(data,handle);}
+async function openProgress(){if(window.showOpenFilePicker){try{const [h]=await window.showOpenFilePicker({types:[{description:'Kuvert progress',accept:{'application/json':['.json']}}]});await readProgress(await h.getFile(),h);return;}catch(e){if(e.name==='AbortError')return;notify(e.message||'Could not load that file.');return;}}$('fileInput').click();}
+async function tryReconnect(){storedHandle=await idbStore('get');if(storedHandle){$('reconnect').textContent='Reconnect '+storedHandle.name;$('reconnect').hidden=false;}}
+function getUnits({selection=drawSelection,ignoreRuntime=false}={}){const units=[],series={};for(const f of FILMS){if(seen.has(f.id))continue;if(f.tri)(series[f.tri]??=[]).push(f);else units.push({film:f,series:null});}for(const [key,parts]of Object.entries(series)){parts.sort((a,b)=>a.ord-b.ord);units.push({film:parts[0],series:key});}return units.filter(({film:f})=>!skipped.has(f.id)&&(ignoreRuntime||runtimeMatches(f))&&(!selection||((!statusFilter||f.s===statusFilter)&&(decadeFilter===null||Math.floor(f.y/10)*10===decadeFilter)&&(!query.trim()||f.t.toLowerCase().includes(query.trim().toLowerCase())))));}
+function drawFilm(random=Math.random){let units=getUnits();if(!units.length)return null;const others=units.filter(u=>u.film.id!==current?.id);if(current&&others.length)units=others;return units[Math.floor(random()*units.length)];}
+function displayCurrent(animate=true){if(!current)return;clearTimeout(closeTimer);$('env').classList.remove('closing');$('slip').inert=false;$('drawBtn').setAttribute('aria-expanded','true');const f=current;$('markBtn').hidden=false;$('againBtn').hidden=false;$('pickTitle').textContent=f.t;$('pickMeta').textContent=f.y+' · '+(f.s==='W'?'Best Picture winner':f.s==='N'?'Nominated':'Honorable mention');$('pickEyebrow').textContent=f.s==='W'?'Kvällens vinnare':'Kvällens film';$('pickEyebrow').classList.toggle('win',f.s==='W');$('slip').classList.toggle('win',f.s==='W');$('pickNote').hidden=!f.tri;if(f.tri)$('pickNote').textContent=TRI_NAME[f.tri]+' counts as one ticket and plays in order. Part '+f.ord+' of '+FILMS.filter(x=>x.tri===f.tri).length+'.';$('moreDetails').open=false;showInfo(f);$('env').classList.add('open');$('drawBtn').textContent='Dra en ny film';announce('Tonight’s film: '+f.t+', '+f.y);if(animate)$('slip').focus({preventScroll:true});}
+let closeTimer=null;
+function closeEnvelope(){ $('env').classList.add('closing'); $('slip').inert=true; clearTimeout(closeTimer); closeTimer=setTimeout(()=>{$('env').classList.remove('closing');$('slip').inert=false;},240); $('env').classList.remove('open'); $('drawBtn').textContent='Öppna kuvertet'; $('drawBtn').setAttribute('aria-expanded','false'); render(); $('drawBtn').focus(); announce('Envelope closed.'); }
+function handleDraw(){reveal();}
+function syncPick(){clearTimeout(closeTimer);$('env').classList.remove('closing');$('slip').inert=false;if(current&&!seen.has(current.id))displayCurrent(false);else{current=null;showInfo(null);$('env').classList.remove('open');$('drawBtn').textContent='Öppna kuvertet';$('drawBtn').setAttribute('aria-expanded','false');}}
+function reveal(){const res=drawFilm();if(!res){if(seen.size===FILMS.length){current=null;showInfo(null);$('pickTitle').textContent='Slut';$('pickMeta').textContent='Every film watched';$('pickNote').textContent='The whole watchthrough, complete. Nicely done.';$('pickNote').hidden=false;$('markBtn').hidden=true;$('againBtn').hidden=true;$('env').classList.add('open');$('drawBtn').setAttribute('aria-expanded','true');announce('Every film watched.');render();}else notify('No eligible films. Check Skipped, clear a filter, or check unknown runtimes.');return;}if(res.film.id===current?.id){notify('This is the only eligible ticket. Broaden the selection for another movie.');return;}current=res.film;recordPick(current.id);save();displayCurrent();render();}
+function markSeen(id,on){if(!IDS.has(id))return;const previous=snapshot();if(on){seen.add(id);skipped.delete(id);dates[id]??=todayISO();}else{seen.delete(id);delete dates[id];}const wasCurrent=current?.id===id;if(on&&wasCurrent)current=null;save();if(wasCurrent)syncPick();notify(BY_ID.get(id).t+(on?' marked watched.':' marked unwatched.'),previous);if(on){noteOfferId=id;$('noteOffer').hidden=false;}}
+function toggle(id){markSeen(id,!seen.has(id));render();}
+function markWatchedAction(){if(!current)return;markSeen(current.id,true);render();$('drawBtn').focus();}
+function editDate(id){dateId=id;$('dateTitle').textContent='Watch date';$('dateLabel').textContent=BY_ID.get(id).t;$('watchDate').value=dates[id]||todayISO();$('dateDialog').showModal();}
+function setDate(clear=false){const v=$('watchDate').value;if(!clear&&!validDate(v)){$('watchDate').setCustomValidity('Choose a valid date.');$('watchDate').reportValidity();return;}const previous=snapshot();if(clear)delete dates[dateId];else dates[dateId]=v;$('dateDialog').close();save();render();notify('Watch date updated.',previous);}
+function render(){const hasRuntimes=FILMS.some(f=>runtimes[f.id]>0);$('missingTab').hidden=!hasRuntimes;if(!hasRuntimes&&filter==='missing')filter='unseen';const active=document.activeElement,key=active?.dataset?.focus,owner=active?.closest('ul')?.id;const siblings=owner?[...$(owner).querySelectorAll('[data-focus]')]:[];const at=siblings.indexOf(active);renderView();document.querySelectorAll('.tab[data-f]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.f===filter)));document.querySelectorAll('.tab.stat').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.s===statusFilter)));const units=getUnits(),other=units.some(u=>u.film.id!==current?.id);$('eligibleCount').textContent=units.length+' eligible '+(units.length===1?'ticket':'tickets')+(drawSelection?' · filters apply to the draw':' · drawing from all unseen films');$('againBtn').disabled=!other;$('againBtn').title=other?'Draw another movie':'No other eligible ticket';$('drawBtn').hidden=$('env').classList.contains('open');$('drawBtn').disabled=seen.size<FILMS.length&&(!units.length||!!current&&!other);renderQol();if(key){const root=owner?$(owner):document;const same=[...root.querySelectorAll('[data-focus]')].find(el=>el.dataset.focus===key);const controls=owner?[...root.querySelectorAll('[data-focus]')]:[];(same||controls[Math.min(Math.max(at,0),controls.length-1)]||$('search')).focus({preventScroll:true});}}
 
-load();
-render();
-tryReconnect();
+// Metadata is bound to a permanent film ID. Ambiguous search results need a match choice.
+function tmdbAuth(){const t=(tmdbTok||'').trim();return !t?null:t.startsWith('eyJ')||t.length>40?{mode:'bearer',t}:{mode:'key',t};}
+async function tmdb(path,params={},signal){const a=tmdbAuth();if(!a)throw Error('Connect TMDB in Settings for movie details.');const u=new URL('https://api.themoviedb.org/3'+path);Object.entries(params).forEach(([k,v])=>u.searchParams.set(k,v));const headers={};if(a.mode==='bearer')headers.Authorization='Bearer '+a.t;else u.searchParams.set('api_key',a.t);const controller=new AbortController(),abort=()=>controller.abort();signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted)controller.abort();const timer=setTimeout(()=>controller.abort(),15000);try{const r=await fetch(u,{headers,signal:controller.signal});if(!r.ok)throw Error(r.status===401?'Your TMDB credential was not accepted. Reconnect in Settings.':'Movie details are temporarily unavailable.');return await r.json();}finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}}
+function normalized(s){return (s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');}
+function exactMatch(m,f){return (normalized(m.title)===normalized(f.t)||normalized(m.original_title)===normalized(f.t))&&Number((m.release_date||'').slice(0,4))===f.y;}
+async function fetchInfo(f,signal){const cacheKey=f.id+':'+country;if(infoCache.has(cacheKey))return infoCache.get(cacheKey);let id=matches[f.id];if(!id){let s=await tmdb('/search/movie',{query:f.t,primary_release_year:f.y,include_adult:false},signal);const exact=(s.results||[]).filter(x=>exactMatch(x,f));if(exact.length===1)id=exact[0].id;else{if(!s.results?.length)s=await tmdb('/search/movie',{query:f.t,include_adult:false},signal);return {choices:(s.results||[]).slice(0,6)};}}
+  const d=await tmdb('/movie/'+id,{append_to_response:'credits,watch/providers,release_dates'},signal);
+  if(!matches[f.id]&&!exactMatch(d,f))return {choices:[d]};
+  if(signal?.aborted||(matches[f.id]&&matches[f.id]!==id))throw new DOMException('Aborted','AbortError');matches[f.id]=d.id;moodSuggestions[f.id]=suggestMoods(d.genres);if(Number.isFinite(d.runtime)&&d.runtime>0)runtimes[f.id]=d.runtime;persistBrowser();
+  infoCache.set(cacheKey,d);return d;
+}
+function fmtMoney(n){if(!n)return null;return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',notation:'compact',maximumFractionDigits:1}).format(n);}
+function field(id,text){$(id).textContent=text||'';$(id).hidden=!text;}
+function imageField(id,path,size,label){const el=$(id);el.hidden=!path;if(!path){el.removeAttribute('src');el.dataset.big='';return;}el.src='https://image.tmdb.org/t/p/'+size+path;el.dataset.big='https://image.tmdb.org/t/p/original'+path;el.alt=label;el.setAttribute('aria-label','Enlarge '+label);el.onerror=()=>{el.hidden=true;};}
+async function showInfo(f){const req=++infoReq;infoController?.abort();infoController=new AbortController();const signal=infoController.signal;['poster','backdrop','pickTag','pickFacts','pickCredits','pickMoney','pickProv','lbxBtn','moreDetails','retryInfo','matchChoices'].forEach(id=>$(id).hidden=true);$('matchChoices').replaceChildren();$('infoStatus').textContent='';if(!f)return;if(!tmdbAuth()){$('infoStatus').textContent='Connect TMDB in Settings for runtime, images and streaming.';return;}$('infoStatus').textContent='Loading movie details…';try{const d=await fetchInfo(f,signal);if(req!==infoReq)return;if(d.choices){$('infoStatus').textContent=d.choices.length?'Choose the correct movie once to remember its match.':'No movie match found. Try again or use Change movie match after connecting.';$('matchChoices').hidden=false;for(const choice of d.choices){const b=document.createElement('button');b.className='ghost';b.textContent=choice.title+' · '+((choice.release_date||'').slice(0,4)||'Year unknown');b.onclick=()=>{matches[f.id]=choice.id;persistBrowser();showInfo(f);};$('matchChoices').append(b);}if(!d.choices.length)$('retryInfo').hidden=false;return;}$('infoStatus').textContent='';imageField('poster',d.poster_path,'w342',f.t+' poster');imageField('backdrop',d.backdrop_path,'w780',f.t+' backdrop');const releases=d.release_dates?.results?.find(r=>r.iso_3166_1===country)?.release_dates||[];const cert=releases.find(r=>r.certification)?.certification;field('pickFacts',[cert,d.runtime?d.runtime+' min':null,...(d.genres||[]).slice(0,3).map(g=>g.name),d.runtime>=160?'planera en fika':null].filter(Boolean).join(' · '));field('pickTag',d.tagline);const dir=(d.credits?.crew||[]).filter(c=>c.job==='Director').map(c=>c.name).join(', '),cast=(d.credits?.cast||[]).slice(0,4).map(c=>c.name).join(', ');field('pickCredits',[dir?'dir. '+dir:null,cast?'with '+cast:null].filter(Boolean).join(' · '));field('pickMoney',[d.budget?'Budget '+fmtMoney(d.budget):null,d.revenue?'Box office '+fmtMoney(d.revenue):null].filter(Boolean).join(' · '));const p=d['watch/providers']?.results?.[country]||{};const names=a=>[...new Set((a||[]).map(x=>x.provider_name))].join(', ');const offers=[p.flatrate?.length?'Stream: '+names(p.flatrate):null,p.free?.length?'Free: '+names(p.free):null,p.ads?.length?'With ads: '+names(p.ads):null,p.rent?.length?'Rent: '+names(p.rent):null,p.buy?.length?'Buy: '+names(p.buy):null].filter(Boolean);field('pickProv',(offers.length?offers.join(' · '):'No listed availability')+' · '+country);if(p.link){const u=new URL(p.link);if(u.protocol==='https:'&&u.hostname.endsWith('themoviedb.org')){const a=document.createElement('a');a.href=u.href;a.target='_blank';a.rel='noopener';a.textContent=' Check availability';$('pickProv').append(a);}}$('lbxBtn').href='https://letterboxd.com/tmdb/'+d.id;$('lbxBtn').hidden=false;$('moreDetails').hidden=false;render();}catch(e){if(req!==infoReq)return;$('infoStatus').textContent=e.name==='AbortError'?'Movie details timed out. Try again.':e.message;$('retryInfo').hidden=false;}}
+function updateTmdbUI(){const on=!!tmdbTok;$('tmdbSave').hidden=on;$('tmdbClear').hidden=!on;$('tmdbTok').hidden=on;$('tmdbState').textContent=on?'Connected. Availability from JustWatch via TMDB. Credentials stay in this browser; backups contain no credentials.':'Optional: connect TMDB for images, runtime and streaming. Your credential stays in this browser and is never exported.';}
+async function connectTmdb(){const value=$('tmdbTok').value.trim();if(!value)return;tmdbTok=value;$('tmdbSave').disabled=true;$('tmdbState').textContent='Checking…';try{await tmdb('/configuration');if(storageOK)localStorage.setItem(TKEY,tmdbTok);$('tmdbTok').value='';updateTmdbUI();if(current)showInfo(current);loadCountries();}catch(e){tmdbTok=null;$('tmdbState').textContent=e.name==='AbortError'?'Connection timed out. Try again.':e.message;}finally{$('tmdbSave').disabled=false;}}
+async function loadCountries(){try{const countries=await tmdb('/configuration/countries');if(!Array.isArray(countries))return;const options=countries.filter(c=>/^[A-Z]{2}$/.test(c.iso_3166_1)&&c.english_name).sort((a,b)=>a.english_name.localeCompare(b.english_name));$('country').replaceChildren(...options.map(c=>new Option(c.english_name,c.iso_3166_1)));$('country').value=country;}catch{/* Existing country choices remain usable. */}}
+
+$('drawBtn').onclick=handleDraw;$('closeEnvelopeBtn').onclick=closeEnvelope;$('againBtn').onclick=reveal;$('markBtn').onclick=markWatchedAction;
+document.querySelectorAll('.tab[data-f]').forEach(t=>t.onclick=()=>{filter=t.dataset.f;save();render();});
+document.querySelectorAll('.tab.stat').forEach(t=>t.onclick=()=>{statusFilter=statusFilter===t.dataset.s?null:t.dataset.s;save();render();});
+$('search').oninput=e=>{query=e.target.value;save();render();};
+$('drawSelection').onchange=e=>{drawSelection=e.target.checked;save();render();};
+$('country').onchange=e=>{country=e.target.value;save();if(current)showInfo(current);};
+$('resetBtn').onclick=()=>{if(!confirm('Clear every watched mark and start over?'))return;const previous=snapshot();seen=new Set();dates={};skipped=new Set();reviews={};recent=[];moodTags={};current=null;save();syncPick();render();notify('Progress cleared.',previous);};
+$('undoBtn').onclick=()=>{if(!undoState)return;const previous=undoState;seen=new Set(previous.seen);dates={...previous.dates};current=BY_ID.get(previous.current)||null;restoreExtras(previous);undoState=null;save();syncPick();render();notify('Change undone.');$('drawBtn').focus();};
+$('dismissToast').onclick=()=>{$('toast').hidden=true;undoState=null;$('drawBtn').focus();};
+$('saveFile').onclick=saveToFile;$('openFile').onclick=openProgress;
+$('fileInput').onchange=async e=>{const f=e.target.files?.[0];try{if(f)await readProgress(f);}catch(err){notify(err.message||'Could not read that backup.');}e.target.value='';};
+$('reconnect').onclick=async()=>{if(!storedHandle)return;try{if(storedHandle.requestPermission&&await storedHandle.requestPermission({mode:'readwrite'})!=='granted'){notify('File access was not granted. Your browser progress is unchanged.');return;}await readProgress(await storedHandle.getFile(),storedHandle);}catch(e){notify('Could not reconnect. Use Load progress to select the file again.');}};
+$('mergeProgress').onclick=()=>finishRestore('merge');$('replaceProgress').onclick=()=>finishRestore('replace');$('cancelRestore').onclick=()=>finishRestore(null);$('restoreDialog').addEventListener('cancel',e=>{e.preventDefault();finishRestore(null);});
+$('saveDate').onclick=()=>setDate();$('clearDate').onclick=()=>setDate(true);$('cancelDate').onclick=()=>$('dateDialog').close();$('watchDate').oninput=()=>$('watchDate').setCustomValidity('');
+$('tmdbSave').onclick=connectTmdb;$('tmdbTok').onkeydown=e=>{if(e.key==='Enter')connectTmdb();};
+$('tmdbClear').onclick=()=>{tmdbTok=null;infoCache.clear();try{localStorage.removeItem(TKEY);}catch{}$('tmdbTok').value='';updateTmdbUI();showInfo(current);notify('Disconnected. Older backups made by the original app may still contain your credential.');};
+$('retryInfo').onclick=()=>showInfo(current);
+$('changeMatch').onclick=async()=>{if(!current)return;const f=current;const req=++infoReq;infoController?.abort();$('infoStatus').textContent='Finding movie matches…';try{const data=await tmdb('/search/movie',{query:f.t,include_adult:false});if(req!==infoReq)return;$('matchChoices').replaceChildren();$('matchChoices').hidden=false;for(const choice of (data.results||[]).slice(0,8)){const b=document.createElement('button');b.className='ghost';b.textContent=choice.title+' · '+(choice.release_date||'').slice(0,4);b.onclick=()=>{matches[f.id]=choice.id;delete runtimes[f.id];infoCache.clear();persistBrowser();render();showInfo(f);};$('matchChoices').append(b);}$('infoStatus').textContent=data.results?.length?'Choose the correct movie.':'No matching movies found.';}catch{$('infoStatus').textContent='Could not load matches. Try again.';}};
+$('copyCode').onclick=async()=>{try{if(!navigator.clipboard?.writeText)throw Error();await navigator.clipboard.writeText(encode());notify('Progress code copied.');}catch{$('code').focus();$('code').select();notify('Select and copy the progress code.');}};
+$('loadCode').onclick=async()=>{const v=prompt('Paste a Kuvert progress code (original codes also work):');if(!v)return;try{const data=/^KU[456]\./.test(v.trim())?parseCode(v):await chooseLegacy(v);if(data)await requestRestore(data);}catch(e){notify(e.message||'That code could not be read.');}};
+let lightOpener=null;
+function openLight(el){if(!el.dataset.big)return;lightOpener=el;$('lightImg').src=el.dataset.big;$('lightImg').alt=el.alt;$('lightbox').showModal();$('closeLight').focus();}
+function closeLight(){$('lightbox').close();}
+['poster','backdrop'].forEach(id=>{const el=$(id);el.tabIndex=0;el.setAttribute('role','button');el.onclick=()=>openLight(el);el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();openLight(el);}};});
+$('closeLight').onclick=closeLight;$('lightbox').onclick=e=>{if(e.target===$('lightbox'))closeLight();};$('lightbox').addEventListener('close',()=>{$('lightImg').removeAttribute('src');lightOpener?.focus();});
+document.addEventListener('keydown',e=>{if(e.repeat||e.ctrlKey||e.metaKey||e.altKey||document.querySelector('dialog[open]'))return;const t=e.target,typing=t?.matches('input,textarea,select')||t?.isContentEditable;if(e.key==='/'&&!typing){e.preventDefault();showPage('tonight');$('library').open=true;$('search').focus();return;}if(typing){if(e.key==='Escape')t.blur();return;}if(t?.closest('button,a,summary,[role="button"]'))return;if(e.key==='Enter'){e.preventDefault();handleDraw();}else if(e.key.toLowerCase()==='w')markWatchedAction();});
+window.addEventListener('beforeunload',e=>{if(dirty||fileHandle&&fileRevision<revision){e.preventDefault();e.returnValue='';}});
+
+let legacyPending=null;
+function chooseLegacy(code,document=null){return new Promise(resolve=>{legacyPending={code,document,resolve};$('legacyError').textContent='';$('legacyCatalogue').value='local';$('legacyDialog').showModal();});}
+function finishLegacy(accept){const p=legacyPending;if(!p)return;if(!accept){legacyPending=null;$('legacyDialog').close();p.resolve(null);return;}try{const legacyIds=$('legacyCatalogue').value==='original'?LEGACY_IDS:LOCAL_LEGACY_IDS;const data=p.document?validateProgress(p.document,{legacyIds}):parseCode(p.code,legacyIds);legacyPending=null;$('legacyDialog').close();p.resolve(data);}catch(e){$('legacyError').textContent=e.message;}}
+$('confirmLegacy').onclick=()=>finishLegacy(true);$('cancelLegacy').onclick=()=>finishLegacy(false);$('legacyDialog').addEventListener('cancel',e=>{e.preventDefault();finishLegacy(false);});
+
+load();wireQol();wireJourney();render();tryReconnect();if(tmdbTok)loadCountries();
+
 </script>
 </body>
 </html>

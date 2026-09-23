@@ -2962,6 +2962,24 @@ code {
   gap: 8px;
   margin-top: 8px;
 }
+/* Tonight's saved ticket: continue with it, or put it back if the envelope was opened by accident. */
+.resume-line {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 6px;
+}
+.resume-pick .resume-putback {
+  color: #9cacbe;
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.resume-pick .resume-putback:hover,
+.resume-pick .resume-putback:focus-visible {
+  color: var(--brass);
+}
 
 /* ---------- Library ---------- */
 #list,
@@ -4050,7 +4068,12 @@ code {
           <button class="draw" id="drawBtn" aria-controls="slip" aria-expanded="false">Öppna kuvertet</button>
           <div class="resume-pick" id="resumePick" hidden>
             <p id="resumeLabel">Your saved ticket</p>
-            <button class="text-button" id="resumeFilm"></button>
+            <div class="resume-line">
+              <button class="text-button" id="resumeFilm"></button
+              ><button class="text-button resume-putback" id="putBackTonight" title="Close tonight’s ticket; the film goes back in the draw">
+                Put it back
+              </button>
+            </div>
             <div class="resume-actions" id="staleActions" hidden>
               <button class="ghost" id="keepTicket">Keep it for tonight</button
               ><button class="ghost" id="putBack">Put it back</button>
@@ -4226,16 +4249,16 @@ code {
           <div class="settings-block" id="syncPanel">
             <p class="blabel">Sync between devices</p>
             <p class="evening-help" id="syncState">
-              Keep your desktop and iPhone in step through a private GitHub Gist that only your account can see.
+              Keep your desktop and iPhone in step through a secret GitHub Gist on your account. It's unlisted: only someone with its exact link could open it.
             </p>
             <div id="syncSetup">
               <label for="syncToken">GitHub token with Gist access</label>
-              <input id="syncToken" type="password" autocomplete="off" placeholder="github_pat_… or ghp_…" />
+              <input id="syncToken" type="password" autocomplete="off" placeholder="ghp_…" />
               <div class="bacts"><button class="ghost" id="syncConnect">Connect sync</button></div>
               <p class="bhint">
-                On GitHub, go to Settings → Developer settings → Personal access tokens and create a token that can only
-                read and write Gists. Use the same token on each device. It stays in this browser and is never included
-                in backups.
+                On GitHub, go to Settings → Developer settings → Personal access tokens → Tokens (classic), and generate
+                a token with only the <b>gist</b> box ticked. Use the same token on each device. It stays in this browser
+                and is never included in backups or the gist.
               </p>
             </div>
             <div class="bacts" id="syncActions" hidden>
@@ -7874,6 +7897,7 @@ function renderEvening() {
     $("resumeLabel").textContent = stale ? "Drawn " + drawnDayLabel(drawnOn) + " · still on for tonight?" : "Your saved ticket";
     $("resumeFilm").textContent = stale ? current.t : "Continue with " + current.t;
     $("staleActions").hidden = !stale;
+    $("putBackTonight").hidden = stale; // an older ticket offers Keep / Put it back instead
   }
 }
 function drawnDayLabel(iso) {
@@ -8230,6 +8254,7 @@ function wireRefinement() {
   $("resumeFilm").onclick = resumeCurrent;
   $("keepTicket").onclick = keepTicket;
   $("putBack").onclick = putTicketBack;
+  $("putBackTonight").onclick = putTicketBack;
   $("preferencesPanel").addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       e.preventDefault();
@@ -10289,7 +10314,7 @@ function resumePendingRestore() {
 }
 
 // ---------------------------------------------------------------------------
-// Sync between devices through a private GitHub Gist.
+// Sync between devices through a secret (unlisted) GitHub Gist.
 // Each visitor brings their own GitHub token (like the TMDB key); it stays in
 // this browser. One gist holds one file per movie list.
 //
@@ -10340,7 +10365,7 @@ async function gh(path, { method = "GET", body, token = syncCfg.token } = {}) {
     });
     if (r.status === 401) throw Error("GitHub didn't accept that token. Check it hasn't expired.");
     if (r.status === 403 || r.status === 404)
-      throw Error("The token can't read and write Gists. Give it Gist access and try again.");
+      throw Error("The token can't read and write Gists. Use a classic token with the gist scope and try again.");
     if (!r.ok) throw Error("GitHub is unavailable right now (" + r.status + "). Try again in a moment.");
     return r.status === 204 ? null : await r.json();
   } catch (e) {
@@ -10512,7 +10537,7 @@ function renderSync(busyText = "") {
         ? last
           ? "Sync is on. Last synced " + new Date(last.at).toLocaleString() + (last.signature !== progressSignature() ? " · changes waiting to upload." : ".")
           : "Sync is on."
-        : "Keep your desktop and iPhone in step through a private GitHub Gist that only your account can see.");
+        : "Keep your desktop and iPhone in step through a secret GitHub Gist on your account. It's unlisted: only someone with its exact link could open it.");
   $("syncState").classList.toggle("warn", !!syncError);
 }
 function wireSync() {

@@ -980,7 +980,7 @@ const FILMS = [
   { "t": "Zero Dark Thirty", "y": 2012, "s": "N", "id": "2012-zero-dark-thirty", "c": 85 },
   { "t": "Django Unchained", "y": 2012, "s": "N", "id": "2012-django-unchained", "c": 85 },
   { "t": "12 Years a Slave", "y": 2013, "s": "W", "id": "2013-12-years-a-slave", "c": 86 },
-  { "t": "The Wolf of Wall Street", "y": 2013, "s": "N", "id": "2013-the-wolf-of-wall-street", "c": 86 },
+  { "t": "Boogie Nights", "y": 1997, "s": "H", "id": "1997-boogie-nights" },
   { "t": "Birdman or (The Unexpected Virtue of Ignorance)", "y": 2014, "s": "W", "id": "2014-birdman-or-the-unexpected-virtue-of-ignorance", "c": 87 },
   { "t": "Whiplash", "y": 2014, "s": "N", "id": "2014-whiplash", "c": 87 },
   { "t": "Spotlight", "y": 2015, "s": "W", "id": "2015-spotlight", "c": 88 },
@@ -1069,20 +1069,20 @@ const FILMS = [
   { "t": "District 9", "y": 2009, "s": "N", "id": "2009-district-9", "c": 82 },
   { "t": "127 Hours", "y": 2010, "s": "N", "id": "2010-127-hours", "c": 83 },
   { "t": "The Social Network", "y": 2010, "s": "N", "id": "2010-the-social-network", "c": 83 },
-  { "t": "Hugo", "y": 2011, "s": "N", "id": "2011-hugo", "c": 84 },
+  { "t": "Born on the Fourth of July", "y": 1989, "s": "N", "id": "1989-born-on-the-fourth-of-july", "c": 62 },
   { "t": "Moneyball", "y": 2011, "s": "N", "id": "2011-moneyball", "c": 84 },
   { "t": "Dallas Buyers Club", "y": 2013, "s": "N", "id": "2013-dallas-buyers-club", "c": 86 },
   { "t": "Her", "y": 2013, "s": "N", "id": "2013-her", "c": 86 },
   { "t": "Captain Phillips", "y": 2013, "s": "N", "id": "2013-captain-phillips", "c": 86 },
   { "t": "The Grand Budapest Hotel", "y": 2014, "s": "N", "id": "2014-the-grand-budapest-hotel", "c": 87 },
-  { "t": "The Martian", "y": 2015, "s": "N", "id": "2015-the-martian", "c": 88 },
+  { "t": "Munich", "y": 2005, "s": "N", "id": "2005-munich", "c": 78 },
   { "t": "La La Land", "y": 2016, "s": "N", "id": "2016-la-la-land", "c": 89 },
   { "t": "BlacKkKlansman", "y": 2018, "s": "N", "id": "2018-blackkklansman", "c": 91 },
-  { "t": "Bohemian Rhapsody", "y": 2018, "s": "N", "id": "2018-bohemian-rhapsody", "c": 91 },
+  { "t": "Gone Girl", "y": 2014, "s": "H", "id": "2014-gone-girl" },
   { "t": "Nightmare Alley", "y": 2021, "s": "N", "id": "2021-nightmare-alley", "c": 94 },
   { "t": "Maestro", "y": 2023, "s": "N", "id": "2023-maestro", "c": 96 },
   { "t": "American Sniper", "y": 2014, "s": "N", "id": "2014-american-sniper", "c": 87 },
-  { "t": "Silver Linings Playbook", "y": 2012, "s": "N", "id": "2012-silver-linings-playbook", "c": 85 },
+  { "t": "The Insider", "y": 1999, "s": "N", "id": "1999-the-insider", "c": 72 },
   { "t": "F1", "y": 2025, "s": "N", "id": "2025-f1", "c": 98 },
   { "t": "True Romance", "y": 1993, "s": "H", "id": "1993-true-romance" },
   { "t": "Sinners", "y": 2025, "s": "N", "id": "2025-sinners", "c": 98 }
@@ -1100,8 +1100,9 @@ const LOCAL_LEGACY_IDS = ["1927-wings","1929-the-broadway-melody","1930-hell-s-a
 const KUVERT_CONFIG = {
   name: "Kuvert",
   subtitle: "Best Picture winners, nominees and honorable mentions, drawn at random",
-  catalogue: "kuvert-2026-09-expanded-v5",
+  catalogue: "kuvert-2026-09-expanded-v6",
   olderCatalogues: [
+    "kuvert-2026-09-expanded-v5",
     "kuvert-2026-09-expanded-v4",
     "kuvert-2026-09-expanded-v3",
     "kuvert-2026-09-hm-v2",
@@ -1118,6 +1119,13 @@ const KUVERT_CONFIG = {
   // The dala horse, seal and ticket take their colors from the palette.
   palette: "kuvert",
 };
+const RETIRED_FILM_IDS = new Set([
+  "2011-hugo",
+  "2012-silver-linings-playbook",
+  "2015-the-martian",
+  "2018-bohemian-rhapsody",
+  "2013-the-wolf-of-wall-street",
+]);
 
 // Named palettes for imported lists. The dala horse silhouette stays the same in every one.
 const PALETTES = {
@@ -2762,7 +2770,7 @@ function decodeLegacy(code, legacyIds = LEGACY_IDS) {
   if (n >= 1n << BigInt(legacyIds.length))
     throw Error("The legacy code is too long for the original catalogue.");
   const bits = n.toString(2).padStart(legacyIds.length, "0");
-  return new Set(legacyIds.filter((_, i) => bits[i] === "1"));
+  return new Set(legacyIds.filter((id, i) => bits[i] === "1" && !RETIRED_FILM_IDS.has(id)));
 }
 function parseCode(code, legacyIds = null) {
   if (typeof code !== "string" || code.length > 1000000) throw Error("Invalid progress code.");
@@ -2781,6 +2789,25 @@ function parseCode(code, legacyIds = null) {
   );
   return validateProgress(obj);
 }
+// Older built-in progress may still mention films removed from the catalogue.
+// Keep every other ID subject to the existing strict backup validation.
+function withoutRetiredFilms(d, legacyIds = null) {
+  const keep = (id) => !RETIRED_FILM_IDS.has(legacyIds && /^\d+$/.test(String(id)) ? legacyIds[Number(id)] : id);
+  const clean = { ...d };
+  for (const key of ["seen", "skipped", "recent", "rankings", "shelf"])
+    if (Array.isArray(d[key])) clean[key] = d[key].filter(keep);
+  for (const key of ["dates", "reviews", "moods", "runtimes", "verdicts", "lbx", "matches", "posterPaths", "moodSuggestions"])
+    if (plainObject(d[key])) clean[key] = Object.fromEntries(Object.entries(d[key]).filter(([id]) => keep(id)));
+  if (plainObject(d.snubs))
+    clean.snubs = Object.fromEntries(
+      Object.entries(d.snubs).filter(([id]) => keep(id)).map(([id, pick]) => [id, keep(pick) ? pick : "other"]),
+    );
+  if (!keep(d.current)) {
+    clean.current = null;
+    clean.drawnOn = null;
+  }
+  return clean;
+}
 function validateProgress(d, { browserLegacy = false, legacyIds = LOCAL_LEGACY_IDS } = {}) {
   if (!d || typeof d !== "object" || Array.isArray(d)) throw Error("This is not a progress file.");
   const modern = d.app === "kuvert" && [4, 5, 6, 7].includes(d.v);
@@ -2792,6 +2819,7 @@ function validateProgress(d, { browserLegacy = false, legacyIds = LOCAL_LEGACY_I
         ? "This backup belongs to a different movie list. Switch lists in Settings first."
         : "This backup uses a different catalogue version.",
     );
+  if (!LIST.custom && (legacy || d.catalogue !== CATALOGUE)) d = withoutRetiredFilms(d, legacy ? legacyIds : null);
   let marks;
   if (Array.isArray(d.seen))
     marks = d.seen.map((id) => {

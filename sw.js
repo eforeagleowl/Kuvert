@@ -1,7 +1,7 @@
 // Kuvert service worker: keeps the app usable offline.
 // The page itself is fetched fresh when online (so updates arrive right away) and
 // falls back to the cached copy offline. TMDB and GitHub requests are never cached.
-const CACHE = "kuvert-1c8e9005cf";
+const CACHE = "kuvert-c880bbe62a";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

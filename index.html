@@ -983,7 +983,7 @@ const FILMS = [
   { "t": "Zero Dark Thirty", "y": 2012, "s": "N", "id": "2012-zero-dark-thirty", "c": 85 },
   { "t": "Django Unchained", "y": 2012, "s": "N", "id": "2012-django-unchained", "c": 85 },
   { "t": "12 Years a Slave", "y": 2013, "s": "W", "id": "2013-12-years-a-slave", "c": 86 },
-  { "t": "The Wolf of Wall Street", "y": 2013, "s": "N", "id": "2013-the-wolf-of-wall-street", "c": 86 },
+  { "t": "Born on the Fourth of July", "y": 1989, "s": "N", "id": "1989-born-on-the-fourth-of-july", "c": 62 },
   { "t": "Birdman or (The Unexpected Virtue of Ignorance)", "y": 2014, "s": "W", "id": "2014-birdman-or-the-unexpected-virtue-of-ignorance", "c": 87 },
   { "t": "Whiplash", "y": 2014, "s": "N", "id": "2014-whiplash", "c": 87 },
   { "t": "Spotlight", "y": 2015, "s": "W", "id": "2015-spotlight", "c": 88 },
@@ -1072,20 +1072,20 @@ const FILMS = [
   { "t": "District 9", "y": 2009, "s": "N", "id": "2009-district-9", "c": 82 },
   { "t": "127 Hours", "y": 2010, "s": "N", "id": "2010-127-hours", "c": 83 },
   { "t": "The Social Network", "y": 2010, "s": "N", "id": "2010-the-social-network", "c": 83 },
-  { "t": "Hugo", "y": 2011, "s": "N", "id": "2011-hugo", "c": 84 },
+  { "t": "The Insider", "y": 1999, "s": "N", "id": "1999-the-insider", "c": 72 },
   { "t": "Moneyball", "y": 2011, "s": "N", "id": "2011-moneyball", "c": 84 },
   { "t": "Dallas Buyers Club", "y": 2013, "s": "N", "id": "2013-dallas-buyers-club", "c": 86 },
   { "t": "Her", "y": 2013, "s": "N", "id": "2013-her", "c": 86 },
   { "t": "Captain Phillips", "y": 2013, "s": "N", "id": "2013-captain-phillips", "c": 86 },
   { "t": "The Grand Budapest Hotel", "y": 2014, "s": "N", "id": "2014-the-grand-budapest-hotel", "c": 87 },
-  { "t": "The Martian", "y": 2015, "s": "N", "id": "2015-the-martian", "c": 88 },
+  { "t": "Munich", "y": 2005, "s": "N", "id": "2005-munich", "c": 78 },
   { "t": "La La Land", "y": 2016, "s": "N", "id": "2016-la-la-land", "c": 89 },
   { "t": "BlacKkKlansman", "y": 2018, "s": "N", "id": "2018-blackkklansman", "c": 91 },
-  { "t": "Bohemian Rhapsody", "y": 2018, "s": "N", "id": "2018-bohemian-rhapsody", "c": 91 },
+  { "t": "Gone Girl", "y": 2014, "s": "H", "id": "2014-gone-girl" },
   { "t": "Nightmare Alley", "y": 2021, "s": "N", "id": "2021-nightmare-alley", "c": 94 },
   { "t": "Maestro", "y": 2023, "s": "N", "id": "2023-maestro", "c": 96 },
   { "t": "American Sniper", "y": 2014, "s": "N", "id": "2014-american-sniper", "c": 87 },
-  { "t": "Silver Linings Playbook", "y": 2012, "s": "N", "id": "2012-silver-linings-playbook", "c": 85 },
+  { "t": "Boogie Nights", "y": 1997, "s": "H", "id": "1997-boogie-nights" },
   { "t": "F1", "y": 2025, "s": "N", "id": "2025-f1", "c": 98 },
   { "t": "True Romance", "y": 1993, "s": "H", "id": "1993-true-romance" },
   { "t": "Sinners", "y": 2025, "s": "N", "id": "2025-sinners", "c": 98 }
@@ -1103,14 +1103,17 @@ const LOCAL_LEGACY_IDS = ["1927-wings","1929-the-broadway-melody","1930-hell-s-a
 const KUVERT_CONFIG = {
   name: "Kuvert",
   subtitle: "Best Picture winners, nominees and honorable mentions, drawn at random",
-  catalogue: "kuvert-2026-09-expanded-v5",
+  catalogue: "kuvert-2026-09-expanded-v6",
   olderCatalogues: [
+    "kuvert-2026-09-expanded-v5",
     "kuvert-2026-09-expanded-v4",
     "kuvert-2026-09-expanded-v3",
     "kuvert-2026-09-hm-v2",
     "kuvert-2026-09-v1",
   ],
   storageKey: "kuvert:v4",
+  // Films taken off the list. Older saves and backups quietly drop them.
+  retired: ["2013-the-wolf-of-wall-street", "2011-hugo", "2015-the-martian", "2018-bohemian-rhapsody", "2012-silver-linings-playbook"],
   series: { gf: "The Godfather", lotr: "The Lord of the Rings", dune: "Dune" },
   // Award shelves. A list without shelves hides the Won/Nom/HM chips, filters and stats.
   shelves: {
@@ -2792,8 +2795,24 @@ function parseCode(code, legacyIds = null) {
   );
   return validateProgress(obj);
 }
+// Removes every mention of a retired film from saved progress (watched, dates, stars, ranking…).
+const RETIRED = new Set(LIST.custom ? [] : KUVERT_CONFIG.retired || []);
+function dropRetired(v, depth = 0) {
+  if (!RETIRED.size || depth > 6 || !v || typeof v !== "object") return v;
+  if (Array.isArray(v)) return v.filter((x) => !(typeof x === "string" && RETIRED.has(x))).map((x) => dropRetired(x, depth + 1));
+  const out = {};
+  for (const [k, x] of Object.entries(v)) {
+    if (RETIRED.has(k) || (typeof x === "string" && RETIRED.has(x))) continue;
+    out[k] = dropRetired(x, depth + 1);
+  }
+  return out;
+}
 function validateProgress(d, { browserLegacy = false, legacyIds = LOCAL_LEGACY_IDS } = {}) {
   if (!d || typeof d !== "object" || Array.isArray(d)) throw Error("This is not a progress file.");
+  if (RETIRED.size && d.catalogue !== CATALOGUE) {
+    const current = RETIRED.has(d.current) ? null : d.current;
+    d = { ...dropRetired(d), current, catalogue: d.catalogue };
+  }
   const modern = d.app === "kuvert" && [4, 5, 6, 7].includes(d.v);
   const legacy = (d.app === "envelope" && [1, 2, 3].includes(d.v)) || (browserLegacy && !d.app && !d.v);
   if (!modern && !legacy) throw Error("Unsupported progress file or version.");
@@ -2812,8 +2831,8 @@ function validateProgress(d, { browserLegacy = false, legacyIds = LOCAL_LEGACY_I
       }
       if (typeof id !== "string" || !IDS.has(id)) throw Error("Unknown film in backup.");
       return id;
-    });
-  else if (legacy && typeof d.code === "string") marks = [...decodeLegacy(d.code, legacyIds)];
+    }).filter((id) => !RETIRED.has(id));
+  else if (legacy && typeof d.code === "string") marks = [...decodeLegacy(d.code, legacyIds)].filter((id) => !RETIRED.has(id));
   else throw Error("The backup is missing watched films.");
   const importedSeen = new Set(marks),
     importedDates = {};
@@ -2822,6 +2841,7 @@ function validateProgress(d, { browserLegacy = false, legacyIds = LOCAL_LEGACY_I
       throw Error("Invalid watch dates.");
     for (const [key, value] of Object.entries(d.dates)) {
       const id = legacy && /^\d+$/.test(key) ? legacyIds[Number(key)] : key;
+      if (RETIRED.has(id)) continue;
       if (!IDS.has(id) || !importedSeen.has(id) || !validDate(value))
         throw Error("Invalid watch date in backup.");
       importedDates[id] = value;

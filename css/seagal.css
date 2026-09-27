@@ -94,10 +94,17 @@
     fill: var(--brass);
     filter: drop-shadow(0 0 6px rgb(226 71 59 / 0.6));
   }
-  /* The wide face doesn't fit "targets neutralized" beside the name on a phone: just the count. */
+  /* The wide face doesn't fit "targets neutralized" beside the name on a phone: just the count on
+     screen, the whole line for screen readers. */
   @media (max-width: 520px) {
     html[data-mode="seagal"] .tally-word {
-      display: none;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
     }
   }
   html[data-mode="seagal"] .brand-name {

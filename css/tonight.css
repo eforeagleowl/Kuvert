@@ -200,7 +200,7 @@
     border-radius: 12px;
     background: var(--paper);
     color: var(--ink);
-    font: italic 500 1.05rem / 1 var(--font-display);
+    font: italic 500 1.15rem / 1 var(--font-display);
     white-space: nowrap;
     box-shadow: var(--shadow-2);
     transform: translateX(-50%);
@@ -804,7 +804,7 @@
   }
   .t-oscar {
     color: var(--ink-2);
-    font: italic 500 1.12rem / 1.35 var(--font-display);
+    font: italic 500 1.25rem / 1.3 var(--font-display);
   }
   .t-facts {
     color: var(--ink-2);
@@ -832,7 +832,7 @@
   .t-intermission b {
     margin-right: 6px;
     color: var(--stamp);
-    font: italic 600 1rem var(--font-display);
+    font: italic 600 1.12rem var(--font-display);
   }
   .t-moods {
     display: flex;
@@ -929,6 +929,19 @@
   @container ticket (width < 520px) {
     .t-stub {
       display: none;
+    }
+    /* Narrow: the name and number keep one line each, and the streak holes get a row of their own. */
+    .t-head {
+      flex-wrap: wrap;
+      row-gap: 10px;
+    }
+    .t-brand,
+    .t-no {
+      white-space: nowrap;
+    }
+    .punches {
+      order: 3;
+      flex-basis: 100%;
     }
     .t-body {
       grid-template-columns: clamp(84px, 28cqi, 120px) minmax(0, 1fr);
@@ -1125,7 +1138,7 @@
     padding: 4px 0 4px 12px;
     border-left: 2px solid var(--paper-line);
     color: var(--ink-2);
-    font: italic 500 1.05rem / 1.4 var(--font-display);
+    font: italic 500 1.2rem / 1.35 var(--font-display);
   }
   .t-actions {
     display: flex;
@@ -1174,7 +1187,7 @@
   }
   .t-tagline {
     color: var(--ink);
-    font: italic 500 1.2rem / 1.3 var(--font-display);
+    font: italic 500 1.3rem / 1.3 var(--font-display);
   }
 
   /* The last ticket: every film watched. */
@@ -1333,7 +1346,7 @@
     font-size: var(--fs-2);
   }
   .sleepy-note span {
-    font: italic 600 1rem var(--font-display);
+    font: italic 600 1.12rem var(--font-display);
     color: var(--paper);
   }
   .prefs {

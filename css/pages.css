@@ -58,7 +58,7 @@
   .tally .cheer {
     margin-left: 8px;
     color: var(--brass);
-    font: italic 600 1.05rem var(--font-display);
+    font: italic 600 1.15rem var(--font-display);
   }
   .tabs {
     display: flex;
@@ -1215,7 +1215,7 @@
   /* A real italic (Geist has none, so the browser would slant it): the display face's. */
   .secret-door .link {
     color: var(--faint);
-    font: italic 500 var(--fs-4) var(--font-display);
+    font: italic 500 1.2rem var(--font-display);
   }
 
   .site-footer {
@@ -1274,7 +1274,7 @@
   }
   .rail-head span {
     color: var(--brass);
-    font: italic 600 1.05rem var(--font-display);
+    font: italic 600 1.15rem var(--font-display);
     letter-spacing: 0;
     text-transform: none;
   }

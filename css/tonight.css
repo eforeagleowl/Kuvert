@@ -605,6 +605,7 @@
   .stage[data-state="open"] .env-flap {
     --flap: -178deg;
   }
+  .stage.cracked .seal,
   .stage.flap-open .seal,
   .stage[data-state="open"] .seal {
     visibility: hidden;

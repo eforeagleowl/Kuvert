@@ -20,7 +20,19 @@ test("the draw: seal, dial and ticket, with the full animation", async () => {
   await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
   await context.addInitScript(() => localStorage.setItem("kuvert:welcomed", "1"));
   const page = await openPage(context, "/");
+  // Every frame while the halves of the seal fly: is the whole seal still showing underneath?
+  await page.evaluate(() => {
+    window.__sealFrames = [];
+    const tick = () => {
+      if (document.querySelector(".seal-half")) window.__sealFrames.push(getComputedStyle(document.getElementById("seal")).visibility);
+      if (window.__sealFrames.length < 40) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
   await page.click("#drawBtn");
+  await page.waitForFunction(() => window.__sealFrames.length >= 5);
+  const sealFrames = await page.evaluate(() => window.__sealFrames);
+  assert.ok(sealFrames.every((v) => v === "hidden"), "the seal breaks: no whole seal under the flying halves");
   // Mid-draw the dial rolls; afterwards it shows the film's year.
   await page.waitForSelector("#ticket:not([hidden])", { timeout: 6000 });
   await page.waitForFunction(() => !window.kuvert.app.stage.busy, null, { timeout: 6000 });

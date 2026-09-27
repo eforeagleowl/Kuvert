@@ -9,7 +9,7 @@ import { MOODS } from "../data/catalogue.js";
 import { DEFAULT_SETTINGS, AVAILABILITY_TTL, DIRECTORY_TTL, validTime, finishDeadlineFor, getUnits, pickUnit, nextSeriesPart, moodsFor } from "./draw.js";
 import { defaultWatchDate } from "./dates.js";
 import { earnedIds, computeMilestones, ratingOf, watchedFilms } from "./stats.js";
-import { emptyProgress, cloneProgress, keepLocal, replace, bySync } from "./merge.js";
+import { emptyProgress, keepLocal, replace, bySync } from "./merge.js";
 
 const FILTERS = ["unseen", "all", "skipped", "recent", "missing", "shelf"];
 const WALL_SORTS = ["recent", "rank", "stars", "year"];
@@ -174,15 +174,16 @@ export class Store extends EventTarget {
     this.revision++;
     this.p.saved = this.now().toISOString();
     this.dirty = !this.persist();
-    this.emit(kind);
+    this.emit(kind, true);
   }
   // Settings and caches: saved, but not a change to your progress (no new revision for backups or sync).
   saveQuiet(kind = "settings") {
     this.persist();
     this.emit(kind);
   }
-  emit(kind) {
-    this.dispatchEvent(new CustomEvent("change", { detail: { kind } }));
+  // `saved`: progress changed (a new revision), so backups and sync should follow.
+  emit(kind, saved = false) {
+    this.dispatchEvent(new CustomEvent("change", { detail: { kind, saved } }));
   }
 
   touch(...keys) {

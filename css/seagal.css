@@ -19,9 +19,9 @@
     --r-1: 0px;
     --r-2: 0px;
     --r-3: 0px;
-    --font-display: "Michroma", "Arial Black", sans-serif;
-    --font-ui: "Michroma", "Arial Black", sans-serif;
-    --font-mono: "Michroma", "Arial Black", sans-serif;
+    --font-display: "Michroma", "Noto Sans Symbols 2", "Arial Black", sans-serif;
+    --font-ui: "Michroma", "Noto Sans Symbols 2", "Arial Black", sans-serif;
+    --font-mono: "Michroma", "Noto Sans Symbols 2", "Arial Black", sans-serif;
   }
   html[data-mode="seagal"] :is(*, *::before, *::after) {
     font-family: var(--font-display) !important;
@@ -223,7 +223,11 @@
     top: 22px;
     color: color-mix(in oklab, var(--ink) 80%, transparent);
     font-size: 10px;
-    text-shadow: none;
+    text-shadow: none;    transition: top var(--resize);
+  }
+  /* Opened, the file is a narrow band: the case number moves up clear of the name. */
+  html[data-mode="seagal"] .stage[data-state="open"] .case-no {
+    top: 8px;
   }
   .case-flag {
     position: absolute;

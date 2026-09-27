@@ -144,7 +144,7 @@
       min-height: 52px;
       padding: 0;
       border-radius: var(--r-2);
-      font-size: 11px;
+      font-size: 12px;
     }
     .tabbar a .icon {
       width: 22px;
@@ -538,7 +538,7 @@
   }
   .wall-year {
     color: var(--faint);
-    font: 500 11px var(--font-mono);
+    font: 500 12px var(--font-mono);
   }
 
   /* ---------------------------------------------------------------- stats */
@@ -896,7 +896,7 @@
   }
   .heat-months span {
     color: var(--faint);
-    font-size: 10px;
+    font-size: 12px;
     white-space: nowrap;
   }
   .heat-week {
@@ -931,7 +931,7 @@
     align-items: center;
     gap: 4px;
     color: var(--faint);
-    font-size: 11px;
+    font-size: 12px;
   }
   .heat-legend i {
     width: 11px;
@@ -1212,10 +1212,10 @@
   .secret-door {
     text-align: right;
   }
+  /* A real italic (Geist has none, so the browser would slant it): the display face's. */
   .secret-door .link {
     color: var(--faint);
-    font-size: var(--fs-2);
-    font-style: italic;
+    font: italic 500 var(--fs-4) var(--font-display);
   }
 
   .site-footer {
@@ -1313,7 +1313,7 @@
   }
   .stub small {
     color: var(--ink-3);
-    font: 500 10.5px var(--font-mono);
+    font: 500 12px var(--font-mono);
   }
   .stub .stub-stars {
     color: var(--stamp);
@@ -1334,7 +1334,7 @@
     border: 0;
     background: none;
     color: var(--muted);
-    font: 500 11.5px var(--font-mono);
+    font: 500 12px var(--font-mono);
     text-align: left;
   }
   .dec-row:hover {

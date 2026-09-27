@@ -243,51 +243,128 @@ test("group night: add a friend's code, and the draw only picks films neither of
   await context.close();
 });
 
-test("opening and closing the envelope moves smoothly: no flash, no sideways slide, no scroll snap", async () => {
+test("closing in the middle of a draw finishes the draw, then closes cleanly", async () => {
+  const context = await env.browser.newContext({ serviceWorkers: "block", reducedMotion: "no-preference" });
+  await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
+  await context.addInitScript(() => localStorage.setItem("kuvert:welcomed", "1"));
+  const page = await openPage(context, "/");
+  const closed = () =>
+    page.waitForFunction(() => {
+      const s = window.kuvert.app.stage;
+      return !s.busy && !s.open && document.getElementById("ticket").hidden && !document.getElementById("ticket").getAnimations().length && !document.getElementById("envelope").getAnimations().length;
+    }, null, { timeout: 8000 });
+  // While the ticket is still coming out.
+  await page.click("#drawBtn");
+  await page.waitForSelector("#ticket:not([hidden])");
+  await page.evaluate(() => window.kuvert.app.stage.close());
+  await closed();
+  // While drawing again.
+  await page.click("#drawBtn");
+  await page.waitForFunction(() => !window.kuvert.app.stage.busy && window.kuvert.app.stage.open, null, { timeout: 8000 });
+  await page.click("#againBtn");
+  await page.waitForTimeout(200);
+  await page.evaluate(() => window.kuvert.app.stage.close());
+  await closed();
+  assert.equal(await page.getAttribute("#stage", "data-state"), "closed");
+  assert.deepEqual(await problems(page), []);
+  await context.close();
+});
+
+test("the envelope moves smoothly: the ticket comes out from under it, never over it, and nothing jumps", async () => {
   for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 }]) {
     const context = await env.browser.newContext({ serviceWorkers: "block", reducedMotion: "no-preference", viewport });
     await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
     await context.addInitScript(() => localStorage.setItem("kuvert:welcomed", "1"));
     const page = await openPage(context, "/");
-    // Every frame: where the ticket and envelope are on screen, the scroll position and page height.
+    // Every frame: where the ticket, the envelope and its flap are on screen, how much of the ticket is
+    // cut off at the top, the scroll position and the page height.
     await page.evaluate(() => {
       window.__frames = [];
       const tick = () => {
         const t = document.getElementById("ticket"),
-          e = document.getElementById("envelope").getBoundingClientRect();
-        const r = t.getBoundingClientRect();
-        window.__frames.push({ hidden: t.hidden, tTop: r.top, tH: r.height, eLeft: e.left, eW: e.width, sy: scrollY, docH: document.documentElement.scrollHeight });
+          e = document.getElementById("envelope").getBoundingClientRect(),
+          flap = document.querySelector(".env-flap");
+        const r = t.getBoundingClientRect(),
+          cs = getComputedStyle(t),
+          cut = cs.clipPath.startsWith("inset(") ? parseFloat(cs.clipPath.slice(6)) : null;
+        window.__frames.push({
+          hidden: t.hidden,
+          tTop: r.top,
+          tH: r.height,
+          // The first row of the ticket that shows (it's cut off above that while it moves).
+          shows: cut === null ? null : r.top + cut * (r.width / t.offsetWidth || 1),
+          opacity: +cs.opacity,
+          eTop: e.top,
+          eBottom: e.bottom,
+          eLeft: e.left,
+          eW: e.width,
+          flapTop: flap.getBoundingClientRect().top,
+          flapOpacity: +getComputedStyle(flap).opacity,
+          sy: scrollY,
+          docH: document.documentElement.scrollHeight,
+        });
         requestAnimationFrame(tick);
       };
       requestAnimationFrame(tick);
     });
     const take = () => page.evaluate(() => window.__frames.splice(0));
-    const W = viewport.width;
+    // Done: nothing left moving on the ticket or the envelope (the dial and the horse never stop).
+    const settled = (open = true) =>
+      page.waitForFunction(
+        (open) => !window.kuvert.app.stage.busy && document.getElementById("ticket").hidden === !open && ["ticket", "envelope"].every((id) => !document.getElementById(id).getAnimations().length),
+        open,
+        { timeout: 8000 },
+      );
+    const W = viewport.width,
+      at = `(${W}px wide)`;
+    const neverOver = (frames, what) => {
+      const moving = frames.filter((f) => !f.hidden && f.shows !== null);
+      assert.ok(moving.length > 5, what + ": the ticket's move was recorded " + at);
+      for (const f of moving) assert.ok(f.shows >= f.eBottom - 1, `${what}: no part of the ticket shows above the envelope's lower edge ${at}`);
+      for (const f of frames) assert.equal(f.opacity, 1, `${what}: the ticket is never dimmed ${at}`);
+    };
 
     await take();
     await page.click("#drawBtn");
-    await page.waitForFunction(() => !window.kuvert.app.stage.busy && !document.getElementById("ticket").hidden, null, { timeout: 8000 });
-    await page.waitForTimeout(300);
-    const finalH = await page.evaluate(() => document.getElementById("ticket").getBoundingClientRect().height);
-    const opening = (await take()).filter((f) => !f.hidden);
-    assert.ok(opening.length > 10, "the rise was recorded");
-    assert.ok(opening[0].tH < finalH * 0.95, "the ticket's first frame is small, inside the envelope, not already in place");
-    for (const f of opening) assert.ok(Math.abs(f.eLeft - (W - f.eW) / 2) <= 1.5, `the envelope stays centred (${W}px wide)`);
-    for (let i = 1; i < opening.length; i++) assert.ok(opening[i].tTop <= opening[i - 1].tTop + 1, "the ticket only ever rises");
+    await settled();
+    const opening = await take();
+    const out = opening.filter((f) => !f.hidden);
+    const finalH = out.at(-1).tH;
+    assert.ok(out[0].tH < finalH * 0.95, "the ticket starts small, inside the envelope " + at);
+    for (let i = 1; i < out.length; i++) assert.ok(out[i].tTop >= out[i - 1].tTop - 1, "the ticket only ever comes down, out of the envelope " + at);
+    for (const f of opening) assert.ok(Math.abs(f.eLeft - (W - f.eW) / 2) <= 1.5, "the envelope stays centred " + at);
+    for (const f of opening) if (f.flapOpacity > 0.05) assert.ok(f.flapTop >= f.eTop - 2, "the flap never folds up over the dial " + at);
+    neverOver(opening, "opening");
+    // Finished: the ticket's top edge stays tucked under the envelope, which is in front of it.
+    const tucked = await page.evaluate(() => {
+      const e = document.getElementById("envelope").getBoundingClientRect(),
+        t = document.getElementById("ticket").getBoundingClientRect();
+      return { overlap: e.bottom - t.top, front: document.getElementById("envelope").contains(document.elementFromPoint(t.left + t.width / 2, e.bottom - 3)) };
+    });
+    assert.ok(tucked.overlap > 4 && tucked.front, "the ticket's top edge is tucked under the envelope " + at);
+
+    // Draw again: the ticket goes back in and the next one comes out.
+    await take();
+    await page.click("#againBtn");
+    await settled();
+    neverOver(await take(), "draw again");
 
     // Scrolled down to the ticket's buttons, then closed (as Done does, with no scrolling first).
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
     await page.waitForTimeout(150);
     await take();
     await page.evaluate(() => window.kuvert.app.stage.close());
-    await page.waitForTimeout(1300);
+    await settled(false);
     const closing = await take();
-    for (let i = 1; i < closing.length; i++) assert.ok(Math.abs(closing[i].sy - closing[i - 1].sy) < 60, "the view glides, it doesn't snap");
+    for (let i = 1; i < closing.length; i++) assert.ok(Math.abs(closing[i].sy - closing[i - 1].sy) < 60, "the view glides, it doesn't snap " + at);
+    neverOver(closing, "closing");
     const growing = closing.filter((f) => f.hidden);
-    assert.ok(growing.length > 5, "the envelope's return was recorded");
+    assert.ok(growing.length > 5, "the envelope's return was recorded " + at);
     for (const f of growing) {
-      assert.ok(Math.abs(f.eLeft - (W - f.eW) / 2) <= 1.5, "the envelope stays centred while it grows");
-      assert.equal(f.docH, growing.at(-1).docH, "the page keeps its height while the envelope grows");
+      assert.ok(Math.abs(f.eLeft - (W - f.eW) / 2) <= 1.5, "the envelope stays centred while it grows " + at);
+      assert.equal(f.sy, growing.at(-1).sy, "the view holds still while the envelope grows " + at);
+      assert.ok(f.sy + viewport.height <= f.docH + 1, "the page never gets too short for where you are, so the view never jumps " + at);
+      if (f.flapOpacity > 0.05) assert.ok(f.flapTop >= f.eTop - 2, "the flap comes down without rising over the dial " + at);
     }
     assert.deepEqual(await problems(page), []);
     await context.close();

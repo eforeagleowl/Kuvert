@@ -3,6 +3,7 @@ Fonts in this folder, each licensed under the SIL Open Font License, Version 1.1
 Cormorant Garamond: Copyright 2015 the Cormorant Project Authors (github.com/CatharsisFonts/Cormorant)
 Geist and Geist Mono: Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font.git)
 Michroma: Copyright 2011 The Michroma Project Authors (https://github.com/googlefonts/Michroma-font)
+Noto Sans Symbols 2 (a few symbols only): Copyright 2022 The Noto Project Authors (https://github.com/notofonts/symbols)
 
 The files are the Latin and Latin Extended subsets served by Google Fonts.
 

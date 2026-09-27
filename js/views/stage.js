@@ -93,6 +93,22 @@ export class Stage {
       };
     });
   }
+  // Resolves once nothing is animating on the stage (or after a few seconds, whatever happened).
+  idle() {
+    const end = performance.now() + 4000;
+    return new Promise((resolve) => {
+      const check = () => (!this.busy || performance.now() > end ? resolve() : requestAnimationFrame(check));
+      check();
+    });
+  }
+  // Resolves once a smooth scroll has arrived at `top`, or after a moment whatever happened.
+  arrived(top) {
+    const end = performance.now() + 800;
+    return new Promise((resolve) => {
+      const check = () => (Math.abs(scrollY - top) < 2 || performance.now() > end ? resolve() : requestAnimationFrame(check));
+      check();
+    });
+  }
   setOpen(open) {
     this.stageEl.dataset.state = open ? "open" : "closed";
     this.ticket.hidden = !open;
@@ -103,8 +119,8 @@ export class Stage {
   }
   /**
    * Resizes the envelope from the box it had (`before`) to the one it has now, smoothly. Its height
-   * animates with a matching bottom margin, so the room it takes in the page never changes and nothing
-   * below it moves; it stays centred as its width changes, so it never slides sideways.
+   * animates with a matching bottom margin, so the room it takes in the page never changes and the
+   * ticket under it stays put; it stays centred as its width changes, so it never slides sideways.
    */
   resizeEnvelope(before, { duration, easing }) {
     const env = $("envelope"),
@@ -118,6 +134,56 @@ export class Stage {
       { duration, easing },
     );
   }
+  // Where everything under the stage is, so it can glide when the stage changes size (see glideBelow).
+  below() {
+    const out = [];
+    for (let n = this.stageEl.nextElementSibling; n; n = n.nextElementSibling) out.push([n, n.offsetParent ? n.getBoundingClientRect().top : null]);
+    return out;
+  }
+  // Glides it there; anything that has just appeared fades in once the rest has arrived.
+  glideBelow(before, { duration, easing }) {
+    for (const [n, top] of before) {
+      if (!n.offsetParent) continue;
+      if (top === null) n.animate([{ opacity: 0 }, { opacity: 0, offset: 0.7 }, { opacity: 1 }], { duration: duration + 200 });
+      else {
+        const dy = top - n.getBoundingClientRect().top;
+        if (Math.abs(dy) > 0.5) n.animate([{ transform: `translateY(${dy}px)` }, { transform: "none" }], { duration, easing });
+      }
+    }
+  }
+  /**
+   * The ticket slides out from under the envelope's lower edge, as if pulled out of it. `from` is the
+   * envelope's box when it starts; it may be resizing at the same time, with the same timing, and the
+   * ticket is cut off exactly at its edge on every frame, so none of it ever shows above or on it.
+   */
+  slideOut(from, { duration, easing, scale = 1 }) {
+    const t = this.ticket.getBoundingClientRect(),
+      to = $("envelope").getBoundingClientRect(),
+      start = from.bottom - t.height * scale; // all of it still inside
+    const frames = [];
+    // The edge and the ticket move in step but the cut isn't linear in them, so it's set every twelfth.
+    for (let i = 0; i <= 12; i++) {
+      const p = i / 12,
+        edge = from.bottom + (to.bottom - from.bottom) * p,
+        s = scale + (1 - scale) * p,
+        top = start + (t.top - start) * p;
+      frames.push({ offset: p, transformOrigin: "50% 0", transform: `translateY(${top - t.top}px) scale(${s})`, clipPath: `inset(${Math.max(0, (edge - top) / s)}px -80px -100px)` });
+    }
+    return this.ticket.animate(frames, { duration, easing });
+  }
+  // The ticket slides back up under the envelope's lower edge until none of it shows, and stays there.
+  tuck({ duration, easing }) {
+    const t = this.ticket.getBoundingClientRect(),
+      edge = $("envelope").getBoundingClientRect().bottom,
+      dy = edge - t.height - t.top;
+    return this.ticket.animate(
+      [
+        { transform: "none", clipPath: `inset(${Math.max(0, edge - t.top)}px -80px -100px)` },
+        { transform: `translateY(${dy}px)`, clipPath: `inset(${t.height}px -80px -100px)` },
+      ],
+      { duration, easing, fill: "forwards" },
+    );
+  }
 
   /**
    * Opens the envelope on the ticket as it's painted now.
@@ -126,8 +192,7 @@ export class Stage {
   async openStage({ animate = true, roll = null, year = null }) {
     const quick = !animate || reduceMotion();
     if (this.open) {
-      if (roll && !quick) await this.shuffle(roll);
-      else this.nixie.show(year ?? roll ?? this.nixie.value);
+      this.nixie.show(year ?? roll ?? this.nixie.value);
       return;
     }
     if (quick) {
@@ -157,38 +222,48 @@ export class Stage {
       this.skipping = false;
     }
   }
-  // The ticket rises out of the envelope's mouth while the envelope settles into a pocket below it (FLIP).
+  // The envelope settles into a band while the ticket is pulled out from under it (FLIP).
   async rise() {
     const env = $("envelope"),
-      before = env.getBoundingClientRect();
+      before = env.getBoundingClientRect(),
+      below = this.below();
     this.setOpen(true);
     // Measured in the same frame as the change, so the finished layout is never painted first.
     const t = this.ticket.getBoundingClientRect();
-    const mouthX = before.left + before.width / 2,
-      mouthY = before.top + before.height * 0.35;
-    const dx = mouthX - (t.left + t.width / 2),
-      dy = mouthY - t.top;
-    const scale = Math.min(1, (before.width * 0.86) / t.width);
-    const ticket = this.ticket.animate(
-      [
-        { transform: `translate(${dx}px, ${dy}px) scale(${scale})`, clipPath: `inset(0 0 ${Math.max(0, t.height - before.height * 0.45)}px 0 round 4px)`, opacity: 0.2 },
-        { opacity: 1, offset: 0.2 },
-        { transform: "none", clipPath: "inset(0 0 0 0 round 4px)", opacity: 1 },
-      ],
-      { duration: this.skipping ? 1 : 900, easing: "cubic-bezier(0.18, 0.9, 0.22, 1.04)" },
-    );
-    const envelope = this.resizeEnvelope(before, { duration: this.skipping ? 1 : 760, easing: "cubic-bezier(0.3, 0.7, 0.2, 1)" });
+    // A longer ticket has further to come, so it takes a little longer.
+    const travel = t.bottom - before.bottom,
+      timing = { duration: this.skipping ? 1 : Math.round(Math.min(1250, 700 + travel * 0.45)), easing: "cubic-bezier(0.5, 0, 0.15, 1)" };
+    const ticket = this.slideOut(before, { ...timing, scale: Math.min(1, (before.width * 0.92) / t.width) });
+    const envelope = this.resizeEnvelope(before, timing);
+    this.glideBelow(below, timing);
     await Promise.allSettled([ticket.finished, envelope.finished]);
   }
-  // Draw again with the ticket out: it dips into the envelope and comes back as another film.
-  async shuffle(year) {
+  /**
+   * Draw again with the ticket out: it slips back into the envelope, the dial rolls, and the next film
+   * comes out. `paint` puts the new film on the ticket, while it's out of sight.
+   */
+  async swap(year, paint) {
     this.busy = true;
     this.skipping = false;
+    $("drawBtn").classList.add("busy");
     try {
-      const dip = this.ticket.animate([{ transform: "none" }, { transform: "translateY(38px) scale(0.97)", opacity: 0.4 }, { transform: "none" }], { duration: 560, easing: "ease-in-out" });
-      await Promise.all([this.nixie.roll(year, { duration: 1000 }), dip.finished.catch(() => {})]);
+      const rolled = this.nixie.roll(year, { duration: 1000 });
+      const tuck = this.tuck({ duration: 340, easing: "cubic-bezier(0.55, 0, 0.9, 0.4)" });
+      await tuck.finished.catch(() => {});
+      await this.pause(120);
+      const env = $("envelope").getBoundingClientRect(),
+        below = this.below();
+      paint();
+      // Painted and started in one go: the new ticket is never seen before it slides out.
+      tuck.cancel();
+      const timing = { duration: this.skipping ? 1 : 620, easing: "cubic-bezier(0.2, 0.75, 0.25, 1)" };
+      const out = this.slideOut(env, timing);
+      this.glideBelow(below, timing);
+      await Promise.allSettled([rolled, out.finished]);
     } finally {
+      $("drawBtn").classList.remove("busy");
       this.busy = false;
+      this.skipping = false;
     }
   }
   crackSeal() {
@@ -237,8 +312,28 @@ export class Stage {
         .finished.finally(() => crumb.remove());
     }
   }
-  /** Closes the envelope: the ticket slips back in, the flap comes down and the seal is pressed. */
+  /** Closes the envelope: the ticket slips back in, the envelope fills out, the flap comes down and the seal is pressed. */
   async close({ focus = true } = {}) {
+    // Mid-draw? Finish it at once, then close.
+    if (this.busy) {
+      this.skipAhead();
+      await this.idle();
+    }
+    const wasOpen = this.open,
+      animate = wasOpen && !reduceMotion();
+    let tucked = null;
+    if (wasOpen) this.app.play("close");
+    if (animate) {
+      this.busy = true;
+      // Scrolled down to the ticket's buttons? Glide back up to the envelope while the ticket goes in,
+      // so the page getting shorter never snaps the scroll position.
+      const top = Math.max(0, this.stageEl.getBoundingClientRect().top + scrollY - 88),
+        scrolling = scrollY > top + 2;
+      if (scrolling) window.scrollTo({ top, behavior: "smooth" });
+      tucked = this.tuck({ duration: 380, easing: "cubic-bezier(0.55, 0, 0.9, 0.4)" });
+      await Promise.all([tucked.finished.catch(() => {}), scrolling && this.arrived(top)]);
+      this.busy = false;
+    }
     this.clearStamp();
     this.clearInk();
     this.fresh = false;
@@ -247,28 +342,18 @@ export class Stage {
     this.finale = false;
     this.ticket.classList.remove("finale-ticket");
     $("finale").hidden = true;
-    const wasOpen = this.open;
-    if (wasOpen) this.app.play("close");
-    if (wasOpen && !reduceMotion()) {
-      const env = $("envelope");
-      // Scrolled down to the ticket's buttons? Glide back up to the envelope while the ticket goes in,
-      // so the page getting shorter never snaps the scroll position.
-      const top = Math.max(0, this.stageEl.getBoundingClientRect().top + scrollY - 88);
-      if (scrollY > top + 2) window.scrollTo({ top, behavior: "smooth" });
-      const t = this.ticket.getBoundingClientRect(),
-        e = env.getBoundingClientRect();
-      const slide = this.ticket.animate(
-        [{ transform: "none", opacity: 1 }, { transform: `translateY(${e.top - t.top + 20}px) scale(0.9)`, opacity: 0, clipPath: `inset(0 0 ${t.height * 0.7}px 0)` }],
-        { duration: 300, easing: "cubic-bezier(0.5, 0, 0.9, 0.5)", fill: "forwards" },
-      );
-      await slide.finished.catch(() => {});
-      const before = env.getBoundingClientRect();
+    if (animate) {
+      const before = $("envelope").getBoundingClientRect(),
+        below = this.below(),
+        timing = { duration: 520, easing: "cubic-bezier(0.3, 0.7, 0.2, 1)" };
       this.setOpen(false);
-      slide.cancel();
-      this.resizeEnvelope(before, { duration: 420, easing: "cubic-bezier(0.3, 0.7, 0.2, 1)" });
+      tucked.cancel();
+      // The flap folds down as the envelope fills out (a transition in css/tonight.css), then the seal.
+      this.resizeEnvelope(before, timing);
+      this.glideBelow(below, timing);
       $("seal").animate([{ transform: "translate(-50%, 0) scale(1.5)", opacity: 0 }, { transform: "translate(-50%, 0) scale(0.92)", opacity: 1, offset: 0.7 }, { transform: "translate(-50%, 0)" }], {
         duration: 360,
-        delay: 260,
+        delay: 380,
         easing: "cubic-bezier(0.3, 1.4, 0.6, 1)",
         fill: "backwards",
       });
@@ -304,21 +389,28 @@ export class Stage {
   async displayCurrent({ animate = true, roll = false } = {}) {
     const f = this.store.currentFilm;
     if (!f) return;
-    this.clearStamp();
-    this.clearFinale();
-    this.clearInk();
-    this.fresh = false;
-    this.setMode("tonight");
-    this.paintHead(f);
-    const [eyebrow, title] = this.eyebrowFor(f);
-    $("pickEyebrow").textContent = f.kind === "album" && this.app.seagal ? "Special assignment" : eyebrow;
-    $("pickEyebrow").title = title;
-    const parts = f.tri ? this.app.catalog.seriesParts(f.tri).length : 0;
-    setText("pickNote", f.tri ? this.app.catalog.series[f.tri] + " counts as one ticket and plays in order. Part " + f.ord + " of " + parts + "." : "");
-    $("moreDetails").open = false;
-    this.showInfo(f);
+    const paint = () => {
+      this.clearStamp();
+      this.clearFinale();
+      this.clearInk();
+      this.fresh = false;
+      this.setMode("tonight");
+      this.paintHead(f);
+      const [eyebrow, title] = this.eyebrowFor(f);
+      $("pickEyebrow").textContent = f.kind === "album" && this.app.seagal ? "Special assignment" : eyebrow;
+      $("pickEyebrow").title = title;
+      const parts = f.tri ? this.app.catalog.seriesParts(f.tri).length : 0;
+      setText("pickNote", f.tri ? this.app.catalog.series[f.tri] + " counts as one ticket and plays in order. Part " + f.ord + " of " + parts + "." : "");
+      $("moreDetails").open = false;
+      this.showInfo(f);
+    };
     this.app.announce("Tonight’s film: " + f.t + ", " + f.y);
-    await this.openStage({ animate, roll: roll ? f.y : null, year: f.y });
+    // Drawing again with the ticket out: the old ticket goes back in before the new film is painted.
+    if (animate && roll && this.open && !reduceMotion()) await this.swap(f.y, paint);
+    else {
+      paint();
+      await this.openStage({ animate, roll: roll ? f.y : null, year: f.y });
+    }
     if (animate) this.ticket.focus({ preventScroll: true });
     this.app.renderSoon();
   }

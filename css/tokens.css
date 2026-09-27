@@ -48,9 +48,9 @@
     --danger: #e3877c;
 
     /* Type: Cormorant Garamond for the big words, Geist for everything read, Geist Mono for print. */
-    --font-display: "Cormorant Garamond", "Cormorant", Garamond, "Times New Roman", serif;
-    --font-ui: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-    --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --font-display: "Cormorant Garamond", "Noto Sans Symbols 2", "Cormorant", Garamond, "Times New Roman", serif;
+    --font-ui: "Geist", "Noto Sans Symbols 2", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "Geist Mono", "Noto Sans Symbols 2", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
     --fs-1: 0.75rem;
     --fs-2: 0.8125rem;
     --fs-3: 0.9375rem;

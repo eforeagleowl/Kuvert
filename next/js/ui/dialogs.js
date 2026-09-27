@@ -382,6 +382,7 @@ export class Dialogs {
   lightbox(el) {
     if (!el.dataset.big) return;
     this.lightOpener = el.closest("button") || el;
+    $("lightImg").crossOrigin = "anonymous";
     $("lightImg").src = el.dataset.big;
     $("lightImg").alt = el.alt;
     $("lightbox").showModal();

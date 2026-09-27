@@ -741,6 +741,7 @@ export class Stage {
       return;
     }
     el.hidden = false;
+    el.crossOrigin = "anonymous";
     el.src = IMG + size + path;
     el.dataset.big = IMG + "original" + path;
     el.alt = label;

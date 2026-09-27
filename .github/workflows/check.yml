@@ -1,0 +1,29 @@
+# Runs the checks for the rebuild in /next/: the service worker stamp, the unit tests (the save
+# formats against fixtures recorded from the classic app) and the browser tests (both apps together).
+name: Check
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Service worker stamp is current
+        run: node tools/stamp.mjs --check
+      - name: Unit tests
+        run: npm test
+      - name: Browser tests
+        run: npm run test:e2e

@@ -51,7 +51,7 @@ export class Library {
     return span;
   }
   thumbImage(path) {
-    return h("img", { alt: "", loading: "lazy", decoding: "async", src: IMG + "w92" + path, on: { error: (e) => e.target.remove() } });
+    return h("img", { alt: "", loading: "lazy", decoding: "async", crossOrigin: "anonymous", src: IMG + "w92" + path, on: { error: (e) => e.target.remove() } });
   }
   // Rows fetch their poster when they scroll into view, two at a time, and stop after three failures.
   watchThumb(span) {
@@ -393,6 +393,7 @@ export class Library {
               alt: "",
               loading: "lazy",
               decoding: "async",
+              crossOrigin: "anonymous", // CORS, so the service worker may keep it for offline
               src: IMG + "w342" + path,
               on: {
                 error: (e) => {

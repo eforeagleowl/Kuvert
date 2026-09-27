@@ -268,7 +268,24 @@ render();
 if (loadError) app.toast.show(loadError);
 app.dialogs.resumePendingRestore();
 if (app.sync.on) app.settings.syncNow({ quiet: true });
-// Offline support and home-screen install when served from the web.
-if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register("sw.js").catch(() => {});
+// Offline support and home-screen install when served from the web. Trusted Types allows one script
+// URL on this page, through the one policy the CSP names: the worker's own file.
+if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+  try {
+    const policy = window.trustedTypes?.createPolicy("sw", {
+      createScriptURL: (url) => {
+        if (url !== "sw.js") throw new TypeError("Unexpected script URL: " + url);
+        return url;
+      },
+    });
+    navigator.serviceWorker.register(policy ? policy.createScriptURL("sw.js") : "sw.js").catch(() => {});
+    // A new version took over: say so once, with a reload at hand.
+    let hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!hadController) return (hadController = true);
+      app.toast.show("A new version of Kuvert is ready.", null, { action: { label: "Reload", run: () => location.reload() }, duration: 12000 });
+    });
+  } catch {}
+}
 // For tests and the curious: the app, read-only.
 Object.defineProperty(window, "kuvert", { value: Object.freeze({ app, version: "4.0", count: () => plural(store.p.seen.size, "film") }) });

@@ -1248,11 +1248,21 @@
       gap: var(--s-3);
       width: 176px;
     }
+    /* Out by the edges of the window, clear of the page in the middle. */
     .rail-left {
-      left: calc(50% - var(--content) / 2 - 196px);
+      left: 32px;
     }
     .rail-right {
-      right: calc(50% - var(--content) / 2 - 196px);
+      right: 32px;
+    }
+  }
+  /* Where the kurbits flowers line the edges, the rails sit just inside them. */
+  @media (min-width: 1680px) {
+    .rail-left {
+      left: 76px;
+    }
+    .rail-right {
+      right: 76px;
     }
   }
   .rail-head {

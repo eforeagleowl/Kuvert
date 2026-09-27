@@ -230,3 +230,54 @@ test("group night: add a friend's code, and the draw only picks films neither of
   assert.deepEqual(await problems(page), []);
   await context.close();
 });
+
+test("opening and closing the envelope moves smoothly: no flash, no sideways slide, no scroll snap", async () => {
+  for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 }]) {
+    const context = await env.browser.newContext({ serviceWorkers: "block", reducedMotion: "no-preference", viewport });
+    await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
+    await context.addInitScript(() => localStorage.setItem("kuvert:welcomed", "1"));
+    const page = await openPage(context, "/");
+    // Every frame: where the ticket and envelope are on screen, the scroll position and page height.
+    await page.evaluate(() => {
+      window.__frames = [];
+      const tick = () => {
+        const t = document.getElementById("ticket"),
+          e = document.getElementById("envelope").getBoundingClientRect();
+        const r = t.getBoundingClientRect();
+        window.__frames.push({ hidden: t.hidden, tTop: r.top, tH: r.height, eLeft: e.left, eW: e.width, sy: scrollY, docH: document.documentElement.scrollHeight });
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+    const take = () => page.evaluate(() => window.__frames.splice(0));
+    const W = viewport.width;
+
+    await take();
+    await page.click("#drawBtn");
+    await page.waitForFunction(() => !window.kuvert.app.stage.busy && !document.getElementById("ticket").hidden, null, { timeout: 8000 });
+    await page.waitForTimeout(300);
+    const finalH = await page.evaluate(() => document.getElementById("ticket").getBoundingClientRect().height);
+    const opening = (await take()).filter((f) => !f.hidden);
+    assert.ok(opening.length > 10, "the rise was recorded");
+    assert.ok(opening[0].tH < finalH * 0.95, "the ticket's first frame is small, inside the envelope, not already in place");
+    for (const f of opening) assert.ok(Math.abs(f.eLeft - (W - f.eW) / 2) <= 1.5, `the envelope stays centred (${W}px wide)`);
+    for (let i = 1; i < opening.length; i++) assert.ok(opening[i].tTop <= opening[i - 1].tTop + 1, "the ticket only ever rises");
+
+    // Scrolled down to the ticket's buttons, then closed (as Done does, with no scrolling first).
+    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForTimeout(150);
+    await take();
+    await page.evaluate(() => window.kuvert.app.stage.close());
+    await page.waitForTimeout(1300);
+    const closing = await take();
+    for (let i = 1; i < closing.length; i++) assert.ok(Math.abs(closing[i].sy - closing[i - 1].sy) < 60, "the view glides, it doesn't snap");
+    const growing = closing.filter((f) => f.hidden);
+    assert.ok(growing.length > 5, "the envelope's return was recorded");
+    for (const f of growing) {
+      assert.ok(Math.abs(f.eLeft - (W - f.eW) / 2) <= 1.5, "the envelope stays centred while it grows");
+      assert.equal(f.docH, growing.at(-1).docH, "the page keeps its height while the envelope grows");
+    }
+    assert.deepEqual(await problems(page), []);
+    await context.close();
+  }
+});

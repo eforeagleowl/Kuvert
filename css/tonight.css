@@ -610,7 +610,7 @@
     visibility: hidden;
   }
   .stage[data-state="open"] .envelope {
-    --w: min(640px, calc(100vw - 20px));
+    --w: min(640px, 100%); /* never wider than the page column, or it hangs off one side */
     height: 112px;
   }
   /* The ticket lies across the pocket's lower edge, as if just pulled out. */

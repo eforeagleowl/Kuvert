@@ -6,7 +6,7 @@
 // purpose: no libraries, and nothing but the app and its posters is ever cached.
 
 // <stamp> written by tools/stamp.mjs (npm run stamp); do not edit by hand.
-const VERSION = "1a8ef8e2d99c";
+const VERSION = "d821a49e7318";
 const FILES = [
   "./",
   "./assets/crowns.svg",
@@ -49,6 +49,7 @@ const FILES = [
   "./js/state/stats.js",
   "./js/state/store.js",
   "./js/storage/files.js",
+  "./js/storage/safekeeping.js",
   "./js/storage/sync.js",
   "./js/tmdb/client.js",
   "./js/ui/dialogs.js",

@@ -15,7 +15,8 @@ import { makeCatalog } from "./state/catalog.js";
 import { Store } from "./state/store.js";
 import { weekStreak, tallyNote, plural } from "./state/stats.js";
 import { Sync } from "./storage/sync.js";
-import { FileBackup } from "./storage/files.js";
+import { FileBackup, download } from "./storage/files.js";
+import { Safekeeping } from "./storage/safekeeping.js";
 import { Details } from "./tmdb/client.js";
 import { Stage } from "./views/stage.js";
 import { Evening } from "./views/evening.js";
@@ -62,6 +63,7 @@ const app = {
 app.details = new Details({ store });
 app.sync = new Sync({ store, storage: storage || { getItem: () => null, setItem() {}, removeItem() {} } });
 app.files = new FileBackup({ store });
+app.safekeeping = new Safekeeping({ store, storage, files: app.files, sync: app.sync });
 app.toast = new Toast({
   onUndo: (snapshot) => {
     const shown = app.stage.shown;
@@ -210,11 +212,36 @@ function render() {
 app.render = render;
 
 store.addEventListener("change", (e) => {
-  if (e.detail.saved) {
+  if (e.detail.saved && !store.writeLocked) {
     if (app.files.handle) app.files.queueWrite();
     app.sync.schedule(() => app.settings.syncNow({ quiet: true }));
+    // Once there's something to lose, ask the browser to keep it (some ask you, so after a tap).
+    if (store.p.seen.size) app.safekeeping.ask().then(() => app.renderSoon());
   }
   app.renderSoon();
+});
+
+// ---------------------------------------------------------------- keeping progress safe
+$("keepCopySave").addEventListener("click", async () => {
+  const r = await app.safekeeping.saveCopy();
+  if (r) app.toast.show(r === "file" ? "Saved to your backup file. Kuvert keeps it up to date." : r === "shared" ? "Copy saved. Keep it somewhere you'll find it." : "Copy downloaded. Keep it somewhere you'll find it.");
+  app.renderSoon();
+});
+$("keepCopyLater").addEventListener("click", () => {
+  app.safekeeping.snooze();
+  app.renderSoon();
+});
+$("unreadableRestore").addEventListener("click", () => app.settings.open("openFile"));
+$("unreadableDownload").addEventListener("click", () => store.unreadable && download(store.unreadable.text, "kuvert-unreadable-save.json"));
+$("unreadableFresh").addEventListener("click", async () => {
+  const ok = await app.dialogs.confirm({
+    title: "Start fresh?",
+    text: "Kuvert starts saving again from zero. The save it couldn't read stays in this browser under its own name, so it can still be recovered.",
+    confirm: "Start fresh",
+  });
+  if (!ok) return;
+  store.startFresh();
+  app.toast.show("Starting fresh. The unreadable save is still kept aside.");
 });
 
 // The list's own name, counts and colours.
@@ -265,7 +292,8 @@ app.router.show(PAGES.includes(location.hash.slice(1)) ? location.hash.slice(1) 
 history.replaceState({ page }, "", "#" + page);
 app.stage.syncPick();
 render();
-if (loadError) app.toast.show(loadError);
+if (loadError && !store.writeLocked) app.toast.show(loadError);
+app.safekeeping.check().then(() => app.renderSoon());
 app.dialogs.resumePendingRestore();
 if (app.sync.on) app.settings.syncNow({ quiet: true });
 // Offline support and home-screen install when served from the web. Trusted Types allows one script

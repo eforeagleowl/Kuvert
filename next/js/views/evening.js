@@ -114,6 +114,12 @@ export class Evening {
           : "This finish time has passed. Choose a new time or clear it.";
     } else $("finishHint").textContent = "Assumes you start now. An earlier time means tomorrow.";
 
+    // Keeping progress safe: the unreadable-save notice, or a reminder to keep a copy.
+    $("unreadable").hidden = !store.writeLocked;
+    const remind = this.app.safekeeping.reminder();
+    $("keepCopy").hidden = !remind || stage.open || !!store.writeLocked;
+    if (remind) $("keepCopyText").textContent = remind + (this.app.safekeeping.canShareFile && !this.app.files.canPick ? " Send one to Notes, Files or iCloud Drive with one tap." : " A backup file takes one click.");
+
     // The eligible count.
     const drawWord = seagal ? (eligible === 1 ? "live target" : "live targets") : eligible === 1 ? "eligible ticket" : "eligible tickets";
     $("eligibleCount").textContent =

@@ -61,6 +61,7 @@ export class FileBackup extends EventTarget {
   }
   // Writes the current progress to the chosen file, one write at a time.
   queueWrite() {
+    if (this.store.writeLocked) return this.chain; // never replace a backup with the empty stand-in
     const handle = this.handle,
       rev = this.store.revision,
       data = this.store.data(),
@@ -93,6 +94,7 @@ export class FileBackup extends EventTarget {
   }
   /** "Back up progress": returns "file", "download" or null (cancelled). */
   async save() {
+    if (this.store.writeLocked) return null;
     if (this.canPick) {
       try {
         if (!this.handle) {

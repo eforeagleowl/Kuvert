@@ -29,6 +29,8 @@ export class Store extends EventTarget {
     this.caches = { availability: {}, providerDirectories: {} };
     this.lastBackup = null;
     this.storageOK = false;
+    this.writeLocked = false; // a save we couldn't read is never written over (see load)
+    this.unreadable = null;
     this.dirty = false;
     this.revision = 0;
     this.tmdbToken = null;
@@ -59,9 +61,11 @@ export class Store extends EventTarget {
     } catch {
       return null;
     }
+    let raw = null,
+      old = null;
     try {
-      const raw = s.getItem(this.list.storageKey),
-        old = this.list.custom ? null : s.getItem(KEYS.oldBuiltin);
+      raw = s.getItem(this.list.storageKey);
+      old = this.list.custom ? null : s.getItem(KEYS.oldBuiltin);
       if (raw || old) {
         const obj = JSON.parse(raw || old),
           d = validateProgress(obj, this.catalog.ctx, { browserLegacy: !raw });
@@ -84,8 +88,29 @@ export class Store extends EventTarget {
       this.tmdbToken = s.getItem(KEYS.tmdb) || null;
       return null;
     } catch {
+      // Starting empty and saving would write over it. Keep it exactly as it was, with a spare copy
+      // under its own key, and write nothing until you restore something or choose to start fresh.
+      this.p = emptyProgress();
+      const text = raw || old;
+      if (text) {
+        const key = raw ? this.list.storageKey : KEYS.oldBuiltin;
+        this.writeLocked = true;
+        this.unreadable = { key, text };
+        try {
+          if (!s.getItem(KEYS.unreadable(key))) s.setItem(KEYS.unreadable(key), text);
+        } catch {}
+      }
+      try {
+        this.tmdbToken = s.getItem(KEYS.tmdb) || null;
+      } catch {}
       return "Saved progress could not be read. You can restore a backup in Settings.";
     }
+  }
+  /** Leaves an unreadable save behind (it stays under its spare key) and saves from now on. */
+  startFresh() {
+    this.writeLocked = false;
+    this.unreadable = null;
+    this.save("restore");
   }
 
   loadSettings(ps, obj) {
@@ -156,7 +181,7 @@ export class Store extends EventTarget {
   }
 
   persist() {
-    if (!this.storageOK) return false;
+    if (!this.storageOK || this.writeLocked) return false;
     try {
       this.storage.setItem(
         this.list.storageKey,
@@ -466,6 +491,8 @@ export class Store extends EventTarget {
   /** Restore from a backup or code: "merge" keeps this device's choices, "replace" uses the backup's. */
   restore(d, mode) {
     const undo = this.snapshot();
+    this.writeLocked = false; // what you restored replaces the save we couldn't read
+    this.unreadable = null;
     const other = this.fromValidated(d, this.p);
     const before = this.p;
     this.p = mode === "merge" ? keepLocal(before, other) : replace(before, other);

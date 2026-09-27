@@ -256,6 +256,24 @@
       <p class="sleepy-note" id="sleepyNote" hidden><span lang="sv">Dags att sova?</span> Time for bed? One more is fine too.</p>
     </div>
 
+    <aside class="notice card danger" id="unreadable" role="alert" aria-labelledby="unreadableTitle" hidden>
+      <div class="notice-head"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><h2 id="unreadableTitle">Kuvert couldn’t read the progress saved in this browser</h2></div>
+      <p>It’s kept exactly as it was, and nothing will be written over it. Restore a backup or a code to carry on, or start fresh.</p>
+      <div class="row">
+        <button class="btn btn-primary btn-sm" id="unreadableRestore" type="button">Restore a backup</button>
+        <button class="btn btn-sm" id="unreadableDownload" type="button">Download the unreadable save</button>
+        <button class="btn btn-quiet btn-sm" id="unreadableFresh" type="button">Start fresh</button>
+      </div>
+    </aside>
+    <aside class="notice card" id="keepCopy" aria-labelledby="keepCopyTitle" hidden>
+      <div class="notice-head"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><h2 id="keepCopyTitle" data-sg="Secure the intel">Keep a copy of your progress</h2></div>
+      <p id="keepCopyText"></p>
+      <div class="row">
+        <button class="btn btn-primary btn-sm" id="keepCopySave" type="button">Save a copy</button>
+        <button class="btn btn-quiet btn-sm" id="keepCopyLater" type="button">Not now</button>
+      </div>
+    </aside>
+
     <div class="prefs">
       <div class="pref-bar">
         <div class="chips" id="activeChips" aria-label="Active draw preferences"></div>
@@ -469,11 +487,13 @@
             <p class="fine status" id="backupStatus"></p>
             <div class="row">
               <button class="btn btn-primary" id="saveFile" type="button">Back up progress</button>
+              <button class="btn" id="shareCopy" type="button" hidden>Send a copy…</button>
               <button class="btn" id="openFile" type="button">Load progress</button>
               <button class="btn" id="reconnect" type="button" hidden>Reconnect</button>
               <input type="file" id="fileInput" accept=".json,application/json" hidden>
             </div>
             <p class="fine" id="fhint"></p>
+            <p class="fine" id="storageStatus"></p>
           </div>
           <details class="card setting advanced">
             <summary><svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg>Recovery &amp; reset</summary>

@@ -151,7 +151,7 @@ export class Stage {
       await this.pause(360);
       await this.rise();
     } finally {
-      this.stageEl.classList.remove("flap-open");
+      this.stageEl.classList.remove("flap-open", "cracked");
       $("drawBtn").classList.remove("busy");
       this.busy = false;
       this.skipping = false;
@@ -219,6 +219,8 @@ export class Stage {
         )
         .finished.finally(() => half.remove());
     }
+    // The halves fly off from where the seal was; the seal itself is gone until the envelope closes.
+    this.stageEl.classList.add("cracked");
     // A few crumbs of wax.
     for (let i = 0; i < 7; i++) {
       const crumb = h("i", { class: "seal-half" });

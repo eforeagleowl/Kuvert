@@ -155,7 +155,9 @@ const out = { generatedFrom: "index.html (the original app)", builtin: {}, decod
   const full = out.builtin.full.data;
   const code = out.builtin.full.code;
   const [, b64, sum] = code.split(".");
-  const retiredSample = ["2013-the-wolf-of-wall-street", "2011-hugo"];
+  const retiredSample = ["2011-hugo", "2018-bohemian-rhapsody"];
+  // Retired once and back on the list since: an older backup that has it keeps it.
+  const back = "2013-the-wolf-of-wall-street";
   const legacyIds = await page.evaluate(() => ({ original: LEGACY_IDS, local: LOCAL_LEGACY_IDS }));
   const toLegacy = (ids, order) => {
     const set = new Set(ids);
@@ -184,6 +186,19 @@ const out = { generatedFrom: "index.html (the original app)", builtin: {}, decod
       },
     }],
     ["backup v6 on the hm-v2 catalogue", { kind: "file", value: { ...full, v: 6, catalogue: "kuvert-2026-09-hm-v2" } }],
+    ["backup on the catalogue before the last 25 films were added", { kind: "file", value: { ...full, catalogue: "kuvert-2026-09-expanded-v7" } }],
+    ["backup v4 with a film that was retired and is back", {
+      kind: "file",
+      value: {
+        ...full,
+        v: 4,
+        catalogue: "kuvert-2026-09-v1",
+        seen: [...full.seen.filter((id) => id !== back), back],
+        dates: { ...full.dates, [back]: "2026-01-02" },
+        rankings: [back, ...full.rankings.filter((id) => id !== back)],
+        current: full.current === back ? null : full.current,
+      },
+    }],
     ["first app backup v1 (indices), updated list", { kind: "file", legacy: "local", value: { app: "envelope", v: 1, seen: someLocal.map((id) => legacyIds.local.indexOf(id)), dates: indexDates(legacyIds.local, someLocal) } }],
     ["first app backup v3 (indices), original list", { kind: "file", legacy: "original", value: { app: "envelope", v: 3, seen: someOriginal.map((id) => legacyIds.original.indexOf(id)), dates: indexDates(legacyIds.original, someOriginal) } }],
     ["first app backup v2 holding only a code", { kind: "file", legacy: "local", value: { app: "envelope", v: 2, code: toLegacy(someLocal, legacyIds.local) } }],

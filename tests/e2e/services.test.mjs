@@ -5,6 +5,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { newContext, openPage } from "./helpers.mjs";
+import { FILMS } from "../../js/data/catalogue.js";
 
 const golden = JSON.parse(readFileSync(new URL("../fixtures/golden.json", import.meta.url), "utf8"));
 const TMDB_TOKEN = "eyJhbGciOiJIUzI1NiJ9.test-read-access-token.signature-for-tests-only";
@@ -170,8 +171,9 @@ test("TMDB: connecting and loading every film sends what Kuvert Classic sends, a
   }
   const { classic, new: next } = results;
   assert.ok(classic.requests.length > 400, "every film was looked up (" + classic.requests.length + " requests)");
-  const found = Object.keys(classic.details.runtimes).length;
-  assert.ok(found > 200 && found < 250, "most films matched, the ambiguous ones wait for a choice (" + found + ")");
+  const found = Object.keys(classic.details.runtimes).length,
+    total = FILMS.length;
+  assert.ok(found > total * 0.8 && found < total, "most films matched, the ambiguous ones wait for a choice (" + found + " of " + total + ")");
   sameRequests("TMDB requests", classic.requests, next.requests);
   assert.deepEqual(next.details, classic.details);
   assert.equal(next.token, TMDB_TOKEN);

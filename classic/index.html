@@ -1415,7 +1415,32 @@ const FILMS = [
   { "t": "Boogie Nights", "y": 1997, "s": "H", "id": "1997-boogie-nights" },
   { "t": "F1", "y": 2025, "s": "N", "id": "2025-f1", "c": 98 },
   { "t": "True Romance", "y": 1993, "s": "H", "id": "1993-true-romance" },
-  { "t": "Sinners", "y": 2025, "s": "N", "id": "2025-sinners", "c": 98 }
+  { "t": "Sinners", "y": 2025, "s": "N", "id": "2025-sinners", "c": 98 },
+  { "t": "The Ox-Bow Incident", "y": 1943, "s": "N", "id": "1943-the-ox-bow-incident", "c": 16 },
+  { "t": "The Warriors", "y": 1979, "s": "H", "id": "1979-the-warriors" },
+  { "t": "Tootsie", "y": 1982, "s": "N", "id": "1982-tootsie", "c": 55 },
+  { "t": "The Verdict", "y": 1982, "s": "N", "id": "1982-the-verdict", "c": 55 },
+  { "t": "Once Upon a Time in America", "y": 1984, "s": "H", "id": "1984-once-upon-a-time-in-america" },
+  { "t": "The Mission", "y": 1986, "s": "N", "id": "1986-the-mission", "c": 59 },
+  { "t": "Mississippi Burning", "y": 1988, "s": "N", "id": "1988-mississippi-burning", "c": 61 },
+  { "t": "Die Hard", "y": 1988, "s": "H", "id": "1988-die-hard" },
+  { "t": "Dead Poets Society", "y": 1989, "s": "N", "id": "1989-dead-poets-society", "c": 62 },
+  { "t": "Beauty and the Beast", "y": 1991, "s": "N", "id": "1991-beauty-and-the-beast", "c": 64 },
+  { "t": "Scent of a Woman", "y": 1992, "s": "N", "id": "1992-scent-of-a-woman", "c": 65 },
+  { "t": "The Crying Game", "y": 1992, "s": "N", "id": "1992-the-crying-game", "c": 65 },
+  { "t": "In the Name of the Father", "y": 1993, "s": "N", "id": "1993-in-the-name-of-the-father", "c": 66 },
+  { "t": "Quiz Show", "y": 1994, "s": "N", "id": "1994-quiz-show", "c": 67 },
+  { "t": "Se7en", "y": 1995, "s": "H", "id": "1995-se7en" },
+  { "t": "As Good as It Gets", "y": 1997, "s": "N", "id": "1997-as-good-as-it-gets", "c": 70 },
+  { "t": "Traffic", "y": 2000, "s": "N", "id": "2000-traffic", "c": 73 },
+  { "t": "The Pianist", "y": 2002, "s": "N", "id": "2002-the-pianist", "c": 75 },
+  { "t": "Catch Me If You Can", "y": 2002, "s": "H", "id": "2002-catch-me-if-you-can" },
+  { "t": "Lost in Translation", "y": 2003, "s": "N", "id": "2003-lost-in-translation", "c": 76 },
+  { "t": "Mystic River", "y": 2003, "s": "N", "id": "2003-mystic-river", "c": 76 },
+  { "t": "Michael Clayton", "y": 2007, "s": "N", "id": "2007-michael-clayton", "c": 80 },
+  { "t": "Frost/Nixon", "y": 2008, "s": "N", "id": "2008-frost-nixon", "c": 81 },
+  { "t": "The Dark Knight", "y": 2008, "s": "H", "id": "2008-the-dark-knight" },
+  { "t": "The Wolf of Wall Street", "y": 2013, "s": "N", "id": "2013-the-wolf-of-wall-street", "c": 86 }
 ];
 
 // Frozen catalogue orderings used to decode old bit-packed progress codes. Never edit.
@@ -1430,8 +1455,9 @@ const LOCAL_LEGACY_IDS = ["1927-wings","1929-the-broadway-melody","1930-hell-s-a
 const KUVERT_CONFIG = {
   name: "Kuvert",
   subtitle: "Best Picture winners, nominees and honorable mentions, drawn at random",
-  catalogue: "kuvert-2026-09-expanded-v7",
+  catalogue: "kuvert-2026-09-expanded-v8",
   olderCatalogues: [
+    "kuvert-2026-09-expanded-v7",
     "kuvert-2026-09-expanded-v6",
     "kuvert-2026-09-expanded-v5",
     "kuvert-2026-09-expanded-v4",
@@ -1441,7 +1467,7 @@ const KUVERT_CONFIG = {
   ],
   storageKey: "kuvert:v4",
   // Films taken off the list. Older saves and backups quietly drop them.
-  retired: ["2013-the-wolf-of-wall-street", "2011-hugo", "2015-the-martian", "2018-bohemian-rhapsody", "2012-silver-linings-playbook", "1943-for-whom-the-bell-tolls"],
+  retired: ["2011-hugo", "2015-the-martian", "2018-bohemian-rhapsody", "2012-silver-linings-playbook", "1943-for-whom-the-bell-tolls"],
   series: { gf: "The Godfather", lotr: "The Lord of the Rings", dune: "Dune" },
   // Award shelves. A list without shelves hides the Won/Nom/HM chips, filters and stats.
   shelves: {

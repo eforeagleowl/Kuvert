@@ -3,7 +3,7 @@
 // A draw is choreographed: the seal cracks, the year dial rolls to the film's year, the flap lifts and
 // the ticket rises out of the envelope, which settles under it as a pocket. Tap anywhere to skip ahead.
 // The same ticket turns into your stub when you mark the film watched: SEDD is stamped on, and you rate it.
-import { $, h, reduceMotion, setText, nextFrame } from "../ui/dom.js";
+import { $, h, reduceMotion, setText } from "../ui/dom.js";
 import { StarSlider } from "../ui/stars.js";
 import { Nixie } from "./nixie.js";
 import { IMG, fmtMoney } from "../tmdb/client.js";
@@ -97,7 +97,26 @@ export class Stage {
     this.stageEl.dataset.state = open ? "open" : "closed";
     this.ticket.hidden = !open;
     $("drawBtn").setAttribute("aria-expanded", String(open));
-    this.app.renderSoon();
+    // Now, not on the next frame: the envelope's animations measure the finished layout right after
+    // this, and anything that changed later (a line on the ticket, the draw bar) would make it jump.
+    this.app.render();
+  }
+  /**
+   * Resizes the envelope from the box it had (`before`) to the one it has now, smoothly. Its height
+   * animates with a matching bottom margin, so the room it takes in the page never changes and nothing
+   * below it moves; it stays centred as its width changes, so it never slides sideways.
+   */
+  resizeEnvelope(before, { duration, easing }) {
+    const env = $("envelope"),
+      after = env.getBoundingClientRect(),
+      margin = parseFloat(getComputedStyle(env).marginBottom) || 0;
+    return env.animate(
+      [
+        { width: before.width + "px", height: before.height + "px", marginBottom: margin + after.height - before.height + "px", transform: `translateY(${before.top - after.top}px)` },
+        { width: after.width + "px", height: after.height + "px", marginBottom: margin + "px", transform: "none" },
+      ],
+      { duration, easing },
+    );
   }
 
   /**
@@ -143,9 +162,8 @@ export class Stage {
     const env = $("envelope"),
       before = env.getBoundingClientRect();
     this.setOpen(true);
-    await nextFrame();
-    const after = env.getBoundingClientRect(),
-      t = this.ticket.getBoundingClientRect();
+    // Measured in the same frame as the change, so the finished layout is never painted first.
+    const t = this.ticket.getBoundingClientRect();
     const mouthX = before.left + before.width / 2,
       mouthY = before.top + before.height * 0.35;
     const dx = mouthX - (t.left + t.width / 2),
@@ -159,13 +177,7 @@ export class Stage {
       ],
       { duration: this.skipping ? 1 : 900, easing: "cubic-bezier(0.18, 0.9, 0.22, 1.04)" },
     );
-    const envelope = env.animate(
-      [
-        { transform: `translate(${before.left - after.left}px, ${before.top - after.top}px)`, height: before.height + "px", width: before.width + "px" },
-        { transform: "none", height: after.height + "px", width: after.width + "px" },
-      ],
-      { duration: this.skipping ? 1 : 760, easing: "cubic-bezier(0.3, 0.7, 0.2, 1)" },
-    );
+    const envelope = this.resizeEnvelope(before, { duration: this.skipping ? 1 : 760, easing: "cubic-bezier(0.3, 0.7, 0.2, 1)" });
     await Promise.allSettled([ticket.finished, envelope.finished]);
   }
   // Draw again with the ticket out: it dips into the envelope and comes back as another film.
@@ -236,26 +248,22 @@ export class Stage {
     const wasOpen = this.open;
     if (wasOpen) this.app.play("close");
     if (wasOpen && !reduceMotion()) {
-      const env = $("envelope"),
-        t = this.ticket.getBoundingClientRect(),
+      const env = $("envelope");
+      // Scrolled down to the ticket's buttons? Glide back up to the envelope while the ticket goes in,
+      // so the page getting shorter never snaps the scroll position.
+      const top = Math.max(0, this.stageEl.getBoundingClientRect().top + scrollY - 88);
+      if (scrollY > top + 2) window.scrollTo({ top, behavior: "smooth" });
+      const t = this.ticket.getBoundingClientRect(),
         e = env.getBoundingClientRect();
-      await this.ticket
-        .animate([{ transform: "none", opacity: 1 }, { transform: `translateY(${e.top - t.top + 20}px) scale(0.9)`, opacity: 0, clipPath: `inset(0 0 ${t.height * 0.7}px 0)` }], {
-          duration: 300,
-          easing: "cubic-bezier(0.5, 0, 0.9, 0.5)",
-        })
-        .finished.catch(() => {});
+      const slide = this.ticket.animate(
+        [{ transform: "none", opacity: 1 }, { transform: `translateY(${e.top - t.top + 20}px) scale(0.9)`, opacity: 0, clipPath: `inset(0 0 ${t.height * 0.7}px 0)` }],
+        { duration: 300, easing: "cubic-bezier(0.5, 0, 0.9, 0.5)", fill: "forwards" },
+      );
+      await slide.finished.catch(() => {});
       const before = env.getBoundingClientRect();
       this.setOpen(false);
-      await nextFrame();
-      const after = env.getBoundingClientRect();
-      env.animate(
-        [
-          { transform: `translate(${before.left - after.left}px, ${before.top - after.top}px)`, height: before.height + "px", width: before.width + "px" },
-          { transform: "none", height: after.height + "px", width: after.width + "px" },
-        ],
-        { duration: 420, easing: "cubic-bezier(0.3, 0.7, 0.2, 1)" },
-      );
+      slide.cancel();
+      this.resizeEnvelope(before, { duration: 420, easing: "cubic-bezier(0.3, 0.7, 0.2, 1)" });
       $("seal").animate([{ transform: "translate(-50%, 0) scale(1.5)", opacity: 0 }, { transform: "translate(-50%, 0) scale(0.92)", opacity: 1, offset: 0.7 }, { transform: "translate(-50%, 0)" }], {
         duration: 360,
         delay: 260,

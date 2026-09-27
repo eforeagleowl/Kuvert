@@ -8,7 +8,7 @@ import { StarSlider } from "../ui/stars.js";
 import { Nixie } from "./nixie.js";
 import { IMG, fmtMoney } from "../tmdb/client.js";
 import { starText, ratingWord, allWatched, finaleData, plural } from "../state/stats.js";
-import { fmtDay, dayLong, dateFull } from "../state/dates.js";
+import { fmtDay, dayLong, dateFull, defaultWatchDate } from "../state/dates.js";
 
 const VERDICTS = [
   ["yes", "Yes"],
@@ -359,7 +359,8 @@ export class Stage {
       });
     } else this.setOpen(false);
     this.showInfo(null);
-    this.nixie.show(this.store.currentFilm?.y ?? null);
+    // Sealed again: the dial goes dark rather than giving away the year.
+    this.nixie.show(null);
     this.app.renderSoon();
     if (focus) $("drawBtn").focus({ preventScroll: true });
     this.app.announce("Envelope closed.");
@@ -417,7 +418,19 @@ export class Stage {
   drawOrFinale() {
     if (this.busy) return this.skipAhead();
     if (allWatched(this.store.p, this.app.catalog)) return this.displayFinale();
+    // A saved ticket is still in the envelope: opening it reveals that film, not a new one.
+    if (!this.open && this.saved()) {
+      // One from an earlier day: opening it answers "still on for tonight?".
+      const { drawnOn } = this.store.p;
+      if (drawnOn && drawnOn < defaultWatchDate()) this.store.keepTicket();
+      return this.resume();
+    }
     this.draw();
+  }
+  // Tonight's film, drawn earlier and not watched yet.
+  saved() {
+    const f = this.store.currentFilm;
+    return !!f && !this.store.p.seen.has(f.id);
   }
   draw() {
     if (this.busy) return;
@@ -452,7 +465,8 @@ export class Stage {
     const f = this.store.currentFilm;
     if (!f || this.store.p.seen.has(f.id)) return;
     this.app.router.show("tonight", { focus: false });
-    this.displayCurrent({ animate: true });
+    // The reveal: the seal breaks and the dial rolls to the year, as for a new draw.
+    this.displayCurrent({ animate: true, roll: !this.open });
   }
   skip() {
     const r = this.store.skipCurrent();
@@ -479,7 +493,7 @@ export class Stage {
     if (f && !this.store.p.seen.has(f.id)) {
       if (this.open) this.displayCurrent({ animate: false });
       else {
-        this.nixie.show(f.y);
+        this.nixie.show(null);
         this.app.renderSoon();
       }
     } else {
@@ -897,10 +911,14 @@ export class Stage {
     // Draw button, envelope and ticket actions.
     const draw = $("drawBtn");
     draw.hidden = open;
-    draw.disabled = p.seen.size < catalog.films.length && (!units.length || (!!cur && !other));
+    const saved = this.saved();
+    draw.disabled = !saved && p.seen.size < catalog.films.length && (!units.length || (!!cur && !other));
     draw.textContent = all ? this.sg("Se slutbiljetten", "Final debrief") : this.sg("Öppna kuvertet", "Deploy");
     $("envelopeOpen").disabled = draw.disabled;
-    $("envelopeOpen").setAttribute("aria-label", all ? "Open your final ticket" : this.sg("Öppna kuvertet: draw a movie", "Open the case file: deploy a movie"));
+    $("envelopeOpen").setAttribute(
+      "aria-label",
+      all ? "Open your final ticket" : saved ? this.sg("Öppna kuvertet: open your saved ticket", "Open the case file: your active mission") : this.sg("Öppna kuvertet: draw a movie", "Open the case file: deploy a movie"),
+    );
     $("againBtn").disabled = !other;
     $("againBtn").title = other ? "Draw another movie" : "No other eligible ticket";
     $("markBtn").hidden = !cur || p.seen.has(cur.id) || this.mode !== "tonight" || this.finale;
@@ -928,8 +946,8 @@ export class Stage {
     this.paintShelf();
     if (this.mode === "watched") this.renderWatched();
     this.updateFinale();
-    // With the envelope closed, the dial shows the saved ticket's year.
-    if (!open && !this.busy) this.nixie.show(cur && !p.seen.has(cur.id) ? cur.y : null);
+    // With the envelope closed the dial stays dark: a saved ticket's year would give it away.
+    if (!open && !this.busy) this.nixie.show(null);
   }
 }
 

@@ -200,13 +200,15 @@ export class Evening {
         (st.finishTime && end.getTime() > st.finishDeadline ? " · past your finish time" : "");
 
     // Your saved ticket (house rule: a film is pulled on the evening you watch it; an older ticket asks first).
+    // It stays sealed: nothing here names the film, so opening the envelope is still the reveal.
     const resume = !!cur && !p.seen.has(cur.id) && !stage.open;
     $("resumePick").hidden = !resume;
     if (resume) {
       const stale = !!p.drawnOn && p.drawnOn < defaultWatchDate();
       $("resumePick").classList.toggle("stale", stale);
-      $("resumeLabel").textContent = stale ? "Drawn " + drawnDayLabel(p.drawnOn) + " · still on for tonight?" : this.app.sg("Your saved ticket", "Active mission");
-      $("resumeFilm").textContent = stale ? cur.t : this.app.sg("Continue with ", "Resume operation: ") + cur.t;
+      $("resumeLabel").textContent = stale ? "A ticket drawn " + drawnDayLabel(p.drawnOn) + " is still sealed · still on for tonight?" : this.app.sg("Your saved ticket, still sealed", "Active mission, still classified");
+      $("resumeFilm").textContent = this.app.sg("Open it", "Open the file");
+      $("resumeFilm").hidden = stale;
       $("staleActions").hidden = !stale;
       $("putBackTonight").hidden = stale;
     }

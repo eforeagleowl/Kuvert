@@ -196,7 +196,7 @@ function render() {
   const n = store.p.seen.size,
     total = catalog.films.length;
   const cheer = seagal ? null : tallyNote(n, total);
-  $("tally").replaceChildren(h("b", { text: String(n) }), " of " + total + (seagal ? " targets neutralized" : " watched"), cheer ? h("span", { class: "cheer", lang: "sv", title: cheer[1], text: cheer[0] }) : null);
+  $("tally").replaceChildren(h("b", { text: String(n) }), " of " + total + (seagal ? " targets neutralized" : " watched"), cheer ? h("span", { class: "cheer", lang: "sv", title: cheer[1], text: cheer[0] }) : "");
   $("progressFill").style.setProperty("--p", (total ? (n / total) * 100 : 0) + "%");
   app.stage.render();
   app.evening.render();

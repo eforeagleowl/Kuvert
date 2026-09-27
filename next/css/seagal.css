@@ -120,7 +120,7 @@
   html[data-mode="seagal"] .btn-ink {
     --b-bg: var(--text);
     --b-line: var(--text);
-    --b-fg: var(--ink);
+    --b-fg: #0b0f0c; /* not --ink: on the terminal ticket that's the light phosphor */
     text-shadow: none;
   }
   html[data-mode="seagal"] .btn-paper {
@@ -179,7 +179,7 @@
     display: none;
   }
   html[data-mode="seagal"] .seal {
-    top: 70px;
+    top: 46%;
     width: auto;
     height: auto;
     padding: 6px 12px 4px;
@@ -219,8 +219,8 @@
   }
   html[data-mode="seagal"] .case-no {
     display: block;
-    right: 22px;
-    top: 44px;
+    left: 7%;
+    top: 22px;
     color: color-mix(in oklab, var(--ink) 80%, transparent);
     font-size: 10px;
     text-shadow: none;
@@ -452,5 +452,11 @@
   .clearance b {
     color: var(--brass);
     font-size: 1.8rem;
+  }
+
+  /* The terminal face runs wide: keep the Debrief sentence to a readout size. */
+  html[data-mode="seagal"] .headline {
+    font-size: clamp(1.05rem, 2.4vw, 1.5rem);
+    line-height: 1.35;
   }
 }

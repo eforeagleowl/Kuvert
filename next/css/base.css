@@ -11,6 +11,10 @@
     interpolate-size: allow-keywords;
     background: var(--deep);
   }
+  /* Library and Stats keep a second sticky bar under the app bar. */
+  html:is([data-page="library"], [data-page="stats"]) {
+    scroll-padding-top: 150px;
+  }
   body {
     margin: 0;
     min-height: 100dvh;

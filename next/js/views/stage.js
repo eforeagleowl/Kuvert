@@ -506,8 +506,7 @@ export class Stage {
     const lb = !r && p.lbx[id]?.rating ? p.lbx[id].rating : null;
     $("wpSub").replaceChildren(
       this.fresh ? this.sg("How was it? Tap a star, or its left half for a half star.", "Rate the threat.") : this.sg("Change your stars any time.", "Reassess any time."),
-      lb ? " " : null,
-      lb ? h("button", { class: "link", type: "button", text: "Use your Letterboxd " + starText(lb), on: { click: () => this.rate(id, lb) } }) : null,
+      ...(lb ? [" ", h("button", { class: "link", type: "button", text: "Use your Letterboxd " + starText(lb), on: { click: () => this.rate(id, lb) } })] : []),
     );
     this.stars.setValue(r);
     $("wpClear").hidden = r === null;
@@ -820,7 +819,7 @@ export class Stage {
       n = seagal ? 0 : this.app.streak(),
       shown = Math.min(n, 8);
     punches.hidden = !n;
-    punches.replaceChildren(...Array.from({ length: shown }, () => h("i")), n > shown ? "+" + (n - shown) : null);
+    punches.replaceChildren(...Array.from({ length: shown }, () => h("i")), n > shown ? "+" + (n - shown) : "");
     punches.setAttribute("aria-label", plural(n, "week") + " in a row with a film");
     punches.title = punches.getAttribute("aria-label");
     this.paintShelf();

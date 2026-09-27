@@ -423,6 +423,8 @@
   .envelope {
     --w: min(560px, calc(100vw - 32px));
     position: relative;
+    z-index: 0;
+    isolation: isolate;
     width: var(--w);
     height: calc(var(--w) / 1.62);
     color: var(--ink);
@@ -609,8 +611,11 @@
   }
   .stage[data-state="open"] .envelope {
     --w: min(640px, calc(100vw - 20px));
-    height: 118px;
-    margin-top: -64px;
+    height: 112px;
+  }
+  /* The ticket lies across the pocket's lower edge, as if just pulled out. */
+  .stage[data-state="open"] .ticket {
+    margin-top: -38px;
   }
   .stage[data-state="open"] .env-flap {
     opacity: 0;
@@ -622,13 +627,15 @@
     display: none;
   }
   .stage[data-state="open"] .edition {
-    bottom: 14px;
+    top: 16px;
+    bottom: auto;
   }
   .stage[data-state="open"] .edition strong {
     font-size: 24px;
   }
   .stage[data-state="open"] .postmark {
-    bottom: 10px;
+    top: 8px;
+    bottom: auto;
     width: 58px;
     font-size: 10px;
   }
@@ -940,6 +947,17 @@
     -webkit-mask: var(--paper-texture) center / 300px;
     mask: var(--paper-texture) center / 300px;
     pointer-events: none;
+  }
+  /* No poster to stamp: ink it across the ticket head instead of the title. */
+  .ticket.no-details .stamp-sedd {
+    top: 26px;
+    left: 38%;
+  }
+  @container ticket (width < 520px) {
+    .ticket.no-details .stamp-sedd {
+      left: auto;
+      right: 14px;
+    }
   }
   .ticket.watched .stamp-sedd {
     opacity: 0.86;

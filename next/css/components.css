@@ -166,6 +166,14 @@
     resize: vertical;
     field-sizing: content;
     min-height: 96px;
+    max-height: min(40vh, 16lh);
+  }
+  /* Codes are one long word. */
+  #codeInput,
+  #code {
+    overflow-wrap: anywhere;
+    font-family: var(--font-mono);
+    font-size: var(--fs-1);
   }
   select {
     padding-right: var(--s-6);

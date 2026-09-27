@@ -41,8 +41,16 @@ export class Settings {
     // ------------------------------------------------ backup file and code
     $("fhint").textContent = files.canPick ? "After the first backup, Kuvert keeps that file up to date." : "Download a backup to move to another device or keep an extra copy.";
     on("saveFile", async () => {
+      if (app.store.writeLocked) return app.toast.show("Restore a backup or start fresh first: Kuvert couldn't read this browser's save.");
       const out = await files.save();
       if (out === "download") app.toast.show("Progress backup download requested.");
+      this.renderBackup();
+    });
+    // The share sheet, where there is one: Notes, Files, iCloud Drive, Mail.
+    $("shareCopy").hidden = !app.safekeeping.canShareFile;
+    on("shareCopy", async () => {
+      const r = await app.safekeeping.saveCopy({ share: true });
+      if (r) app.toast.show("Copy saved. Keep it somewhere you'll find it.");
       this.renderBackup();
     });
     on("openFile", async () => {
@@ -269,6 +277,7 @@ export class Settings {
       warn = false;
     }
     $("backupStatus").textContent = text;
+    $("storageStatus").textContent = this.app.safekeeping.statusText();
     $("backupStatus").classList.toggle("warn", warn);
     const line = $("saveState");
     line.textContent = this.app.seagal ? files.message().replace(/Saved in this browser/, "Intel secured").replace(/ watched/, " neutralized") : files.message();

@@ -24,7 +24,7 @@ export async function newContext({ serviceWorkers = "block", viewport = { width:
   await context.addInitScript((welcomed) => {
     window.__problems = [];
     document.addEventListener("securitypolicyviolation", (e) => window.__problems.push("CSP: " + e.violatedDirective + " " + (e.blockedURI || "")));
-    if (welcomed && location.pathname.includes("/next/")) localStorage.setItem("kuvert:welcomed", "1");
+    if (welcomed && !location.pathname.startsWith("/classic/")) localStorage.setItem("kuvert:welcomed", "1");
   }, welcomed);
   return context;
 }
@@ -41,8 +41,8 @@ export async function openPage(context, path) {
 
 export async function go(page, path) {
   await page.goto(env.url + path);
-  if (path.startsWith("/next/")) await page.waitForFunction(() => window.kuvert?.app);
-  else await page.waitForFunction(() => typeof encode === "function" && document.readyState === "complete");
+  if (path.startsWith("/classic/")) await page.waitForFunction(() => typeof encode === "function" && document.readyState === "complete");
+  else await page.waitForFunction(() => window.kuvert?.app);
 }
 
 /** Script errors, console errors and policy violations seen so far. */

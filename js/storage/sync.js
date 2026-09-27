@@ -109,7 +109,8 @@ export class Sync extends EventTarget {
    * Returns what happened: { applied: "replace" | "merge", undo } when the other device's progress came in.
    */
   async syncNow({ quiet = false } = {}) {
-    if (!this.on || this.busy || !this.store.storageOK) return null;
+    // Not while this browser's save couldn't be read: its empty stand-in would look like the newer copy.
+    if (!this.on || this.busy || !this.store.storageOK || this.store.writeLocked) return null;
     this.busy = true;
     this.error = "";
     this.changed();

@@ -1,7 +1,7 @@
 # Kuvert feature inventory
 
 Everything the current app (`/index.html`, version 3.0, built 25 Sep 2026) does, read from its source.
-The rebuild in `/next/` keeps every line of this list. Items marked **changed** behave better on purpose;
+The rebuild keeps every line of this list. Items marked **changed** behave better on purpose;
 nothing is dropped.
 
 ## Lists and catalogue

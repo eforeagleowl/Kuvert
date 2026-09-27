@@ -1,5 +1,5 @@
-// Reads the constants that define the catalogue out of the original single-file app (/index.html),
-// without running the app. Used to generate next/js/data and next/js/compat/legacy-ids.js, and by the
+// Reads the constants that define the catalogue out of the original single-file app (classic/index.html),
+// without running the app. Used to generate js/data and js/compat/legacy-ids.js, and by the
 // drift test that keeps both apps on the same catalogue while they live side by side.
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
@@ -41,7 +41,7 @@ function declaration(src, name) {
   return src.slice(start, i).trim();
 }
 
-export function readLegacy(path = new URL("../index.html", import.meta.url)) {
+export function readLegacy(path = new URL("../classic/index.html", import.meta.url)) {
   const src = readFileSync(path, "utf8");
   const code = NAMES.map((n) => "out." + n + " = (" + declaration(src, n) + ");").join("\n");
   const out = {};

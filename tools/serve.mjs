@@ -1,5 +1,5 @@
 // A small static server for the repo, for tests and local previews: node tools/serve.mjs [port]
-// Serves / (the original app) and /next/ (the rebuild) from the same origin, like GitHub Pages does.
+// Serves Kuvert at / and Kuvert Classic at /classic/ from the same origin, like GitHub Pages does.
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { extname, join, normalize, sep } from "node:path";
@@ -21,13 +21,14 @@ const TYPES = {
   ".md": "text/plain; charset=utf-8",
 };
 
-export function serve(port = 0) {
+/** `root` defaults to this repo; `setRoot` swaps it while running (a deploy, for upgrade tests). */
+export function serve(port = 0, { root = ROOT } = {}) {
   const server = createServer(async (req, res) => {
     try {
       let path = decodeURIComponent(new URL(req.url, "http://x").pathname);
       if (path.endsWith("/")) path += "index.html";
-      const file = normalize(join(ROOT, path));
-      if (!file.startsWith(ROOT.endsWith(sep) ? ROOT : ROOT + sep)) throw Object.assign(Error(), { code: "ENOENT" });
+      const file = normalize(join(root, path));
+      if (!file.startsWith(root.endsWith(sep) ? root : root + sep)) throw Object.assign(Error(), { code: "ENOENT" });
       if ((await stat(file)).isDirectory()) {
         res.writeHead(301, { Location: path + "/" });
         return res.end();
@@ -40,11 +41,11 @@ export function serve(port = 0) {
     }
   });
   return new Promise((resolve) =>
-    server.listen(port, "127.0.0.1", () => resolve({ server, url: "http://127.0.0.1:" + server.address().port })),
+    server.listen(port, "127.0.0.1", () => resolve({ server, url: "http://127.0.0.1:" + server.address().port, setRoot: (dir) => (root = dir) })),
   );
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const { url } = await serve(Number(process.argv[2]) || 8123);
-  console.log("Serving the repo at " + url + "/ (original) and " + url + "/next/ (rebuild)");
+  console.log("Serving Kuvert at " + url + "/ and Kuvert Classic at " + url + "/classic/");
 }

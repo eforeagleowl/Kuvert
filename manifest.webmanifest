@@ -2,6 +2,7 @@
   "name": "Kuvert",
   "short_name": "Kuvert",
   "description": "Open the envelope and discover your next film.",
+  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

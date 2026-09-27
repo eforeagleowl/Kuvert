@@ -2,6 +2,7 @@
 // The unit tests prove the formats byte for byte; these prove it with the real pages.
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { newContext, openPage, go, problems, nextProgress, classicProgress } from "./helpers.mjs";
 
 // In the classic app (runs in its page): a small watchthrough through its own globals.
@@ -49,6 +50,35 @@ test("the rebuild reads the classic app's save, and the classic app reads it bac
   await classic.evaluate(() => persistBrowser());
   await go(page, "/");
   assert.deepEqual((await nextProgress(page)).seen, back.seen);
+  assert.deepEqual([...(await problems(classic)), ...(await problems(page))], []);
+  await context.close();
+});
+
+test("a save from before the last 25 films were added opens in both apps with nothing lost", async () => {
+  // Written by Kuvert Classic on the previous catalogue, the day before the films were added.
+  const before = JSON.parse(readFileSync(new URL("../fixtures/save-before-final-25.json", import.meta.url), "utf8"));
+  const context = await newContext();
+  await context.addInitScript((save) => {
+    if (!localStorage.getItem("test:seeded")) localStorage.setItem("kuvert:v4", save), localStorage.setItem("test:seeded", "1");
+  }, JSON.stringify(before));
+  const expect = { seen: [...before.seen].sort(), dates: before.dates, rankings: before.rankings, current: before.current, skipped: [...before.skipped].sort() };
+  const same = (read, who) => {
+    for (const k of Object.keys(expect)) assert.deepEqual(read[k], expect[k], who + ": " + k);
+  };
+
+  const page = await openPage(context, "/");
+  same(await nextProgress(page), "Kuvert");
+  assert.equal(await page.isVisible("#unreadable"), false, "the save reads cleanly");
+  const classic = await openPage(context, "/classic/");
+  same(await classicProgress(classic), "Kuvert Classic");
+
+  // One of the new films, watched in the new app, is read back by Classic with everything else.
+  await page.evaluate(() => window.kuvert.app.store.markSeen("1988-die-hard", true));
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("kuvert:v4")));
+  assert.equal(saved.catalogue, "kuvert-2026-09-expanded-v8");
+  await go(classic, "/classic/");
+  const back = await classicProgress(classic);
+  assert.deepEqual(back.seen, [...expect.seen, "1988-die-hard"].sort());
   assert.deepEqual([...(await problems(classic)), ...(await problems(page))], []);
   await context.close();
 });

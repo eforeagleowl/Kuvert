@@ -1,0 +1,520 @@
+{
+ "app": "kuvert",
+ "v": 7,
+ "catalogue": "kuvert-2026-09-expanded-v7",
+ "saved": "2026-09-26T20:15:00.000Z",
+ "seen": [
+  "1929-the-broadway-melody",
+  "1938-you-can-t-take-it-with-you",
+  "1940-the-great-dictator",
+  "1941-how-green-was-my-valley",
+  "1941-the-maltese-falcon",
+  "1946-the-best-years-of-our-lives",
+  "1946-the-yearling",
+  "1950-all-about-eve",
+  "1952-high-noon",
+  "1958-gigi",
+  "1959-ben-hur",
+  "1960-the-sundowners",
+  "1964-mary-poppins",
+  "1966-the-good-the-bad-and-the-ugly",
+  "1971-a-clockwork-orange",
+  "1975-jaws",
+  "1977-star-wars",
+  "1983-scarface",
+  "1983-terms-of-endearment",
+  "1988-rain-man",
+  "1989-born-on-the-fourth-of-july",
+  "1998-saving-private-ryan",
+  "1999-the-green-mile",
+  "2001-the-lord-of-the-rings-the-fellowship-of-the-ring",
+  "2003-the-lord-of-the-rings-the-return-of-the-king",
+  "2005-munich",
+  "2006-letters-from-iwo-jima",
+  "2010-the-king-s-speech",
+  "2010-true-grit",
+  "2011-moneyball",
+  "2014-gone-girl",
+  "2014-the-grand-budapest-hotel",
+  "2015-bridge-of-spies",
+  "2015-the-revenant",
+  "2017-get-out",
+  "2017-the-shape-of-water",
+  "2019-once-upon-a-time-in-hollywood",
+  "2022-all-quiet-on-the-western-front",
+  "2022-everything-everywhere-all-at-once",
+  "2023-maestro"
+ ],
+ "dates": {
+  "2023-maestro": "2026-01-01",
+  "2017-get-out": "2026-02-08",
+  "1989-born-on-the-fourth-of-july": "2026-03-15",
+  "2006-letters-from-iwo-jima": "2026-04-22",
+  "1975-jaws": "2026-05-01",
+  "1946-the-best-years-of-our-lives": "2026-06-08",
+  "2014-gone-girl": "2026-07-15",
+  "1983-scarface": "2026-08-22",
+  "1958-gigi": "2026-09-01",
+  "2015-bridge-of-spies": "2026-01-08",
+  "2022-all-quiet-on-the-western-front": "2026-02-15",
+  "1950-all-about-eve": "2026-03-22",
+  "1938-you-can-t-take-it-with-you": "2026-04-01",
+  "2010-true-grit": "2026-05-08",
+  "1988-rain-man": "2026-06-15",
+  "1941-the-maltese-falcon": "2026-07-22",
+  "1946-the-yearling": "2026-08-01",
+  "1971-a-clockwork-orange": "2026-09-08",
+  "1940-the-great-dictator": "2026-01-15",
+  "1998-saving-private-ryan": "2026-02-22",
+  "1966-the-good-the-bad-and-the-ugly": "2026-03-01",
+  "2019-once-upon-a-time-in-hollywood": "2026-04-08",
+  "2003-the-lord-of-the-rings-the-return-of-the-king": "2026-05-15",
+  "2015-the-revenant": "2026-06-22",
+  "2022-everything-everywhere-all-at-once": "2026-07-01",
+  "1952-high-noon": "2026-08-08",
+  "2014-the-grand-budapest-hotel": "2026-09-15",
+  "1941-how-green-was-my-valley": "2026-01-22",
+  "1959-ben-hur": "2026-02-01",
+  "1929-the-broadway-melody": "2026-03-08",
+  "1983-terms-of-endearment": "2026-04-15",
+  "1964-mary-poppins": "2026-05-22",
+  "2005-munich": "2026-06-01",
+  "2010-the-king-s-speech": "2026-07-08"
+ },
+ "current": "1927-wings",
+ "skipped": [
+  "1930-hell-s-angels"
+ ],
+ "reviews": {
+  "2023-maestro": {
+   "note": "Riktigt bra! Åh, vilken film.",
+   "rating": 0.5
+  },
+  "2017-get-out": {
+   "note": "He said \"no\" — then yes.",
+   "rating": 1
+  },
+  "1989-born-on-the-fourth-of-july": {
+   "note": "",
+   "rating": 1.5
+  },
+  "2006-letters-from-iwo-jima": {
+   "note": "Line one\nline two",
+   "rating": null
+  },
+  "1975-jaws": {
+   "note": "Mästerverk ★",
+   "rating": 2.5
+  },
+  "1946-the-best-years-of-our-lives": {
+   "note": "Riktigt bra! Åh, vilken film.",
+   "rating": 3
+  },
+  "2014-gone-girl": {
+   "note": "He said \"no\" — then yes.",
+   "rating": 3.5
+  },
+  "1983-scarface": {
+   "note": "",
+   "rating": 4
+  },
+  "1958-gigi": {
+   "note": "Line one\nline two",
+   "rating": null
+  },
+  "2015-bridge-of-spies": {
+   "note": "Mästerverk ★",
+   "rating": 5
+  },
+  "2022-all-quiet-on-the-western-front": {
+   "note": "Riktigt bra! Åh, vilken film.",
+   "rating": 0.5
+  },
+  "1950-all-about-eve": {
+   "note": "He said \"no\" — then yes.",
+   "rating": 1
+  },
+  "1938-you-can-t-take-it-with-you": {
+   "note": "",
+   "rating": 1.5
+  },
+  "2010-true-grit": {
+   "note": "Line one\nline two",
+   "rating": null
+  },
+  "1988-rain-man": {
+   "note": "Mästerverk ★",
+   "rating": 2.5
+  },
+  "1941-the-maltese-falcon": {
+   "note": "Riktigt bra! Åh, vilken film.",
+   "rating": 3
+  },
+  "1946-the-yearling": {
+   "note": "He said \"no\" — then yes.",
+   "rating": 3.5
+  },
+  "1971-a-clockwork-orange": {
+   "note": "",
+   "rating": 4
+  },
+  "1940-the-great-dictator": {
+   "note": "Line one\nline two",
+   "rating": null
+  },
+  "1998-saving-private-ryan": {
+   "note": "Mästerverk ★",
+   "rating": 5
+  }
+ },
+ "recent": [
+  "1927-wings",
+  "2023-maestro",
+  "1930-all-quiet-on-the-western-front",
+  "2006-letters-from-iwo-jima",
+  "1932-grand-hotel"
+ ],
+ "moods": {
+  "1927-wings": [
+   "Adventurous",
+   "Funny",
+   "Tense"
+  ],
+  "1929-the-broadway-melody": [
+   "Epic",
+   "Romantic"
+  ],
+  "1930-hell-s-angels": [
+   "Dark",
+   "Reflective",
+   "Uplifting"
+  ],
+  "1930-all-quiet-on-the-western-front": [
+   "Adventurous",
+   "Funny",
+   "Tense"
+  ],
+  "1931-cimarron": [
+   "Epic",
+   "Romantic"
+  ],
+  "1932-grand-hotel": [
+   "Dark",
+   "Reflective",
+   "Uplifting"
+  ],
+  "1933-cavalcade": [
+   "Adventurous",
+   "Funny",
+   "Tense"
+  ],
+  "1934-it-happened-one-night": [
+   "Epic",
+   "Romantic"
+  ],
+  "1935-mutiny-on-the-bounty": [
+   "Dark",
+   "Reflective",
+   "Uplifting"
+  ],
+  "1935-a-midsummer-night-s-dream": [
+   "Adventurous",
+   "Funny",
+   "Tense"
+  ]
+ },
+ "runtimes": {
+  "1949-all-the-king-s-men": 155,
+  "1987-fatal-attraction": 83,
+  "1968-once-upon-a-time-in-the-west": 84,
+  "1967-in-the-heat-of-the-night": 83,
+  "2003-master-and-commander-the-far-side-of-the-world": 153,
+  "1968-oliver": 140,
+  "1938-you-can-t-take-it-with-you": 213,
+  "1991-jfk": 142,
+  "2004-million-dollar-baby": 167,
+  "1944-henry-v": 94,
+  "2017-darkest-hour": 205,
+  "1963-cleopatra": 191,
+  "1989-do-the-right-thing": 174,
+  "1957-the-bridge-on-the-river-kwai": 113,
+  "2019-1917": 209,
+  "2017-dunkirk": 139,
+  "2021-nightmare-alley": 92,
+  "2017-the-shape-of-water": 148,
+  "2019-parasite": 194,
+  "2016-la-la-land": 215,
+  "2025-f1": 207,
+  "1956-the-searchers": 175,
+  "1955-the-night-of-the-hunter": 217,
+  "1960-the-apartment": 127,
+  "2010-black-swan": 152,
+  "2002-gangs-of-new-york": 102,
+  "1940-the-grapes-of-wrath": 83,
+  "1966-the-good-the-bad-and-the-ugly": 85,
+  "1977-annie-hall": 176,
+  "1997-boogie-nights": 191,
+  "1942-wake-island": 181,
+  "1964-mary-poppins": 111,
+  "1940-the-great-dictator": 184,
+  "2001-the-lord-of-the-rings-the-fellowship-of-the-ring": 185,
+  "1981-raiders-of-the-lost-ark": 137,
+  "1956-the-king-and-i": 105,
+  "1951-an-american-in-paris": 148,
+  "1999-the-insider": 161,
+  "1994-pulp-fiction": 80,
+  "1947-gentleman-s-agreement": 82,
+  "1952-ivanhoe": 146,
+  "1993-schindler-s-list": 189,
+  "1962-the-longest-day": 92,
+  "2010-127-hours": 208,
+  "2023-maestro": 193,
+  "1941-how-green-was-my-valley": 102,
+  "2023-killers-of-the-flower-moon": 191,
+  "1957-12-angry-men": 205,
+  "2022-everything-everywhere-all-at-once": 177,
+  "1981-das-boot": 114,
+  "1965-doctor-zhivago": 198,
+  "2025-sinners": 158,
+  "2013-her": 81,
+  "1945-the-lost-weekend": 136,
+  "2025-marty-supreme": 85,
+  "1989-field-of-dreams": 137,
+  "2020-nomadland": 86,
+  "1969-midnight-cowboy": 92,
+  "1973-the-sting": 200,
+  "2015-spotlight": 183
+ },
+ "rankings": [
+  "2023-maestro",
+  "2017-get-out",
+  "1989-born-on-the-fourth-of-july",
+  "2006-letters-from-iwo-jima",
+  "1975-jaws",
+  "1946-the-best-years-of-our-lives",
+  "2014-gone-girl",
+  "1983-scarface",
+  "1958-gigi",
+  "2015-bridge-of-spies",
+  "2022-all-quiet-on-the-western-front",
+  "1950-all-about-eve",
+  "1938-you-can-t-take-it-with-you",
+  "2010-true-grit",
+  "1988-rain-man"
+ ],
+ "verdicts": {
+  "1946-the-best-years-of-our-lives": "yes",
+  "1958-gigi": "no",
+  "1950-all-about-eve": "unsure",
+  "1938-you-can-t-take-it-with-you": "yes",
+  "1988-rain-man": "no",
+  "2003-the-lord-of-the-rings-the-return-of-the-king": "unsure",
+  "2022-everything-everywhere-all-at-once": "yes",
+  "1941-how-green-was-my-valley": "no",
+  "1959-ben-hur": "unsure",
+  "1929-the-broadway-melody": "yes",
+  "1983-terms-of-endearment": "no",
+  "2010-the-king-s-speech": "unsure",
+  "2017-the-shape-of-water": "yes"
+ },
+ "lbx": {
+  "1935-mutiny-on-the-bounty": {
+   "rating": 1,
+   "date": "2025-12-01"
+  },
+  "1935-a-midsummer-night-s-dream": {
+   "rating": 1.5,
+   "date": null
+  },
+  "1935-a-tale-of-two-cities": {
+   "rating": 2,
+   "date": "2025-12-03"
+  },
+  "1936-the-great-ziegfeld": {
+   "rating": 2.5,
+   "date": null
+  },
+  "1937-the-life-of-emile-zola": {
+   "rating": 3,
+   "date": "2025-12-05"
+  }
+ },
+ "matches": {
+  "2000-gladiator": 1000,
+  "1974-chinatown": 1037,
+  "1975-barry-lyndon": 1074,
+  "2010-true-grit": 1111,
+  "1994-pulp-fiction": 1148,
+  "2000-crouching-tiger-hidden-dragon": 1185,
+  "1977-annie-hall": 1222,
+  "2006-the-departed": 1259,
+  "2014-american-sniper": 1296,
+  "2002-chicago": 1333,
+  "2013-captain-phillips": 1370,
+  "2022-top-gun-maverick": 1407,
+  "1962-how-the-west-was-won": 1444,
+  "1960-the-apartment": 1481,
+  "1964-dr-strangelove": 1518,
+  "1975-dog-day-afternoon": 1555,
+  "2017-dunkirk": 1592,
+  "2003-the-lord-of-the-rings-the-return-of-the-king": 1629,
+  "1962-lawrence-of-arabia": 1666,
+  "1958-gigi": 1703,
+  "1984-amadeus": 1740,
+  "1987-fatal-attraction": 1777,
+  "2005-munich": 1814,
+  "1972-deliverance": 1851,
+  "1999-the-sixth-sense": 1888,
+  "1956-the-searchers": 1925,
+  "1950-all-about-eve": 1962,
+  "1990-dances-with-wolves": 1999,
+  "1942-wake-island": 2036,
+  "1965-the-sound-of-music": 2073
+ },
+ "shelf": [
+  "1954-seven-samurai",
+  "1962-how-the-west-was-won",
+  "1963-tom-jones",
+  "2014-american-sniper",
+  "2014-birdman-or-the-unexpected-virtue-of-ignorance",
+  "2016-manchester-by-the-sea"
+ ],
+ "snubs": {
+  "1958-gigi": "1958-cat-on-a-hot-tin-roof",
+  "1988-rain-man": "other",
+  "1941-how-green-was-my-valley": "1941-the-maltese-falcon",
+  "1983-terms-of-endearment": "1983-the-right-stuff"
+ },
+ "drawnOn": "2026-09-20",
+ "posterPaths": {
+  "1975-one-flew-over-the-cuckoo-s-nest": null,
+  "2003-the-lord-of-the-rings-the-return-of-the-king": "/p1Xy_z-1.jpg",
+  "1993-the-fugitive": "/p2Xy_z-2.jpg",
+  "1946-the-yearling": "/p3Xy_z-3.jpg",
+  "2007-there-will-be-blood": null,
+  "2001-a-beautiful-mind": "/p5Xy_z-5.jpg",
+  "1983-the-right-stuff": "/p6Xy_z-6.jpg",
+  "1967-in-the-heat-of-the-night": "/p7Xy_z-7.jpg",
+  "1930-all-quiet-on-the-western-front": null,
+  "1990-the-godfather-part-iii": "/p9Xy_z-9.jpg",
+  "1975-dog-day-afternoon": "/p10Xy_z-10.jpg",
+  "1952-high-noon": "/p11Xy_z-11.jpg",
+  "1991-the-silence-of-the-lambs": null,
+  "2014-the-grand-budapest-hotel": "/p13Xy_z-13.jpg",
+  "2006-the-departed": "/p14Xy_z-14.jpg",
+  "1953-julius-caesar": "/p15Xy_z-15.jpg",
+  "1977-annie-hall": null,
+  "2013-captain-phillips": "/p17Xy_z-17.jpg",
+  "1968-once-upon-a-time-in-the-west": "/p18Xy_z-18.jpg",
+  "2009-the-hurt-locker": "/p19Xy_z-19.jpg"
+ },
+ "moodSuggestions": {
+  "1950-all-about-eve": [
+   "Adventurous",
+   "Reflective"
+  ],
+  "2009-avatar": [
+   "Dark",
+   "Romantic"
+  ],
+  "2002-chicago": [
+   "Epic",
+   "Tense"
+  ],
+  "2005-brokeback-mountain": [
+   "Funny",
+   "Uplifting"
+  ],
+  "2021-dune": [
+   "Adventurous",
+   "Reflective"
+  ],
+  "1947-gentleman-s-agreement": [
+   "Dark",
+   "Romantic"
+  ],
+  "1997-boogie-nights": [
+   "Epic",
+   "Tense"
+  ],
+  "1976-rocky": [
+   "Funny",
+   "Uplifting"
+  ],
+  "1944-henry-v": [
+   "Adventurous",
+   "Reflective"
+  ],
+  "1999-american-beauty": [
+   "Dark",
+   "Romantic"
+  ],
+  "1932-grand-hotel": [
+   "Epic",
+   "Tense"
+  ],
+  "1977-annie-hall": [
+   "Funny",
+   "Uplifting"
+  ],
+  "2019-once-upon-a-time-in-hollywood": [
+   "Adventurous",
+   "Reflective"
+  ],
+  "1969-butch-cassidy-and-the-sundance-kid": [
+   "Dark",
+   "Romantic"
+  ],
+  "1935-a-midsummer-night-s-dream": [
+   "Epic",
+   "Tense"
+  ]
+ },
+ "settings": {
+  "country": "SE",
+  "drawSelection": true,
+  "filter": "all",
+  "query": "godfather",
+  "statusFilter": "W",
+  "decadeFilter": 1970,
+  "runtimeLimit": 120,
+  "timeMode": "120",
+  "moodFilter": "Dark",
+  "finishTime": "",
+  "finishDeadline": null,
+  "subscriptionOnly": true,
+  "selectedServices": {
+   "SE": [
+    8,
+    337
+   ]
+  },
+  "wallSort": "rank"
+ },
+ "lastBackup": {
+  "at": "2026-09-25T10:00:00.000Z",
+  "signature": "deadbeef",
+  "kind": "file"
+ },
+ "availability": {
+  "SE": {
+   "1927-wings": {
+    "at": 1700000000000,
+    "ids": [
+     8
+    ]
+   }
+  }
+ },
+ "providerDirectories": {
+  "SE": {
+   "at": 1700000000000,
+   "providers": [
+    {
+     "id": 8,
+     "name": "Netflix"
+    }
+   ]
+  }
+ }
+}

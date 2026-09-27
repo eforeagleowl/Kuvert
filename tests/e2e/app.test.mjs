@@ -77,6 +77,42 @@ test("an evening: draw, mark watched, rate, undo", async () => {
   await context.close();
 });
 
+test("a saved ticket stays sealed: nothing names it or its year until the envelope opens on it", async () => {
+  const context = await newContext();
+  const page = await openPage(context, "/");
+  // Tonight's film, drawn earlier and put back in the envelope unwatched.
+  const film = await page.evaluate(() => {
+    const { store, catalog, stage } = window.kuvert.app;
+    const f = catalog.films.find((x) => x.t.length > 14 && !x.tri);
+    store.pick(f.id);
+    stage.syncPick();
+    return { id: f.id, t: f.t, y: f.y };
+  });
+  const sealed = async (when) => {
+    await page.waitForSelector("#resumePick:not([hidden])");
+    const seen = await page.evaluate(() => ({ text: document.getElementById("page-tonight").innerText, year: window.kuvert.app.stage.nixie.value }));
+    assert.ok(!seen.text.includes(film.t), when + ": the title shows before the envelope opens");
+    assert.ok(!seen.text.includes(String(film.y)), when + ": the year shows before the envelope opens");
+    assert.equal(seen.year, null, when + ": the dial shows the year before the envelope opens");
+  };
+  await sealed("saved");
+  await page.reload();
+  await page.waitForFunction(() => window.kuvert?.app);
+  await sealed("after a reload");
+  // Opening the envelope reveals that film, not a new one.
+  await page.click("#drawBtn");
+  await page.waitForFunction(() => !window.kuvert.app.stage.busy && window.kuvert.app.stage.open);
+  assert.equal(await page.evaluate(() => window.kuvert.app.store.p.current), film.id);
+  assert.equal(await page.textContent("#pickTitle"), film.t);
+  assert.equal(await page.evaluate(() => window.kuvert.app.stage.nixie.value), film.y);
+  // Closed again, it's sealed again.
+  await page.click("#ticketClose");
+  await page.waitForFunction(() => !window.kuvert.app.stage.busy && !window.kuvert.app.stage.open);
+  await sealed("closed again");
+  assert.deepEqual(await problems(page), []);
+  await context.close();
+});
+
 test("draw again never repeats the film on the ticket", async () => {
   const context = await newContext();
   const page = await openPage(context, "/");

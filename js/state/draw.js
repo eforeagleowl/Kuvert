@@ -88,6 +88,7 @@ export function getUnits(env, { selection = env.settings.drawSelection, ignoreRu
   return units.filter(
     ({ film: f }) =>
       !p.skipped.has(f.id) &&
+      !env.exclude?.has(f.id) && // group night: someone in the group has seen it
       (ignoreRuntime || runtimeMatches(p, settings, f, now)) &&
       (ignoreMood || !settings.moodFilter || moodsFor(p, f.id).includes(settings.moodFilter)) &&
       (ignoreStreaming || !settings.subscriptionOnly || p.shelf.has(f.id) || subscriptionMatches(caches, settings, f.id, now.getTime())) &&

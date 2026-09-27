@@ -66,6 +66,7 @@
 <symbol id="i-list" viewBox="0 0 24 24"><path d="M3 5h.01" /><path d="M3 12h.01" /><path d="M3 19h.01" /><path d="M8 5h13" /><path d="M8 12h13" /><path d="M8 19h13" /></symbol>
 <symbol id="i-popcorn" viewBox="0 0 24 24"><path d="M18 8a2 2 0 0 0 0-4 2 2 0 0 0-4 0 2 2 0 0 0-4 0 2 2 0 0 0-4 0 2 2 0 0 0 0 4" /><path d="M10 22 9 8" /><path d="m14 22 1-14" /><path d="M20 8c.5 0 .9.4.8 1l-2.6 12c-.1.5-.7 1-1.2 1H7c-.6 0-1.1-.4-1.2-1L3.2 9c-.1-.6.3-1 .8-1Z" /></symbol>
 <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" /></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
 <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/></symbol>
 <symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 4.7a.7.7 0 0 0-1.2-.5L6.4 7.6A1.4 1.4 0 0 1 5.4 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.4a1.4 1.4 0 0 1 1 .4l3.4 3.4a.7.7 0 0 0 1.2-.5z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.4 18.4a9 9 0 0 0 0-12.8"/></symbol>
 <symbol id="crowns" viewBox="0 0 24 20"><path d="m1 8 v-5 l2.5 2 L6 1 l2.5 4 2.5-2 v5 z"/><path d="m13 8 v-5 l2.5 2 L18 1 l2.5 4 2.5-2 v5 z"/><path d="m7 18 v-5 l2.5 2 L12 11 l2.5 4 2.5-2 v5 z"/></symbol>
@@ -192,6 +193,7 @@
               <p class="t-facts" id="pickFacts" hidden></p>
               <p class="t-line" id="finishEstimate" hidden></p>
               <p class="t-line t-intermission" id="intermission" hidden></p>
+              <p class="t-line t-group" id="groupLine" hidden></p>
               <div class="t-moods" id="moodTags" hidden></div>
               <p class="t-line" id="pickNote" hidden></p>
               <p class="t-line t-prov" id="pickProv" hidden></p>
@@ -282,6 +284,7 @@
       <div class="pref-bar">
         <div class="chips" id="activeChips" aria-label="Active draw preferences"></div>
         <button class="btn btn-quiet btn-sm" id="adjustPreferences" type="button" aria-expanded="false" aria-controls="preferencesPanel"><svg class="icon" aria-hidden="true"><use href="#i-sliders"/></svg><span>Adjust</span></button>
+        <button class="btn btn-quiet btn-sm" id="openGroup" type="button" aria-haspopup="dialog"><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg><span data-sg="Squad">Group night</span></button>
       </div>
       <section class="pref-panel card" id="preferencesPanel" hidden aria-labelledby="prefTitle">
         <div class="pref-head"><h2 id="prefTitle">Tonight’s preferences</h2><button class="link" id="donePreferences" type="button">Done</button></div>
@@ -705,6 +708,26 @@
     <button class="btn btn-primary" id="saveReview" type="button" data-sg="File report">Save note</button>
     <button class="btn btn-quiet" id="cancelReview" type="button">Cancel</button>
   </div>
+</dialog>
+<dialog class="group-dialog" id="groupDialog" aria-labelledby="groupTitle">
+  <h2 id="groupTitle"><span lang="sv" data-sg="Squad deployment">Filmkväll med vänner</span></h2>
+  <p class="fine" id="groupIntro">Group night. Add your friends’ progress codes, and tonight’s draw only picks films none of you has seen. Their code is in their Kuvert under Settings, then Recovery &amp; reset. Only their name and which films they’ve watched are kept, on this device.</p>
+  <ul class="group-people" id="groupPeople" aria-label="Your group"></ul>
+  <form class="group-add" id="groupForm">
+    <label class="field" for="groupName"><span>Name</span></label>
+    <input id="groupName" autocomplete="off" maxlength="40" placeholder="Friend 1">
+    <label class="field" for="groupCode"><span>Their progress code</span></label>
+    <textarea id="groupCode" rows="3" spellcheck="false" autocomplete="off" placeholder="KU7.…"></textarea>
+    <p class="error" id="groupError" role="alert"></p>
+    <div class="row">
+      <button class="btn btn-primary" id="groupAdd" type="submit">Add to the group</button>
+      <button class="btn" id="groupFile" type="button">Load their backup file</button>
+      <input type="file" id="groupFileInput" accept=".json,application/json" hidden>
+    </div>
+  </form>
+  <label class="switch" id="groupOnRow"><input type="checkbox" id="groupOn"><span>Draw for the group tonight</span></label>
+  <p class="group-summary" id="groupSummary" role="status"></p>
+  <div class="row"><button class="btn btn-primary" id="groupDone" type="button">Done</button></div>
 </dialog>
 <dialog id="codeDialog" aria-labelledby="codeTitle">
   <h2 id="codeTitle">Restore from a code</h2>

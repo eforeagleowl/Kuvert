@@ -17,6 +17,7 @@ export const KEYS = Object.freeze({
   // Only this app writes these; the original app never reads them.
   safekeeping: "kuvert:safekeeping", // { count, snoozed }: films at your last copy, reminder snoozed until
   unreadable: (key) => "kuvert:unreadable:" + key, // a save that couldn't be read, kept exactly as it was
+  group: (listId) => "kuvert:group:" + listId, // group night: { on, people: [{ name, seen, added }] }
   // sessionStorage
   clearance: "kuvert:clearance", // show the SEAGAL boot screen once
   pendingRestore: "kuvert:pendingRestore", // a backup to preview after switching lists

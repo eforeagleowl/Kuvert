@@ -182,3 +182,51 @@ test("Tonight reminds you to keep a copy, and one tap makes it", async () => {
   assert.deepEqual(await problems(page), []);
   await context.close();
 });
+
+test("group night: add a friend's code, and the draw only picks films neither of you has seen", async () => {
+  const context = await newContext();
+  const page = await openPage(context, "/");
+  // Anna's code, made the way her Kuvert makes it: the first 120 films watched.
+  const { code, annaSeen, before } = await page.evaluate(() => {
+    const { store, catalog } = window.kuvert.app;
+    const before = store.units().length;
+    const saved = store.p;
+    const ids = catalog.films.slice(0, 120).map((f) => f.id);
+    store.p = { ...saved, seen: new Set(ids) };
+    const code = store.code();
+    store.p = saved;
+    return { code, annaSeen: ids, before };
+  });
+  // Tonight's ticket before group night: a film Anna has seen.
+  await page.evaluate((id) => window.kuvert.app.store.pick(id), annaSeen[5]);
+  await page.click("#openGroup");
+  await page.fill("#groupName", "Anna");
+  await page.fill("#groupCode", code);
+  await page.click("#groupAdd");
+  await page.waitForSelector(".group-people li:nth-child(2)");
+  assert.match(await page.textContent("#groupSummary"), /films none of the 2 people has seen/);
+  await page.click("#groupDone");
+  assert.match(await page.textContent("#openGroup"), /Group night · 2/);
+  const after = await page.evaluate(() => window.kuvert.app.store.units().length);
+  assert.ok(after < before && after > 0);
+  assert.match(await page.textContent("#eligibleCount"), /none of you has seen/);
+
+  // The ticket already out says Anna has seen it; drawing again picks one she hasn't.
+  await page.click("#resumeFilm");
+  await page.waitForSelector("#ticket:not([hidden])");
+  await page.waitForSelector("#groupLine:not([hidden])");
+  assert.equal(await page.textContent("#groupLine"), "Anna has seen this one.");
+  for (let i = 0; i < 5; i++) {
+    await page.click("#againBtn");
+    await page.waitForFunction(() => !window.kuvert.app.stage.busy);
+    const id = await page.evaluate(() => window.kuvert.app.store.p.current);
+    assert.ok(!annaSeen.includes(id), "drew a film Anna has seen: " + id);
+  }
+  await page.waitForFunction(() => document.getElementById("groupLine").textContent.startsWith("Group night: none of you"));
+  // Only Anna's name and watched films were kept, and nothing went into your own save.
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("kuvert:group:builtin")));
+  assert.deepEqual(Object.keys(stored.people[0]).sort(), ["added", "name", "seen"]);
+  assert.equal(await page.evaluate(() => localStorage.getItem("kuvert:v4").includes("Anna")), false);
+  assert.deepEqual(await problems(page), []);
+  await context.close();
+});

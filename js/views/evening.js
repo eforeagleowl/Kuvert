@@ -122,8 +122,9 @@ export class Evening {
 
     // The eligible count.
     const drawWord = seagal ? (eligible === 1 ? "live target" : "live targets") : eligible === 1 ? "eligible ticket" : "eligible tickets";
-    $("eligibleCount").textContent =
-      eligible + " " + drawWord + (active ? this.app.sg(" · tonight’s filters apply", " · rules of engagement apply") : this.app.sg(" · drawing from all unseen films", " · all hostiles in play"));
+    $("eligibleCount").textContent = this.app.group?.on
+      ? eligible + (eligible === 1 ? " film" : " films") + this.app.sg(" none of you has seen", " no one in the squad has neutralized") + (active ? " · tonight’s filters apply" : "")
+      : eligible + " " + drawWord + (active ? this.app.sg(" · tonight’s filters apply", " · rules of engagement apply") : this.app.sg(" · drawing from all unseen films", " · all hostiles in play"));
 
     // Missing details for tonight's filters.
     $("metadataTools").hidden = !(this.checking || (active && (pending > 0 || eligible === 0)));

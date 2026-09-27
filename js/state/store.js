@@ -30,6 +30,7 @@ export class Store extends EventTarget {
     this.lastBackup = null;
     this.storageOK = false;
     this.writeLocked = false; // a save we couldn't read is never written over (see load)
+    this.exclude = null; // group night: films someone in the group has seen (see state/group.js)
     this.unreadable = null;
     this.dirty = false;
     this.revision = 0;
@@ -263,7 +264,7 @@ export class Store extends EventTarget {
 
   // ---------------------------------------------------------------- the draw
   env() {
-    return { p: this.p, settings: this.settings, caches: this.caches, catalog: this.catalog, now: this.now() };
+    return { p: this.p, settings: this.settings, caches: this.caches, catalog: this.catalog, now: this.now(), exclude: this.exclude };
   }
   units(opts) {
     return getUnits(this.env(), opts);

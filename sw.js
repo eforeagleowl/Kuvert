@@ -6,7 +6,7 @@
 // purpose: no libraries, and nothing but the app and its posters is ever cached.
 
 // <stamp> written by tools/stamp.mjs (npm run stamp); do not edit by hand.
-const VERSION = "d903c2964d2a";
+const VERSION = "7573827f9317";
 const FILES = [
   "./",
   "./manifest.webmanifest",
@@ -33,6 +33,7 @@ const FILES = [
   "./js/state/catalog.js",
   "./js/state/dates.js",
   "./js/state/draw.js",
+  "./js/state/group.js",
   "./js/state/merge.js",
   "./js/state/stats.js",
   "./js/state/store.js",
@@ -47,6 +48,7 @@ const FILES = [
   "./js/ui/stars.js",
   "./js/ui/toast.js",
   "./js/views/evening.js",
+  "./js/views/group.js",
   "./js/views/library.js",
   "./js/views/nixie.js",
   "./js/views/rails.js",

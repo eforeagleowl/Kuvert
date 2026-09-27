@@ -5,7 +5,7 @@ import { env, newContext, openPage, go, problems, nextProgress } from "./helpers
 
 test("every page starts without errors or policy violations", async () => {
   const context = await newContext();
-  const page = await openPage(context, "/next/");
+  const page = await openPage(context, "/");
   for (const name of ["library", "stats", "settings", "tonight"]) {
     await page.click(`a[data-route="${name}"]:visible`);
     await page.waitForFunction((n) => document.documentElement.dataset.page === n && !document.getElementById("page-" + n).hidden, name);
@@ -19,7 +19,7 @@ test("the draw: seal, dial and ticket, with the full animation", async () => {
   const context = await env.browser.newContext({ serviceWorkers: "block", reducedMotion: "no-preference" });
   await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
   await context.addInitScript(() => localStorage.setItem("kuvert:welcomed", "1"));
-  const page = await openPage(context, "/next/");
+  const page = await openPage(context, "/");
   await page.click("#drawBtn");
   // Mid-draw the dial rolls; afterwards it shows the film's year.
   await page.waitForSelector("#ticket:not([hidden])", { timeout: 6000 });
@@ -37,7 +37,7 @@ test("the draw: seal, dial and ticket, with the full animation", async () => {
 
 test("an evening: draw, mark watched, rate, undo", async () => {
   const context = await newContext();
-  const page = await openPage(context, "/next/");
+  const page = await openPage(context, "/");
   await page.click("#drawBtn");
   await page.waitForSelector("#ticket:not([hidden])");
   const id = await page.evaluate(() => window.kuvert.app.store.p.current);
@@ -67,7 +67,7 @@ test("an evening: draw, mark watched, rate, undo", async () => {
 
 test("draw again never repeats the film on the ticket", async () => {
   const context = await newContext();
-  const page = await openPage(context, "/next/");
+  const page = await openPage(context, "/");
   await page.click("#drawBtn");
   await page.waitForSelector("#ticket:not([hidden])");
   let last = await page.evaluate(() => window.kuvert.app.store.p.current);
@@ -82,7 +82,7 @@ test("draw again never repeats the film on the ticket", async () => {
 
 test("SEAGAL: in through the brave link, out on the second request", async () => {
   const context = await newContext();
-  const page = await openPage(context, "/next/#settings");
+  const page = await openPage(context, "/#settings");
   await page.click("#braveLink");
   await page.waitForFunction(() => document.documentElement.dataset.mode === "seagal" && window.kuvert?.app);
   assert.equal(await page.evaluate(() => window.kuvert.app.list.id), "seagal");
@@ -105,7 +105,7 @@ test("a backup file made by the rebuild loads back in", async () => {
     delete window.showSaveFilePicker;
     delete window.showOpenFilePicker;
   });
-  const page = await openPage(context, "/next/");
+  const page = await openPage(context, "/");
   await page.evaluate(() => {
     const { store, catalog } = window.kuvert.app;
     for (const f of catalog.films.slice(3, 9)) store.markSeen(f.id, true);
@@ -118,7 +118,7 @@ test("a backup file made by the rebuild loads back in", async () => {
   const file = await download.path();
 
   await page.evaluate(() => window.kuvert.app.store.reset());
-  await go(page, "/next/#settings");
+  await go(page, "/#settings");
   assert.equal((await nextProgress(page)).seen.length, 0);
   const [chooser] = await Promise.all([page.waitForEvent("filechooser"), page.click("#openFile")]);
   await chooser.setFiles(file);
@@ -139,7 +139,7 @@ test("an unreadable save is never written over until you choose to start fresh",
   await page.goto(env.url + "/tools/blank.html");
   const broken = '{"app":"kuvert","v":7,"seen":["1927-wings","1942-casab';
   await page.evaluate((b) => localStorage.setItem("kuvert:v4", b), broken);
-  await go(page, "/next/");
+  await go(page, "/");
   assert.ok(await page.isVisible("#unreadable"), "the notice explains what happened");
   await page.click("#drawBtn");
   await page.waitForSelector("#ticket:not([hidden])");
@@ -162,7 +162,7 @@ test("Tonight reminds you to keep a copy, and one tap makes it", async () => {
   await context.addInitScript(() => {
     delete window.showSaveFilePicker; // headless has no file picker to click through
   });
-  const page = await openPage(context, "/next/");
+  const page = await openPage(context, "/");
   assert.equal(await page.isVisible("#keepCopy"), false);
   await page.evaluate(() => {
     const { store, catalog } = window.kuvert.app;

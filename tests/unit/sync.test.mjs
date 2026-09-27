@@ -1,10 +1,10 @@
 // Sync between two devices through a pretend GitHub Gist.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { resolveList } from "../../next/js/data/lists.js";
-import { makeCatalog } from "../../next/js/state/catalog.js";
-import { Store } from "../../next/js/state/store.js";
-import { Sync } from "../../next/js/storage/sync.js";
+import { resolveList } from "../../js/data/lists.js";
+import { makeCatalog } from "../../js/state/catalog.js";
+import { Store } from "../../js/state/store.js";
+import { Sync } from "../../js/storage/sync.js";
 import { MemoryStorage } from "./helpers.mjs";
 
 // A tiny in-memory GitHub: just the gist endpoints Kuvert uses.

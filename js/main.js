@@ -306,7 +306,11 @@ if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
         return url;
       },
     });
-    navigator.serviceWorker.register(policy ? policy.createScriptURL("sw.js") : "sw.js").catch(() => {});
+    // Check for a new version every time Kuvert opens, not only when the browser gets round to it.
+    navigator.serviceWorker
+      .register(policy ? policy.createScriptURL("sw.js") : "sw.js")
+      .then((reg) => reg.update())
+      .catch(() => {});
     // A new version took over: say so once, with a reload at hand.
     let hadController = !!navigator.serviceWorker.controller;
     navigator.serviceWorker.addEventListener("controllerchange", () => {

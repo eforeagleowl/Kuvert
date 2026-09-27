@@ -1,9 +1,9 @@
-# Kuvert, rebuilt
+# How Kuvert is built
 
-The same app as the classic Kuvert one folder up, rebuilt from the ground up: every feature
-(listed in [FEATURES.md](FEATURES.md)), the same saves, codes and backup files, and a new interface.
-It lives at `/next/` on the same site, so both apps share one browser's progress and you can move
-between them freely. When it has earned it, it can replace the classic page.
+Kuvert was rebuilt from the ground up: every feature of the original (listed in
+[FEATURES.md](FEATURES.md)), the same saves, codes and backup files, and a new interface. It lives at
+the site root; the original stays at `/classic/` as Kuvert Classic. Both share one browser's progress,
+so you can move between them freely. The rebuild's first home, `/next/`, forwards to the root.
 
 ## What's new on the surface
 
@@ -37,6 +37,8 @@ js/ui/            DOM helpers, toast, dialogs, stars, sounds, the horse
 js/share/         ticket and ranking images, drawn on a canvas
 js/fun/           SEAGAL
 sw.js             offline: precaches every file under a version stamped from their contents
+classic/          Kuvert Classic, the original single-file app, with its own worker
+next/             the rebuild's old address: forwards to the root and removes its old worker
 ```
 
 - **One state object.** Every change goes through `Store`, which saves, emits `change`, and hands
@@ -63,6 +65,16 @@ The rebuild still writes version 7. Its one addition is an optional `stamps` fie
 last changed), which lets sync merge film by film, so un-marking a film on one device sticks. The
 classic app ignores the field; when it saves, sync falls back to the classic merge.
 
+## Keeping progress safe
+
+Progress lives in one browser, which can lose it. So Kuvert asks the browser to keep its data,
+offers a one-tap copy (the share sheet on phones, a kept-up-to-date file where the browser allows it,
+a download elsewhere), and reminds you on Tonight when there's no recent copy. A save that can't be
+read is kept aside under `kuvert:unreadable:<key>` and never written over: no saves, file writes or
+sync until you restore something or choose to start fresh. Keys that only this app writes
+(`kuvert:safekeeping`, `kuvert:unreadable:*`) are listed in `js/compat/keys.js`; the classic app
+never reads them.
+
 ## Checks
 
 ```
@@ -70,12 +82,12 @@ npm ci
 npm test            # unit: formats against fixtures recorded from the classic app, state, sync
 npm run test:e2e    # browser: the evening end to end, both apps reading each other, offline
 npm run check       # all of the above, plus the service worker stamp
-npm run serve       # http://127.0.0.1:8123/ (classic) and /next/ (this)
+npm run serve       # http://127.0.0.1:8123/ (Kuvert) and /classic/ (Kuvert Classic)
 ```
 
 `tests/fixtures/golden.json` is recorded by driving the classic app in a browser
 (`npm run golden`). The unit tests hold the rebuild to it byte for byte. If the classic page changes
 its films, run `npm run extract` (the drift test says so), then `npm run golden`.
 
-After changing any file here, run `npm run stamp` so browsers pick up the new version. CI fails
+After changing any file of the app, run `npm run stamp` so browsers pick up the new version. CI fails
 when the stamp is stale.

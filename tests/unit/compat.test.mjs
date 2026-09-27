@@ -3,12 +3,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { FILMS, KUVERT } from "../../next/js/data/catalogue.js";
-import { LEGACY_IDS, LOCAL_LEGACY_IDS } from "../../next/js/compat/legacy-ids.js";
-import { listContext, validateProgress } from "../../next/js/compat/validate.js";
-import { parseCode, encodeCode, checksum } from "../../next/js/compat/codes.js";
-import { encodeLegacy, decodeLegacy } from "../../next/js/compat/legacy-code.js";
-import { stateData, progressSignature, browserSave } from "../../next/js/compat/serialize.js";
+import { FILMS, KUVERT } from "../../js/data/catalogue.js";
+import { LEGACY_IDS, LOCAL_LEGACY_IDS } from "../../js/compat/legacy-ids.js";
+import { listContext, validateProgress } from "../../js/compat/validate.js";
+import { parseCode, encodeCode, checksum } from "../../js/compat/codes.js";
+import { encodeLegacy, decodeLegacy } from "../../js/compat/legacy-code.js";
+import { stateData, progressSignature, browserSave } from "../../js/compat/serialize.js";
 
 const golden = JSON.parse(readFileSync(new URL("../fixtures/golden.json", import.meta.url), "utf8"));
 const builtin = listContext({ films: FILMS, catalogue: KUVERT.catalogue, olderCatalogues: KUVERT.olderCatalogues, retired: KUVERT.retired });

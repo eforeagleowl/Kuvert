@@ -2,12 +2,12 @@
 // keep a copy appears when it should and not otherwise.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { resolveList } from "../../next/js/data/lists.js";
-import { makeCatalog } from "../../next/js/state/catalog.js";
-import { Store } from "../../next/js/state/store.js";
-import { Safekeeping, REMIND } from "../../next/js/storage/safekeeping.js";
-import { Sync } from "../../next/js/storage/sync.js";
-import { validateProgress } from "../../next/js/compat/validate.js";
+import { resolveList } from "../../js/data/lists.js";
+import { makeCatalog } from "../../js/state/catalog.js";
+import { Store } from "../../js/state/store.js";
+import { Safekeeping, REMIND } from "../../js/storage/safekeeping.js";
+import { Sync } from "../../js/storage/sync.js";
+import { validateProgress } from "../../js/compat/validate.js";
 import { MemoryStorage } from "./helpers.mjs";
 
 const NOW = new Date("2026-09-27T20:00:00Z");

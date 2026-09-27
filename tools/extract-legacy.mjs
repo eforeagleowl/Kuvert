@@ -1,6 +1,6 @@
 // Writes the catalogue modules for the rebuild from the original app:
-//   next/js/data/catalogue.js      films, list config, palettes, moods, Oscar field sizes, the SEAGAL list
-//   next/js/compat/legacy-ids.js   the frozen film orders that old bit-packed codes decode against
+//   js/data/catalogue.js      films, list config, palettes, moods, Oscar field sizes, the SEAGAL list
+//   js/compat/legacy-ids.js   the frozen film orders that old bit-packed codes decode against
 // Run: node tools/extract-legacy.mjs   (tests/drift.test.mjs fails if these fall out of step)
 import { writeFileSync } from "node:fs";
 import { readLegacy } from "./legacy-source.mjs";
@@ -8,10 +8,10 @@ import { readLegacy } from "./legacy-source.mjs";
 const L = readLegacy();
 const json = (v) => JSON.stringify(v);
 const lines = (arr) => "[\n" + arr.map((x) => "  " + json(x) + ",").join("\n") + "\n]";
-const head = "// Generated from /index.html by tools/extract-legacy.mjs. Do not edit by hand.\n";
+const head = "// Generated from classic/index.html by tools/extract-legacy.mjs. Do not edit by hand.\n";
 
 writeFileSync(
-  new URL("../next/js/data/catalogue.js", import.meta.url),
+  new URL("../js/data/catalogue.js", import.meta.url),
   head +
     "// Each film keeps a permanent id; `tri`/`ord` mark parts of a series; `c` is the Academy Awards\n" +
     "// ceremony (1st–98th) where a winner or nominee competed for Best Picture.\n\n" +
@@ -28,7 +28,7 @@ writeFileSync(
 );
 
 writeFileSync(
-  new URL("../next/js/compat/legacy-ids.js", import.meta.url),
+  new URL("../js/compat/legacy-ids.js", import.meta.url),
   head +
     "// Frozen catalogue orderings used to decode old bit-packed progress codes. Never edit.\n" +
     "// ORIGINAL: the list before five films were added. LOCAL: the updated list (the default choice).\n" +

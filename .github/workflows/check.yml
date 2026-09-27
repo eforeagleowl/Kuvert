@@ -1,5 +1,6 @@
-# Runs the checks for the rebuild in /next/: the service worker stamp, the unit tests (the save
-# formats against fixtures recorded from the classic app) and the browser tests (both apps together).
+# Runs Kuvert's checks: the service worker stamp, the unit tests (the save formats against fixtures
+# recorded from Kuvert Classic) and the browser tests (both apps together, offline, and the upgrade
+# from the old layout, which needs the full history).
 name: Check
 
 on:
@@ -15,6 +16,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v5
         with:
           node-version: 22

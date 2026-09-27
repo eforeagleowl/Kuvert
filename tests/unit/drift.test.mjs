@@ -3,8 +3,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readLegacy } from "../../tools/legacy-source.mjs";
-import * as cat from "../../next/js/data/catalogue.js";
-import { LEGACY_IDS, LOCAL_LEGACY_IDS } from "../../next/js/compat/legacy-ids.js";
+import * as cat from "../../js/data/catalogue.js";
+import { LEGACY_IDS, LOCAL_LEGACY_IDS } from "../../js/compat/legacy-ids.js";
 
 const L = readLegacy();
 

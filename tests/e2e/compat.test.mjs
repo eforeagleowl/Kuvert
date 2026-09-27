@@ -20,11 +20,11 @@ function classicWatch(n) {
 
 test("the rebuild reads the classic app's save, and the classic app reads it back", async () => {
   const context = await newContext();
-  const classic = await openPage(context, "/index.html");
+  const classic = await openPage(context, "/classic/");
   await classic.evaluate(classicWatch, 6);
   const written = await classicProgress(classic);
 
-  const page = await openPage(context, "/next/");
+  const page = await openPage(context, "/");
   const read = await nextProgress(page);
   for (const k of ["seen", "dates", "reviews", "skipped", "rankings"]) assert.deepEqual(read[k], written[k], k);
 
@@ -39,7 +39,7 @@ test("the rebuild reads the classic app's save, and the classic app reads it bac
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("kuvert:v4")));
   assert.ok(saved.stamps?.[extra], "the rebuild stamps the change");
 
-  await go(classic, "/index.html");
+  await go(classic, "/classic/");
   const back = await classicProgress(classic);
   assert.ok(back.seen.includes(extra));
   assert.equal(back.reviews[extra].rating, 4.5);
@@ -47,7 +47,7 @@ test("the rebuild reads the classic app's save, and the classic app reads it bac
 
   // The classic app saves over it (dropping stamps it doesn't know); the rebuild still reads it all.
   await classic.evaluate(() => persistBrowser());
-  await go(page, "/next/");
+  await go(page, "/");
   assert.deepEqual((await nextProgress(page)).seen, back.seen);
   assert.deepEqual([...(await problems(classic)), ...(await problems(page))], []);
   await context.close();
@@ -55,14 +55,14 @@ test("the rebuild reads the classic app's save, and the classic app reads it bac
 
 test("codes work in both directions", async () => {
   const one = await newContext();
-  const classic = await openPage(one, "/index.html");
+  const classic = await openPage(one, "/classic/");
   await classic.evaluate(classicWatch, 9);
   const classicCode = await classic.evaluate(() => encode());
   const want = await classicProgress(classic);
 
   // A classic code, pasted into the rebuild.
   const two = await newContext();
-  const page = await openPage(two, "/next/#settings");
+  const page = await openPage(two, "/#settings");
   await page.click("text=Recovery & reset");
   await page.click("#loadCode");
   await page.fill("#codeInput", classicCode);
@@ -98,12 +98,12 @@ test("an old envelope:v1 save is migrated the same way by both apps", async () =
     // What the very first version of the app kept: a list of watched ids and a current pick.
     await page.evaluate(() => localStorage.setItem("envelope:v1", JSON.stringify({ seen: ["1941-citizen-kane", "1942-casablanca"], current: "1939-gone-with-the-wind" })));
     await go(page, path);
-    const out = path.startsWith("/next/") ? await nextProgress(page) : await classicProgress(page);
+    const out = !path.startsWith("/classic/") ? await nextProgress(page) : await classicProgress(page);
     const keys = await page.evaluate(() => Object.keys(localStorage).sort());
     await context.close();
     return { seen: out.seen, current: out.current, keys };
   };
-  const [a, b] = [await legacy("/index.html"), await legacy("/next/")];
+  const [a, b] = [await legacy("/classic/"), await legacy("/")];
   assert.deepEqual(b.seen, a.seen);
   assert.equal(b.current, a.current);
 });

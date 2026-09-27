@@ -1,4 +1,4 @@
-// Generates tests/fixtures/golden.json by driving the ORIGINAL app (/index.html) in a headless browser.
+// Generates tests/fixtures/golden.json by driving the ORIGINAL app (classic/index.html) in a headless browser.
 // It records what the original writes (codes, backup files, browser saves, signatures) and how it reads
 // every older format, including the errors it raises. tests/unit/compat.test.mjs holds the rebuild to it.
 // Run: node tools/golden.mjs
@@ -19,7 +19,7 @@ async function openOriginal(setup) {
     await page.goto(url + "/tools/blank.html");
     await page.evaluate(setup);
   }
-  await page.goto(url + "/index.html");
+  await page.goto(url + "/classic/index.html");
   await page.waitForFunction(() => typeof encode === "function" && document.readyState === "complete");
   if (errors.length) throw Error("The original app failed to start: " + errors.join("; "));
   return { page, context };

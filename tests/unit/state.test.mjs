@@ -2,12 +2,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { resolveList } from "../../next/js/data/lists.js";
-import { makeCatalog } from "../../next/js/state/catalog.js";
-import { Store } from "../../next/js/state/store.js";
-import { bySync, keepLocal, emptyProgress } from "../../next/js/state/merge.js";
-import { defaultWatchDate } from "../../next/js/state/dates.js";
-import { LOCAL_LEGACY_IDS } from "../../next/js/compat/legacy-ids.js";
+import { resolveList } from "../../js/data/lists.js";
+import { makeCatalog } from "../../js/state/catalog.js";
+import { Store } from "../../js/state/store.js";
+import { bySync, keepLocal, emptyProgress } from "../../js/state/merge.js";
+import { defaultWatchDate } from "../../js/state/dates.js";
+import { LOCAL_LEGACY_IDS } from "../../js/compat/legacy-ids.js";
 import { MemoryStorage } from "./helpers.mjs";
 
 const golden = JSON.parse(readFileSync(new URL("../fixtures/golden.json", import.meta.url), "utf8"));

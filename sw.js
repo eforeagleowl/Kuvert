@@ -6,7 +6,7 @@
 // purpose: no libraries, and nothing but the app and its posters is ever cached.
 
 // <stamp> written by tools/stamp.mjs (npm run stamp); do not edit by hand.
-const VERSION = "adb98da150dc";
+const VERSION = "c038f260b49b";
 const FILES = [
   "./",
   "./manifest.webmanifest",
@@ -56,16 +56,18 @@ const FILES = [
   "./js/views/stage.js",
   "./js/views/stats.js",
   "./assets/crowns.svg",
-  "./assets/fonts/cormorant-500-italic-latin-ext.woff2",
-  "./assets/fonts/cormorant-500-italic-latin.woff2",
+  "./assets/fonts/cormorant-500-700-italic-latin-ext.woff2",
+  "./assets/fonts/cormorant-500-700-italic-latin.woff2",
   "./assets/fonts/cormorant-600-700-latin-ext.woff2",
   "./assets/fonts/cormorant-600-700-latin.woff2",
   "./assets/fonts/geist-400-700-latin-ext.woff2",
   "./assets/fonts/geist-400-700-latin.woff2",
+  "./assets/fonts/geist-arrows.woff2",
   "./assets/fonts/geist-mono-400-600-latin-ext.woff2",
   "./assets/fonts/geist-mono-400-600-latin.woff2",
   "./assets/fonts/michroma-400-latin-ext.woff2",
   "./assets/fonts/michroma-400-latin.woff2",
+  "./assets/fonts/noto-symbols-2-marks.woff2",
   "./assets/paper.webp",
   "./assets/tmdb.svg",
   "./favicon.svg",

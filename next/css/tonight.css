@@ -1,0 +1,1426 @@
+@layer tonight {
+  .page-tonight {
+    display: grid;
+    justify-items: center;
+    gap: var(--s-4);
+  }
+
+  /* ---------------------------------------------------------------- the masthead */
+  .marquee {
+    display: grid;
+    grid-template-columns: auto auto;
+    align-items: end;
+    justify-content: center;
+    column-gap: clamp(8px, 2vw, 18px);
+    padding-top: clamp(8px, 4vw, 36px);
+    text-align: center;
+  }
+  .marquee-title {
+    font: 700 var(--fs-display) / 0.86 var(--font-display);
+    letter-spacing: 0.14em;
+    margin-right: -0.14em;
+    text-transform: uppercase;
+    background: linear-gradient(180deg, var(--paper) 30%, color-mix(in oklab, var(--brass) 70%, var(--paper)) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 6px 18px rgb(0 0 0 / 0.45));
+  }
+  .marquee-sub {
+    grid-column: 1 / -1;
+    max-width: 46ch;
+    margin: var(--s-3) auto 0;
+    color: var(--muted);
+    font-size: var(--fs-3);
+  }
+
+  /* ---------------------------------------------------------------- the dala horse
+     Carved in bare wood, painted as you watch (see js/ui/horse.js). */
+  .hast {
+    position: relative;
+    display: block;
+    width: clamp(64px, 12vw, 96px);
+    padding: 0;
+    border: 0;
+    background: none;
+    border-radius: var(--r-2);
+    -webkit-tap-highlight-color: transparent;
+    transform-origin: 50% 100%;
+  }
+  .hast-art svg,
+  .brand-horse svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    transform-origin: 50% 95%;
+    filter: drop-shadow(0 6px 10px rgb(0 0 0 / 0.45));
+  }
+  .dala .h-wood {
+    fill: #c9a071;
+  }
+  .dala .h-grain {
+    fill: none;
+    stroke: #8d6843;
+    stroke-width: 0.6;
+    stroke-linecap: round;
+    opacity: 0.55;
+  }
+  .dala :is(.h-coat, .h-eye, .h-harness, .h-saddle, .h-flowers, .h-gold) {
+    opacity: 0;
+    transition: opacity 0.9s var(--ease);
+  }
+  .dala .h-coat {
+    fill: var(--velvet);
+  }
+  .dala .h-eye ellipse {
+    fill: var(--paper);
+  }
+  .dala .h-eye circle {
+    fill: var(--ink);
+  }
+  .dala .h-harness path {
+    fill: none;
+    stroke: var(--paper);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
+  .dala .h-studs circle {
+    fill: var(--brass);
+  }
+  .dala .h-saddle {
+    fill: var(--blue);
+    stroke: var(--paper);
+    stroke-width: 0.9;
+  }
+  .dala .h-flowers .petal {
+    fill: var(--paper);
+  }
+  .dala .h-flowers .heart {
+    fill: var(--velvet);
+  }
+  .dala .h-gold {
+    fill: var(--brass);
+    stroke: var(--brass);
+    stroke-width: 1.3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .dala .h-gold .h-mane {
+    fill: none;
+    stroke-width: 2.2;
+    stroke-dasharray: 0.1 3.2;
+  }
+  .dala.p1 :is(.h-coat, .h-eye),
+  .dala.p2 .h-harness,
+  .dala.p3 .h-saddle,
+  .dala.p4 .h-flowers,
+  .dala.p5 .h-gold {
+    opacity: 1;
+  }
+  .dala.p5 .h-saddle {
+    stroke: var(--brass);
+  }
+  .hast.nod svg {
+    animation: horse-nod 0.75s var(--ease) both;
+  }
+  .hast.rock svg,
+  .brand:hover .brand-horse svg {
+    animation: horse-rock 1.1s ease-in-out;
+  }
+  .hast.hop {
+    animation: horse-hop 0.45s var(--ease);
+  }
+  .hast.droop svg {
+    animation: horse-droop 1.5s ease-in-out;
+  }
+  .hast.back svg {
+    animation: horse-trot-in 0.9s var(--ease);
+  }
+  .hast.painted svg {
+    animation: horse-fresh-paint 1.2s var(--ease);
+  }
+  .hast.sleepy:not(.nod, .rock, .droop, .back, .painted) svg {
+    animation: horse-breathe 3.6s ease-in-out infinite;
+  }
+  .hast.away svg {
+    visibility: hidden;
+  }
+  @keyframes horse-nod {
+    30% {
+      transform: rotate(-9deg);
+    }
+    60% {
+      transform: rotate(3deg);
+    }
+  }
+  @keyframes horse-rock {
+    25% {
+      transform: rotate(-6deg);
+    }
+    75% {
+      transform: rotate(5deg);
+    }
+  }
+  @keyframes horse-hop {
+    40% {
+      transform: translateY(-14px) rotate(-4deg);
+    }
+    70% {
+      transform: translateY(0) scaleY(0.94);
+    }
+  }
+  @keyframes horse-droop {
+    30%,
+    70% {
+      transform: rotate(8deg) translateY(4px);
+    }
+  }
+  @keyframes horse-trot-in {
+    from {
+      transform: translateX(-60px);
+      opacity: 0;
+    }
+  }
+  @keyframes horse-fresh-paint {
+    30% {
+      filter: drop-shadow(0 0 14px var(--brass)) brightness(1.25);
+      transform: scale(1.08);
+    }
+  }
+  @keyframes horse-breathe {
+    50% {
+      transform: scaleY(0.97) translateY(1px);
+    }
+  }
+  .horse-say {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 6px);
+    padding: 5px 12px 6px;
+    border-radius: 12px;
+    background: var(--paper);
+    color: var(--ink);
+    font: italic 500 1.05rem / 1 var(--font-display);
+    white-space: nowrap;
+    box-shadow: var(--shadow-2);
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+  .horse-say::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    border: 6px solid transparent;
+    border-top-color: var(--paper);
+    transform: translateX(-50%);
+  }
+  .horse-say.say {
+    animation: say-in 0.35s var(--spring) both;
+  }
+  .horse-say.bye {
+    animation: say-out 0.25s var(--ease-in) both;
+  }
+  @keyframes say-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, 8px) scale(0.8);
+    }
+  }
+  @keyframes say-out {
+    to {
+      opacity: 0;
+      transform: translate(-50%, -6px);
+    }
+  }
+  .horse-zzz {
+    position: absolute;
+    top: -6px;
+    right: -14px;
+    display: none;
+    color: var(--muted);
+    font: italic 600 1rem var(--font-display);
+    pointer-events: none;
+  }
+  .hast.sleepy .horse-zzz {
+    display: block;
+  }
+  .horse-zzz i {
+    position: absolute;
+    opacity: 0;
+    animation: zzz 3s linear infinite;
+  }
+  .horse-zzz i:nth-child(2) {
+    animation-delay: 1s;
+  }
+  .horse-zzz i:nth-child(3) {
+    animation-delay: 2s;
+    font-size: 1.3em;
+  }
+  @keyframes zzz {
+    0% {
+      opacity: 0;
+      transform: translate(0, 0);
+    }
+    20% {
+      opacity: 0.9;
+    }
+    100% {
+      opacity: 0;
+      transform: translate(14px, -30px);
+    }
+  }
+  .gallop {
+    position: fixed;
+    left: 0;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    z-index: 70;
+    width: 70px;
+    height: 63px;
+    pointer-events: none;
+    animation: gallop 2.6s cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards;
+  }
+  .gallop svg {
+    width: 100%;
+    height: 100%;
+    animation: gallop-bob 0.32s ease-in-out infinite;
+  }
+  @keyframes gallop {
+    from {
+      transform: translateX(-90px);
+    }
+    to {
+      transform: translateX(calc(100vw + 20px));
+    }
+  }
+  @keyframes gallop-bob {
+    50% {
+      transform: translateY(-9px) rotate(-5deg);
+    }
+  }
+
+  /* ---------------------------------------------------------------- the year dial (Nixie tubes) */
+  .stage {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    width: 100%;
+    perspective: 1600px;
+  }
+  .nixie {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: var(--s-5);
+    padding: 10px 16px 10px 12px;
+    border-radius: 14px;
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 0.05), transparent 40%),
+      #05080d;
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--brass) 45%, #000),
+      0 0 0 4px #0b1119,
+      0 0 0 5px color-mix(in oklab, var(--brass) 25%, #000),
+      var(--shadow-2),
+      inset 0 2px 8px rgb(0 0 0 / 0.8);
+    transition: box-shadow 0.6s var(--ease);
+  }
+  .nixie.lit {
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--brass) 55%, #000),
+      0 0 0 4px #0b1119,
+      0 0 0 5px color-mix(in oklab, var(--brass) 30%, #000),
+      0 18px 50px -18px color-mix(in oklab, var(--nixie) 60%, transparent),
+      var(--shadow-2),
+      inset 0 2px 8px rgb(0 0 0 / 0.8);
+  }
+  .nixie-label {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    color: var(--brass-lo);
+    font: 600 10px / 1 var(--font-ui);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+  }
+  .nixie-tubes {
+    display: flex;
+    gap: 7px;
+  }
+  .tube {
+    --lit: 0;
+    position: relative;
+    width: 42px;
+    height: 70px;
+    border-radius: 21px 21px 8px 8px;
+    overflow: hidden;
+    background:
+      radial-gradient(60% 45% at 50% 55%, color-mix(in oklab, var(--nixie) calc(var(--lit) * 24%), transparent), transparent 75%),
+      linear-gradient(90deg, rgb(255 255 255 / 0.06), transparent 30%, transparent 70%, rgb(255 255 255 / 0.04)),
+      #0a0d12;
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 0.07),
+      inset 0 -6px 10px rgb(0 0 0 / 0.6);
+    transition: --lit 0.25s var(--ease);
+  }
+  /* The anode mesh in front of the digits. */
+  .tube::after {
+    content: "";
+    position: absolute;
+    inset: 6px 5px 8px;
+    border-radius: 16px 16px 4px 4px;
+    background:
+      repeating-linear-gradient(60deg, rgb(200 170 140 / calc(0.06 + var(--lit) * 0.1)) 0 1px, transparent 1px 5px),
+      repeating-linear-gradient(-60deg, rgb(200 170 140 / calc(0.06 + var(--lit) * 0.1)) 0 1px, transparent 1px 5px);
+    pointer-events: none;
+  }
+  /* A glass highlight. */
+  .tube::before {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: 7px;
+    width: 5px;
+    height: 44px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.18), transparent);
+    z-index: 2;
+  }
+  .tube .digit {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding-top: 4px;
+    color: transparent;
+    font: 400 50px / 1 var(--font-ui);
+    -webkit-text-stroke: 1px rgb(150 130 115 / 0.16);
+    transform: scaleX(0.78);
+    transition:
+      -webkit-text-stroke-color 70ms linear,
+      text-shadow 70ms linear;
+  }
+  .tube .digit.on {
+    -webkit-text-stroke: 1.7px #ffd2a8;
+    text-shadow:
+      0 0 3px #ffb27a,
+      0 0 9px var(--nixie),
+      0 0 22px color-mix(in oklab, var(--nixie) 80%, #ff3d00);
+    z-index: 1;
+  }
+  .tube.on {
+    --lit: 1;
+  }
+  .tube.settle {
+    animation: tube-settle 0.5s var(--ease);
+  }
+  @keyframes tube-settle {
+    30% {
+      filter: brightness(1.7) saturate(1.2);
+    }
+  }
+
+  /* ---------------------------------------------------------------- the envelope */
+  .envelope {
+    --w: min(560px, calc(100vw - 32px));
+    position: relative;
+    z-index: 0;
+    isolation: isolate;
+    width: var(--w);
+    height: calc(var(--w) / 1.62);
+    color: var(--ink);
+    transition: transform var(--t-2) var(--ease);
+  }
+  .env-back,
+  .env-front,
+  .env-flap {
+    position: absolute;
+    inset: 0;
+  }
+  .env-back {
+    border-radius: 6px;
+    background:
+      linear-gradient(180deg, color-mix(in oklab, var(--paper-3) 80%, var(--ink)) 0%, var(--paper-3) 45%),
+      var(--paper-texture);
+    background-blend-mode: multiply;
+    background-size: auto, 384px;
+    box-shadow: var(--shadow-3);
+  }
+  /* The pocket: side folds and the bottom fold, each its own shade. */
+  .env-front {
+    z-index: 2;
+    border-radius: 6px;
+    pointer-events: none;
+  }
+  .env-front::before,
+  .env-front::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 6px;
+    background-image: linear-gradient(var(--fold)), var(--paper-texture);
+    background-size: auto, 384px;
+    background-blend-mode: multiply;
+  }
+  .env-front::before {
+    --fold: 100deg, color-mix(in oklab, var(--paper) 88%, var(--brass)), var(--paper-2) 50%, color-mix(in oklab, var(--paper) 86%, var(--ink));
+    clip-path: polygon(0 0, 50% 54%, 100% 0, 100% 100%, 0 100%);
+    filter: drop-shadow(0 -1px 0 rgb(0 0 0 / 0.08));
+  }
+  .env-front::after {
+    --fold: 180deg, var(--paper) 40%, var(--paper-2);
+    clip-path: polygon(0 100%, 50% 40%, 100% 100%);
+  }
+  .edition,
+  .postmark,
+  .case-no {
+    position: absolute;
+    z-index: 3;
+  }
+  .edition {
+    left: 7%;
+    bottom: 9%;
+    display: grid;
+    color: color-mix(in oklab, var(--ink) 80%, transparent);
+    font: 600 11px / 1.2 var(--font-ui);
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+  }
+  .edition strong {
+    font: 700 clamp(22px, 5.2vw, 34px) / 1 var(--font-display);
+    letter-spacing: 0.1em;
+    color: var(--ink);
+  }
+  .postmark {
+    right: 7%;
+    bottom: 8%;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    width: clamp(64px, 14vw, 84px);
+    aspect-ratio: 1;
+    border: 2px solid color-mix(in oklab, var(--blue) 70%, transparent);
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 4px var(--paper), inset 0 0 0 5px color-mix(in oklab, var(--blue) 60%, transparent);
+    color: color-mix(in oklab, var(--blue) 80%, var(--ink));
+    font: 700 13px / 1 var(--font-ui);
+    letter-spacing: 0.3em;
+    text-indent: 0.3em;
+    transform: rotate(-12deg);
+    opacity: 0.78;
+  }
+  .postmark svg {
+    width: 24px;
+    height: 20px;
+    margin-bottom: 4px;
+  }
+  .case-no {
+    display: none;
+  }
+  /* The flap closes down over the pocket and carries the seal on its tip. */
+  .env-flap {
+    z-index: 4;
+    transform-origin: 50% 0;
+    transform: rotateX(var(--flap));
+    transform-style: preserve-3d;
+    transition: --flap 0.42s var(--ease);
+    pointer-events: none;
+  }
+  .env-flap::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 38% 0;
+    border-radius: 6px 6px 0 0;
+    background-image: linear-gradient(180deg, color-mix(in oklab, var(--paper) 92%, var(--brass)), var(--paper-2)), var(--paper-texture);
+    background-size: auto, 384px;
+    background-blend-mode: multiply;
+    clip-path: polygon(0 0, 100% 0, 52% 98%, 48% 98%);
+    filter: drop-shadow(0 3px 2px rgb(0 0 0 / 0.18));
+  }
+  .seal {
+    position: absolute;
+    left: 50%;
+    top: calc(62% - 36px);
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 49% 51% 46% 54% / 52% 47% 53% 48%;
+    background:
+      radial-gradient(circle at 36% 30%, color-mix(in oklab, var(--velvet) 60%, white) 0%, transparent 32%),
+      radial-gradient(circle at 50% 55%, var(--velvet) 50%, color-mix(in oklab, var(--velvet) 70%, black) 100%);
+    box-shadow:
+      0 3px 6px rgb(0 0 0 / 0.35),
+      inset 0 -3px 5px rgb(0 0 0 / 0.3),
+      inset 0 2px 3px rgb(255 255 255 / 0.2);
+    color: color-mix(in oklab, var(--velvet) 55%, black);
+    transform: translate(-50%, 0);
+    transition: transform var(--t-2) var(--ease);
+  }
+  .seal::before {
+    content: "";
+    position: absolute;
+    inset: 9px;
+    border-radius: 50%;
+    box-shadow:
+      inset 0 1px 2px rgb(0 0 0 / 0.45),
+      0 1px 0 rgb(255 255 255 / 0.18);
+  }
+  .seal svg {
+    width: 28px;
+    height: 24px;
+    filter: drop-shadow(0 1px 0 rgb(255 255 255 / 0.25));
+  }
+  .envelope-hit {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    width: 100%;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+  }
+  .envelope-hit:disabled {
+    cursor: default;
+  }
+  .envelope:has(.envelope-hit:hover:not(:disabled)),
+  .envelope:has(.envelope-hit:focus-visible) {
+    transform: translateY(-4px);
+  }
+  .envelope:has(.envelope-hit:hover:not(:disabled)) .env-flap {
+    --flap: -9deg;
+  }
+  .envelope:has(.envelope-hit:hover:not(:disabled)) .seal {
+    transform: translate(-50%, 0) rotate(-8deg);
+  }
+  /* Broken seal halves fly off (made in js/views/stage.js). */
+  .seal-half {
+    position: fixed;
+    z-index: 80;
+    pointer-events: none;
+  }
+
+  /* Opened: the flap folds back and fades; the envelope becomes the pocket under the ticket. */
+  .stage.flap-open .env-flap,
+  .stage[data-state="open"] .env-flap {
+    --flap: -178deg;
+  }
+  .stage.flap-open .seal,
+  .stage[data-state="open"] .seal {
+    visibility: hidden;
+  }
+  .stage[data-state="open"] .envelope {
+    --w: min(640px, calc(100vw - 20px));
+    height: 112px;
+  }
+  /* The ticket lies across the pocket's lower edge, as if just pulled out. */
+  .stage[data-state="open"] .ticket {
+    margin-top: -38px;
+  }
+  .stage[data-state="open"] .env-flap {
+    opacity: 0;
+  }
+  .stage[data-state="open"] .env-back {
+    box-shadow: var(--shadow-2);
+  }
+  .stage[data-state="open"] .envelope-hit {
+    display: none;
+  }
+  .stage[data-state="open"] .edition {
+    top: 16px;
+    bottom: auto;
+  }
+  .stage[data-state="open"] .edition strong {
+    font-size: 24px;
+  }
+  .stage[data-state="open"] .postmark {
+    top: 8px;
+    bottom: auto;
+    width: 58px;
+    font-size: 10px;
+  }
+  .stage[data-state="open"] .postmark svg {
+    width: 18px;
+    height: 15px;
+  }
+
+  /* ---------------------------------------------------------------- the ticket */
+  .ticket {
+    position: relative;
+    z-index: 1;
+    width: min(720px, 100%);
+    container: ticket / inline-size;
+    outline: none;
+  }
+  .paper {
+    position: relative;
+    padding: 20px clamp(16px, 4cqi, 28px) 18px;
+    border-radius: 4px;
+    border-top: 6px solid var(--blue);
+    border-bottom: 4px solid var(--blue);
+    background-color: var(--paper);
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.35), transparent 30%), var(--paper-texture);
+    background-size: auto, 384px;
+    background-blend-mode: multiply;
+    color: var(--ink);
+    box-shadow: var(--shadow-3);
+  }
+  .ticket.win .paper {
+    border-top-color: var(--brass);
+  }
+  .paper::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border: 1px solid color-mix(in oklab, var(--ink) 16%, transparent);
+    border-radius: 2px;
+    pointer-events: none;
+  }
+  .t-head {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    padding: 2px 44px 12px 0;
+    border-bottom: 1.5px dashed var(--paper-line);
+    color: var(--ink-3);
+    font: 500 11px / 1.2 var(--font-mono);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .t-no {
+    margin-left: auto;
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+  }
+  /* Streak holes punched through the ticket: one per week in a row with a film. */
+  .punches {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+  .punches i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--deep);
+    box-shadow: inset 0 1px 1.5px rgb(0 0 0 / 0.8), 0 0.5px 0 rgb(255 255 255 / 0.6);
+  }
+  .t-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--ink-3);
+  }
+  .t-close:hover {
+    background: color-mix(in oklab, var(--paper) 85%, var(--ink));
+    color: var(--ink);
+  }
+  .t-body {
+    display: grid;
+    grid-template-columns: clamp(96px, 26cqi, 184px) minmax(0, 1fr) auto;
+    gap: clamp(14px, 3.5cqi, 26px);
+    padding-top: 18px;
+  }
+  .t-poster {
+    position: relative;
+    align-self: start;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+    border: 1px solid var(--paper-line);
+    border-radius: 3px;
+    background: linear-gradient(160deg, var(--paper-2), color-mix(in oklab, var(--paper) 80%, var(--ink)));
+    box-shadow: 0 8px 16px -8px rgb(0 0 0 / 0.4);
+  }
+  .poster-mark {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 56%;
+    fill: color-mix(in oklab, var(--ink) 14%, transparent);
+    transform: translate(-50%, -50%);
+  }
+  .t-poster img {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    cursor: zoom-in;
+    animation: fade-in 0.5s var(--ease);
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  .t-main {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    min-width: 0;
+  }
+  .t-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--stamp);
+    font: 600 11px / 1.2 var(--font-ui);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .ticket.win .t-eyebrow {
+    color: color-mix(in oklab, var(--brass) 45%, var(--ink));
+  }
+  .ticket.win .t-eyebrow::before {
+    content: "";
+    width: 16px;
+    height: 13px;
+    background: currentColor;
+    mask: url("../assets/crowns.svg") center / contain no-repeat;
+  }
+  .t-title {
+    color: var(--ink);
+    font: 600 clamp(2rem, 1.1rem + 4.6cqi, 3.2rem) / 0.98 var(--font-display);
+    letter-spacing: -0.005em;
+    overflow-wrap: anywhere;
+  }
+  .t-meta {
+    color: var(--ink-2);
+    font-size: var(--fs-3);
+  }
+  .t-oscar {
+    color: var(--ink-2);
+    font: italic 500 1.12rem / 1.35 var(--font-display);
+  }
+  .t-facts {
+    color: var(--ink-2);
+    font: 500 11.5px / 1.5 var(--font-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .t-line {
+    color: var(--ink-2);
+    font-size: var(--fs-2);
+  }
+  .t-line a,
+  .t-link,
+  .paper .link {
+    color: color-mix(in oklab, var(--blue) 80%, var(--ink));
+  }
+  .t-intermission b {
+    margin-right: 6px;
+    color: var(--stamp);
+    font: italic 600 1rem var(--font-display);
+  }
+  .t-moods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .t-moods span {
+    padding: 2px 9px;
+    border: 1px solid var(--paper-line);
+    border-radius: var(--r-pill);
+    color: var(--ink-2);
+    font-size: var(--fs-1);
+  }
+  .t-shelf {
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 30px;
+    padding: 0 10px;
+    border: 1px dashed var(--paper-line);
+    border-radius: var(--r-pill);
+    background: none;
+    color: var(--ink-2);
+    font-size: var(--fs-2);
+  }
+  .t-shelf[aria-pressed="true"] {
+    border-style: solid;
+    border-color: var(--ink-2);
+    background: color-mix(in oklab, var(--paper) 85%, var(--ink));
+    color: var(--ink);
+  }
+  .t-status {
+    color: var(--ink-3);
+    font-size: var(--fs-2);
+  }
+  .t-status:empty {
+    display: none;
+  }
+  .t-choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .t-choices .btn {
+    white-space: normal;
+    text-align: left;
+  }
+  .t-skel {
+    display: none;
+    gap: 8px;
+  }
+  .ticket.loading .t-skel {
+    display: grid;
+  }
+  .t-skel i {
+    height: 11px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--paper-2) 0%, color-mix(in oklab, var(--paper) 70%, var(--ink)) 50%, var(--paper-2) 100%) 0 0 / 200% 100%;
+    animation: shimmer 1.3s linear infinite;
+  }
+  .t-skel i:nth-child(1) {
+    width: 62%;
+  }
+  .t-skel i:nth-child(2) {
+    width: 88%;
+  }
+  .t-skel i:nth-child(3) {
+    width: 46%;
+  }
+  @keyframes shimmer {
+    to {
+      background-position: -200% 0;
+    }
+  }
+  /* The stub on the right, torn off at the door. */
+  .t-stub {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-left: 12px;
+    border-left: 1.5px dashed var(--paper-line);
+    color: var(--ink-3);
+    font: 500 10px / 1 var(--font-mono);
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+    white-space: nowrap;
+  }
+  .t-stub b {
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+  @container ticket (width < 520px) {
+    .t-stub {
+      display: none;
+    }
+    .t-body {
+      grid-template-columns: clamp(84px, 28cqi, 120px) minmax(0, 1fr);
+    }
+  }
+  .ticket.no-details .t-poster {
+    display: none;
+  }
+  .ticket.no-details .t-body {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  /* SEDD: inked on when you mark a film watched. */
+  .stamp-sedd {
+    position: absolute;
+    top: 64px;
+    left: clamp(14px, 4cqi, 30px);
+    z-index: 3;
+    padding: 4px 12px 2px;
+    border: 3.5px double var(--stamp);
+    border-radius: 6px;
+    color: var(--stamp);
+    font: 700 clamp(28px, 7cqi, 44px) / 1 var(--font-display);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transform: rotate(-11deg);
+    opacity: 0;
+    mix-blend-mode: multiply;
+    -webkit-mask: var(--paper-texture) center / 300px;
+    mask: var(--paper-texture) center / 300px;
+    pointer-events: none;
+  }
+  /* No poster to stamp: ink it across the ticket head instead of the title. */
+  .ticket.no-details .stamp-sedd {
+    top: 26px;
+    left: 38%;
+  }
+  @container ticket (width < 520px) {
+    .ticket.no-details .stamp-sedd {
+      left: auto;
+      right: 14px;
+    }
+  }
+  .ticket.watched .stamp-sedd {
+    opacity: 0.86;
+  }
+  .ticket.stamped .stamp-sedd {
+    animation: ink-stamp 0.42s cubic-bezier(0.3, 1.5, 0.6, 1) both;
+  }
+  @keyframes ink-stamp {
+    0% {
+      opacity: 0;
+      transform: rotate(-4deg) scale(2.2);
+      filter: blur(3px);
+    }
+    60% {
+      opacity: 0.95;
+      transform: rotate(-12deg) scale(0.94);
+      filter: blur(0);
+    }
+    100% {
+      opacity: 0.86;
+      transform: rotate(-11deg) scale(1);
+    }
+  }
+  .milestone-ink {
+    position: absolute;
+    right: 64px;
+    top: 58px;
+    z-index: 3;
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    padding: 10px 12px;
+    border: 2px solid color-mix(in oklab, var(--blue) 75%, transparent);
+    border-radius: 50%;
+    color: color-mix(in oklab, var(--blue) 85%, var(--ink));
+    font: 600 10px / 1.1 var(--font-ui);
+    letter-spacing: 0.12em;
+    text-align: center;
+    text-transform: uppercase;
+    transform: rotate(9deg);
+    mix-blend-mode: multiply;
+    max-width: 130px;
+    aspect-ratio: 1;
+    place-content: center;
+  }
+  .milestone-ink b {
+    font: 700 13px / 1 var(--font-display);
+    letter-spacing: 0.14em;
+  }
+  .milestone-ink.landing {
+    animation: ink-stamp 0.5s cubic-bezier(0.3, 1.5, 0.6, 1) both;
+  }
+
+  /* After watching: your stub. */
+  .watched {
+    display: grid;
+    gap: 10px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1.5px dashed var(--paper-line);
+  }
+  .watched h3 {
+    color: var(--ink);
+    font: 600 1.75rem / 1 var(--font-display);
+  }
+  .wp-head {
+    display: grid;
+    gap: 4px;
+  }
+  .wp-sub {
+    color: var(--ink-2);
+    font-size: var(--fs-2);
+  }
+  .wp-stars {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-2) var(--s-3);
+  }
+  .rating-word {
+    color: var(--ink-2);
+    font-size: var(--fs-2);
+  }
+  .rating-word i {
+    color: var(--stamp);
+    font: italic 600 1.2rem var(--font-display);
+  }
+  .gold-seal {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 35% 30%, #fff5cf, transparent 38%),
+      conic-gradient(from 20deg, #b88a2a, #f7dc8a, #c89b3a, #f2d47c, #a87a22, #f7dc8a, #b88a2a);
+    box-shadow: 0 2px 5px rgb(0 0 0 / 0.3), inset 0 0 0 3px rgb(255 255 255 / 0.25);
+    color: #7a5714;
+  }
+  .gold-seal svg {
+    width: 20px;
+    height: 17px;
+  }
+  .gold-seal.landing {
+    animation: seal-press 0.55s var(--spring) both;
+  }
+  @keyframes seal-press {
+    from {
+      transform: scale(2) rotate(-40deg);
+      opacity: 0;
+    }
+  }
+  .wp-line {
+    color: var(--ink-2);
+    font-size: var(--fs-2);
+  }
+  .wp-verdict {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    font-size: var(--fs-2);
+    color: var(--ink-2);
+  }
+  .verdicts {
+    display: inline-flex;
+    gap: 4px;
+  }
+  .verdict-btn {
+    min-height: 30px;
+    padding: 0 12px;
+    border: 1px solid var(--paper-line);
+    border-radius: var(--r-pill);
+    background: none;
+    color: var(--ink-2);
+    font-size: var(--fs-2);
+  }
+  .verdict-btn[aria-pressed="true"] {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .should-won select {
+    min-height: 32px;
+    margin-left: 4px;
+    background-color: transparent;
+    border-color: var(--paper-line);
+    color: var(--ink);
+  }
+  .wp-note {
+    margin: 0;
+    padding: 4px 0 4px 12px;
+    border-left: 2px solid var(--paper-line);
+    color: var(--ink-2);
+    font: italic 500 1.05rem / 1.4 var(--font-display);
+  }
+  .t-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1.5px dashed var(--paper-line);
+  }
+  .t-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: auto;
+    font-size: var(--fs-2);
+  }
+  .ticket.watched .t-actions {
+    display: none;
+  }
+  .t-details {
+    margin-top: 12px;
+    color: var(--ink-2);
+  }
+  .t-details > summary {
+    min-height: 34px;
+    color: var(--ink-2);
+    font-size: var(--fs-2);
+    font-weight: 500;
+  }
+  .t-details[open] > summary {
+    margin-bottom: 8px;
+  }
+  .t-details > :not(summary) {
+    margin-top: 8px;
+  }
+  .backdrop-btn {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 3px;
+    overflow: hidden;
+    background: none;
+    cursor: zoom-in;
+  }
+  .t-tagline {
+    color: var(--ink);
+    font: italic 500 1.2rem / 1.3 var(--font-display);
+  }
+
+  /* The last ticket: every film watched. */
+  .finale {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    padding: 24px 8px 8px;
+    text-align: center;
+  }
+  .ticket.finale-ticket :is(.t-body, .t-actions, .t-details, .watched, .t-close) {
+    display: none;
+  }
+  .finale-crowns {
+    width: 34px;
+    height: 28px;
+    color: var(--brass-lo);
+  }
+  .finale .kicker {
+    color: var(--stamp);
+  }
+  .finale h2 {
+    color: var(--ink);
+    font: 700 clamp(2.4rem, 8cqi, 3.6rem) / 1 var(--font-display);
+  }
+  .finale-sub,
+  .finale-message {
+    max-width: 44ch;
+    color: var(--ink-2);
+  }
+  .finale-seal {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    width: 150px;
+    height: 150px;
+    margin: 6px 0;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 35% 30%, #fff5cf, transparent 40%),
+      conic-gradient(from 10deg, #b88a2a, #f7dc8a, #c89b3a, #f2d47c, #a87a22, #f7dc8a, #b88a2a);
+    box-shadow: var(--shadow-2), inset 0 0 0 6px rgb(255 255 255 / 0.25), inset 0 0 0 8px rgb(122 87 20 / 0.4);
+    color: #5e420c;
+  }
+  .finale-seal strong {
+    font: 700 3rem / 1 var(--font-display);
+  }
+  .finale-seal span {
+    font: 600 10px / 1 var(--font-ui);
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+  }
+  .finale-dates {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 28px;
+    margin: 6px 0 0;
+  }
+  .finale-dates div {
+    display: grid;
+  }
+  .finale-dates dt {
+    color: var(--ink-3);
+    font-size: var(--fs-1);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .finale-dates dd {
+    margin: 0;
+    color: var(--ink);
+    font: 600 1.25rem var(--font-display);
+  }
+  .finale .fine {
+    color: var(--ink-3);
+  }
+  .confetti {
+    position: fixed;
+    inset: 0;
+    z-index: 75;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .confetti i {
+    position: absolute;
+    top: 0;
+    display: block;
+  }
+  .confetti .c-ticket {
+    width: 16px;
+    height: 9px;
+    border-radius: 1px;
+    background: var(--paper);
+    border-top: 2px solid var(--brass);
+  }
+  .confetti .c-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--velvet);
+  }
+  .confetti .c-crown {
+    width: 14px;
+    height: 11px;
+    color: var(--brass);
+  }
+
+  /* ---------------------------------------------------------------- draw bar, preferences, resume */
+  .draw-bar {
+    display: grid;
+    justify-items: center;
+    gap: var(--s-2);
+    margin-top: var(--s-3);
+  }
+  .btn-draw {
+    position: relative;
+    min-height: 58px;
+    padding: 0 clamp(28px, 6vw, 44px);
+    border: 1px solid color-mix(in oklab, var(--brass) 70%, white);
+    border-radius: var(--r-pill);
+    background: linear-gradient(180deg, var(--brass-hi), var(--brass) 55%, color-mix(in oklab, var(--brass) 88%, var(--velvet)));
+    color: var(--ink);
+    font: 700 1.5rem / 1 var(--font-display);
+    letter-spacing: 0.05em;
+    box-shadow:
+      0 14px 34px -14px color-mix(in oklab, var(--brass) 80%, transparent),
+      0 2px 0 color-mix(in oklab, var(--brass) 60%, var(--night)),
+      inset 0 1px 0 rgb(255 255 255 / 0.55);
+    transition:
+      transform var(--t-2) var(--spring),
+      box-shadow var(--t-2),
+      filter var(--t-2);
+  }
+  .btn-draw:hover:not(:disabled) {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+  }
+  .btn-draw:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  .btn-draw:disabled {
+    filter: grayscale(0.6) brightness(0.8);
+    cursor: not-allowed;
+  }
+  .btn-draw.busy {
+    pointer-events: none;
+  }
+  .eligible {
+    color: var(--faint);
+    font: 500 var(--fs-1) / 1.4 var(--font-mono);
+    letter-spacing: 0.04em;
+    text-align: center;
+  }
+  .sleepy-note {
+    color: var(--muted);
+    font-size: var(--fs-2);
+  }
+  .sleepy-note span {
+    font: italic 600 1rem var(--font-display);
+    color: var(--paper);
+  }
+  .prefs {
+    display: grid;
+    justify-items: center;
+    gap: var(--s-3);
+    width: min(640px, 100%);
+  }
+  .pref-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-2);
+  }
+  .pref-panel {
+    display: grid;
+    gap: var(--s-4);
+    width: 100%;
+    padding: var(--s-5);
+    transition:
+      opacity var(--t-2),
+      transform var(--t-3) var(--ease),
+      display var(--t-3) allow-discrete;
+  }
+  @starting-style {
+    .pref-panel {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+  }
+  .pref-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .pref-head h2 {
+    font: 600 var(--fs-5) var(--font-display);
+    color: var(--paper);
+  }
+  .pref-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: var(--s-3);
+  }
+  .pref-grid select,
+  .pref-grid input {
+    width: 100%;
+  }
+  .metadata-tools {
+    display: grid;
+    gap: var(--s-2);
+    width: 100%;
+    padding: var(--s-4);
+    font-size: var(--fs-3);
+  }
+  .metadata-tools .btn {
+    justify-self: start;
+  }
+  .resume,
+  .skip-reminder {
+    display: grid;
+    gap: var(--s-2);
+    width: min(560px, 100%);
+    padding: var(--s-4) var(--s-5);
+  }
+  .resume.stale {
+    border-color: color-mix(in oklab, var(--brass) 45%, var(--line));
+  }
+  .resume-film {
+    color: var(--paper);
+    font: 600 var(--fs-5) / 1.2 var(--font-display);
+    text-align: left;
+  }
+  .keys {
+    display: flex;
+    gap: var(--s-4);
+    color: var(--faint);
+    font-size: var(--fs-1);
+  }
+  @media (hover: none) {
+    .keys {
+      display: none;
+    }
+  }
+  .welcome {
+    display: grid;
+    gap: var(--s-3);
+    width: min(640px, 100%);
+    padding: var(--s-5);
+    border-color: color-mix(in oklab, var(--brass) 35%, var(--line));
+    background:
+      radial-gradient(420px 200px at 100% 0%, var(--brass-wash), transparent),
+      color-mix(in oklab, var(--surface) 90%, transparent);
+  }
+  .welcome h2 {
+    color: var(--paper);
+    font: 600 var(--fs-6) / 1.1 var(--font-display);
+  }
+  .welcome p {
+    color: var(--muted);
+  }
+}

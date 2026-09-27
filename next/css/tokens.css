@@ -1,0 +1,140 @@
+/* Kuvert's design tokens. One named palette (nine colours) sets everything; every other shade is mixed
+   from it, so an imported list's palette (js/boot.js) or SEAGAL (seagal.css) repaints the whole app.
+   Layers, lowest first: tokens, base, components, tonight, pages, skin. */
+@layer tokens, base, components, tonight, pages, skin;
+
+@property --p { syntax: "<percentage>"; inherits: true; initial-value: 0%; }
+@property --lit { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --flap { syntax: "<angle>"; inherits: true; initial-value: 0deg; }
+
+@layer tokens {
+  :root {
+    color-scheme: dark;
+
+    /* The palette: Kuvert blue. */
+    --night: #102136;
+    --deep: #081320;
+    --glow: #203b58;
+    --navy: #18334f;
+    --brass: #e3c36e;
+    --velvet: #9a3e39;
+    --blue: #245b8f;
+    --paper: #f3ebd9;
+    --ink: #17263a;
+    --text: #e1e6eb;
+
+    /* Mixed from the palette. */
+    --surface: color-mix(in oklab, var(--night) 93%, var(--text));
+    --surface-2: color-mix(in oklab, var(--night) 87%, var(--text));
+    --surface-3: color-mix(in oklab, var(--night) 80%, var(--text));
+    --well: color-mix(in oklab, var(--night) 55%, var(--deep));
+    --line: color-mix(in oklab, var(--night) 76%, var(--text));
+    --line-soft: color-mix(in oklab, var(--night) 87%, var(--text));
+    --muted: color-mix(in oklab, var(--text) 70%, var(--night));
+    --faint: color-mix(in oklab, var(--text) 46%, var(--night));
+    --brass-hi: color-mix(in oklab, var(--brass) 78%, white);
+    --brass-lo: color-mix(in oklab, var(--brass) 52%, var(--night));
+    --brass-wash: color-mix(in oklab, var(--brass) 13%, transparent);
+    --velvet-hi: color-mix(in oklab, var(--velvet) 58%, var(--text));
+    --sky: color-mix(in oklab, var(--blue) 42%, var(--text));
+    --ink-2: color-mix(in oklab, var(--ink) 80%, var(--paper));
+    --ink-3: color-mix(in oklab, var(--ink) 58%, var(--paper));
+    --paper-2: color-mix(in oklab, var(--paper) 92%, var(--ink));
+    --paper-3: color-mix(in oklab, var(--paper) 84%, var(--brass));
+    --paper-line: color-mix(in oklab, var(--ink) 24%, var(--paper));
+    --stamp: color-mix(in oklab, var(--velvet) 88%, var(--ink));
+    --nixie: #ff8a3c;
+    --good: #9fd0a8;
+    --danger: #e3877c;
+
+    /* Type: Cormorant Garamond for the big words, Geist for everything read, Geist Mono for print. */
+    --font-display: "Cormorant Garamond", "Cormorant", Garamond, "Times New Roman", serif;
+    --font-ui: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --fs-1: 0.75rem;
+    --fs-2: 0.8125rem;
+    --fs-3: 0.9375rem;
+    --fs-4: 1.0625rem;
+    --fs-5: 1.375rem;
+    --fs-6: 1.875rem;
+    --fs-7: 2.625rem;
+    --fs-display: clamp(3.4rem, 12vw, 6.75rem);
+
+    /* Space, on a 4-pixel grid. */
+    --s-1: 4px;
+    --s-2: 8px;
+    --s-3: 12px;
+    --s-4: 16px;
+    --s-5: 24px;
+    --s-6: 32px;
+    --s-7: 48px;
+    --s-8: 72px;
+    --gutter: max(16px, env(safe-area-inset-left, 0px));
+    --content: 1040px;
+
+    /* Shape and depth. */
+    --r-1: 6px;
+    --r-2: 10px;
+    --r-3: 16px;
+    --r-pill: 999px;
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-2: 0 12px 30px -14px rgb(0 0 0 / 0.65), 0 2px 6px -2px rgb(0 0 0 / 0.35);
+    --shadow-3: 0 40px 80px -30px rgb(0 0 0 / 0.75), 0 12px 24px -12px rgb(0 0 0 / 0.45);
+
+    /* Motion. */
+    --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+    --ease-in: cubic-bezier(0.55, 0, 0.8, 0.2);
+    --spring: linear(0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938 16.7%, 1.017 19.4%, 1.067, 1.089 24.3%, 1.093 26.2%, 1.084 28.5%, 1.018 36.5%, 0.998 40.5%, 0.99 44.1%, 0.994 53.7%, 1.001 66.7%, 1);
+    --t-1: 120ms;
+    --t-2: 220ms;
+    --t-3: 380ms;
+
+    --paper-texture: url("../assets/paper.webp");
+  }
+
+  /* Imported lists pick one of these palettes (js/boot.js sets data-palette). */
+  :root[data-palette="skog"] {
+    --night: #12261E;
+    --deep: #08140F;
+    --glow: #1F4434;
+    --navy: #1C3A2C;
+    --brass: #D9B26A;
+    --velvet: #8E4A2F;
+    --blue: #2F6B4F;
+    --paper: #F1EBDC;
+    --ink: #18281F;
+  }
+  :root[data-palette="vinter"] {
+    --night: #1B1A33;
+    --deep: #0D0C1C;
+    --glow: #2E2C58;
+    --navy: #28264A;
+    --brass: #E0C07A;
+    --velvet: #8C3B5E;
+    --blue: #4A4F9A;
+    --paper: #F2EDE4;
+    --ink: #1D1B33;
+  }
+  :root[data-palette="falu"] {
+    --night: #2A1414;
+    --deep: #160909;
+    --glow: #4A2322;
+    --navy: #3A1C1A;
+    --brass: #E6BE70;
+    --velvet: #B0322B;
+    --blue: #3A5E80;
+    --paper: #F4EBDC;
+    --ink: #2A1A17;
+  }
+  :root[data-palette="natt"] {
+    --night: #16181C;
+    --deep: #0B0C0E;
+    --glow: #2A2E36;
+    --navy: #23262C;
+    --brass: #D8C38F;
+    --velvet: #A2463C;
+    --blue: #4B6A86;
+    --paper: #EFEBE3;
+    --ink: #1C1E22;
+  }
+}

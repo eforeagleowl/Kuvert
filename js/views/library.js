@@ -11,10 +11,14 @@ const ARCHIVES = ["skipped", "recent", "missing", "shelf"];
 export class Library {
   constructor(app) {
     this.app = app;
-    this.posterRun = { controller: null, failures: 0, attempts: new Set(), imageFailures: new Set() };
+    this.posterRun = { controller: null, attempts: new Set(), imageFailures: new Set() };
     // Films whose TMDB search found more than one candidate: only you can pick, from the film's ticket.
     this.needsMatch = new Set();
-    this.rowPosters = { observer: null, queue: [], tried: new Set(), busy: 0, failures: 0 };
+    this.rowPosters = { observer: null, queue: [], tried: new Set(), busy: 0 };
+    // Lookups that keep failing (no connection, TMDB busy or refusing) pause and try again by themselves,
+    // instead of stopping for the rest of the session. `reason` is what TMDB or the network said.
+    this.pause = { until: 0, streak: 0, reason: "", timer: null, tries: new Map() };
+    addEventListener("online", () => this.resumeLookups());
     const store = app.store;
     $("libraryTabs").addEventListener("click", (e) => {
       const b = e.target.closest("button[data-f]");
@@ -81,10 +85,10 @@ export class Library {
   thumbImage(path) {
     return this.deferredImage(IMG + "w92" + path, (e) => e.target.remove());
   }
-  // Rows fetch their poster when they scroll into view, two at a time, and stop after three failures.
+  // Rows fetch their poster when they scroll into view, two at a time.
   watchThumb(span) {
     const rp = this.rowPosters;
-    if (rp.tried.has(span.dataset.film) || rp.failures >= 3 || !("IntersectionObserver" in window)) return;
+    if (rp.tried.has(span.dataset.film) || !("IntersectionObserver" in window)) return;
     rp.observer ??= new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
@@ -105,7 +109,7 @@ export class Library {
   pumpRows() {
     const rp = this.rowPosters,
       { details, store } = this.app;
-    while (rp.busy < 2 && rp.queue.length && rp.failures < 3 && details.connected) {
+    while (rp.busy < 2 && rp.queue.length && details.connected && !this.paused()) {
       const f = rp.queue.shift();
       if (store.p.posterPaths[f.id] !== undefined) {
         this.fillThumbs(f);
@@ -115,16 +119,49 @@ export class Library {
       details
         .fetchInfo(f)
         .then((d) => {
-          rp.failures = 0;
+          this.lookupWorked();
           if (d?.choices) this.needsMatch.add(f.id);
           this.fillThumbs(f);
         })
-        .catch(() => rp.failures++)
+        .catch((e) => this.lookupFailed(f, e) && rp.queue.push(f))
         .finally(() => {
           rp.busy--;
           this.pumpRows();
         });
     }
+  }
+  paused() {
+    return Date.now() < this.pause.until;
+  }
+  lookupWorked() {
+    const pz = this.pause;
+    pz.streak = 0;
+    pz.reason = "";
+    // TMDB is answering again: no need to wait out the rest of a pause.
+    if (pz.until) this.resumeLookups();
+  }
+  // Three failures in a row pause every poster lookup: 30 seconds, then longer each time, up to 5 minutes.
+  // Returns whether this film should be tried again later (each gets three tries a session).
+  lookupFailed(f, e) {
+    const pz = this.pause,
+      tries = (pz.tries.get(f.id) || 0) + 1;
+    pz.tries.set(f.id, tries);
+    pz.reason = e?.name === "AbortError" ? "TMDB took too long to answer." : e?.message || "TMDB didn't answer.";
+    if (++pz.streak % 3 === 0) {
+      const wait = Math.min(300000, 30000 * 2 ** (pz.streak / 3 - 1));
+      pz.until = Date.now() + wait;
+      clearTimeout(pz.timer);
+      pz.timer = setTimeout(() => this.resumeLookups(), wait);
+      this.renderWall();
+    }
+    return tries < 3;
+  }
+  resumeLookups() {
+    clearTimeout(this.pause.timer);
+    this.pause.until = 0;
+    this.renderWall();
+    this.pumpRows();
+    this.syncPosters();
   }
   fillThumbs(f) {
     const path = this.app.store.p.posterPaths[f.id];
@@ -434,11 +471,14 @@ export class Library {
     const unmatched = new Set(films.filter((f) => p.posterPaths[f.id] === undefined && this.needsMatch.has(f.id)).map((f) => f.id));
     const pending = films.filter((f) => p.posterPaths[f.id] === undefined && !unmatched.has(f.id)).length;
     for (const tile of wall.children) tile.title = unmatched.has(tile.dataset.film) ? "Open to pick the right movie for its poster" : "";
-    $("posterWallStatus").textContent = pr.controller
-      ? "Collecting posters…"
-      : !details.connected
-        ? "Connect TMDB in Settings for posters."
-        : count + " of " + plural(films.length, "poster") + (unmatched.size ? " · " + unmatched.size + (unmatched.size === 1 ? " needs" : " need") + " you to pick the right movie: open it to choose" : "");
+    const paused = this.paused() && pending > 0;
+    $("posterWallStatus").textContent = paused
+      ? count + " of " + plural(films.length, "poster") + " · Paused: " + this.pause.reason + " Trying again shortly."
+      : pr.controller
+        ? "Collecting posters…"
+        : !details.connected
+          ? "Connect TMDB in Settings for posters."
+          : count + " of " + plural(films.length, "poster") + (unmatched.size ? " · " + unmatched.size + (unmatched.size === 1 ? " needs" : " need") + " you to pick the right movie: open it to choose" : "");
     $("loadPosters").hidden = (!details.connected || !pending) && !films.some((f) => pr.imageFailures.has(f.id));
     $("loadPosters").disabled = !!pr.controller;
     $("loadPosters").textContent = pr.controller ? "Loading posters…" : "Retry missing posters";
@@ -452,26 +492,26 @@ export class Library {
   }
   retryPosters() {
     const pr = this.posterRun;
-    pr.failures = 0;
     pr.attempts.clear();
+    this.pause.tries.clear();
+    this.pause.streak = 0;
     for (const tile of $("posterWall").children) if (pr.imageFailures.has(tile.dataset.film)) delete tile.dataset.poster;
     pr.imageFailures.clear();
-    this.renderWall();
-    this.syncPosters();
+    this.resumeLookups();
   }
   // While the archive is open, posters for watched films are fetched two at a time.
   async syncPosters() {
     const { store, catalog, details } = this.app,
       pr = this.posterRun;
     if (!this.wallVisible() || !details.connected) return this.stopPosters();
-    if (pr.controller || pr.failures >= 3) return;
+    if (pr.controller || this.paused()) return;
     const queue = watchedFilms(store.p, catalog).filter((f) => store.p.posterPaths[f.id] === undefined && !pr.attempts.has(f.id));
     if (!queue.length) return;
     const controller = new AbortController();
     pr.controller = controller;
     this.renderWall();
     const worker = async () => {
-      while (queue.length && !controller.signal.aborted && pr.failures < 3) {
+      while (queue.length && !controller.signal.aborted && !this.paused()) {
         const f = queue.shift();
         if (!store.p.seen.has(f.id)) continue;
         try {
@@ -479,12 +519,11 @@ export class Library {
           if (controller.signal.aborted) return;
           if (d?.choices) this.needsMatch.add(f.id);
           pr.attempts.add(f.id);
-          pr.failures = 0;
+          this.lookupWorked();
           this.renderWall();
-        } catch {
+        } catch (e) {
           if (controller.signal.aborted) return;
-          pr.attempts.add(f.id);
-          pr.failures++;
+          if (!this.lookupFailed(f, e)) pr.attempts.add(f.id);
         }
       }
     };

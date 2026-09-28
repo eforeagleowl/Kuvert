@@ -3,6 +3,11 @@
 // Kuvert only talks to TMDB once you've connected your own credential.
 
 export const IMG = "https://image.tmdb.org/t/p/";
+// Every TMDB image Kuvert shows or draws, at an address of its own. TMDB only sends its CORS header when
+// asked in CORS mode, and lets browsers keep images for a year. Kuvert Classic loads the same posters as
+// plain images, so a browser that has shown them there hands its stored copy (no CORS header) to Kuvert's
+// CORS request and the image fails. Classic's copies never have this marker, so they're never reused.
+export const imageUrl = (size, path) => IMG + size + path + "?cors=1";
 
 export function tmdbAuth(token) {
   const t = (token || "").trim();

@@ -6,7 +6,7 @@
 import { $, h, reduceMotion, setText } from "../ui/dom.js";
 import { StarSlider } from "../ui/stars.js";
 import { Nixie } from "./nixie.js";
-import { IMG, fmtMoney } from "../tmdb/client.js";
+import { imageUrl, fmtMoney } from "../tmdb/client.js";
 import { starText, ratingWord, allWatched, finaleData, plural } from "../state/stats.js";
 import { fmtDay, dayLong, dateFull, defaultWatchDate } from "../state/dates.js";
 
@@ -858,8 +858,8 @@ export class Stage {
     }
     el.hidden = false;
     el.crossOrigin = "anonymous";
-    el.src = IMG + size + path;
-    el.dataset.big = IMG + "original" + path;
+    el.src = imageUrl(size, path);
+    el.dataset.big = imageUrl("original", path);
     el.alt = label;
     el.onerror = () => (el.hidden = true);
   }

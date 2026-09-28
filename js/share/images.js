@@ -1,6 +1,6 @@
 // Share images for the group chat: a ticket and your ranking, drawn on a canvas in Kuvert's style and
 // sent through the phone's share sheet, or saved as a PNG on desktop.
-import { IMG } from "../tmdb/client.js";
+import { imageUrl } from "../tmdb/client.js";
 import { STAR_PATH } from "../ui/stars.js";
 import { HORSE_BODY } from "../ui/horse.js";
 import { slugify } from "../data/lists.js";
@@ -21,7 +21,7 @@ const loadImage = (src) =>
 async function loadPoster(path) {
   if (!path) return null;
   try {
-    const r = await fetch(IMG + "w500" + path, { mode: "cors" });
+    const r = await fetch(imageUrl("w500", path), { mode: "cors" });
     if (!r.ok) return null;
     return await createImageBitmap(await r.blob());
   } catch {

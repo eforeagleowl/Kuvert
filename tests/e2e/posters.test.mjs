@@ -11,7 +11,8 @@ const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAIAAAA2iEnWAAAAFklEQVR
 // Every title is found once, except Hamlet, which has two films that year: that one needs you to pick.
 // `busy`: how many searches TMDB turns away first, as it does when it gets too many requests.
 async function standInTmdb(context, { busy = 0 } = {}) {
-  const films = new Map();
+  const films = new Map(),
+    images = [];
   const id = (s) => ([...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 17) % 900000) + 1000;
   await context.route("https://api.themoviedb.org/**", (route) => {
     const req = route.request(),
@@ -36,13 +37,17 @@ async function standInTmdb(context, { busy = 0 } = {}) {
     if (f) return json({ id: Number(m[1]), title: f.q, original_title: f.q, release_date: f.y + "-06-01", runtime: 100, poster_path: "/p" + m[1] + ".jpg", genres: [], credits: { cast: [], crew: [] }, "watch/providers": { results: {} }, release_dates: { results: [] } });
     return json({ status_message: "Not found" }, 404);
   });
-  await context.route("https://image.tmdb.org/**", (route) => route.fulfill({ status: 200, contentType: "image/png", headers: CORS, body: PNG }));
+  await context.route("https://image.tmdb.org/**", (route) => {
+    images.push(route.request().url());
+    route.fulfill({ status: 200, contentType: "image/png", headers: CORS, body: PNG });
+  });
+  return images;
 }
 
 test("watched films get their posters in the Library, and a film that needs a match says so", async () => {
   for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 }]) {
     const context = await newContext({ viewport });
-    await standInTmdb(context);
+    const images = await standInTmdb(context);
     const page = await openPage(context, "/");
     await page.evaluate(() => {
       document.getElementById("tmdbTok").value = "eyJhbGciOiJIUzI1NiJ9.test-read-access-token.signature-for-tests-only";
@@ -90,6 +95,8 @@ test("watched films get their posters in the Library, and a film that needs a ma
     await page.evaluate(() => document.querySelector('#posterWall [data-film="1948-hamlet"]').scrollIntoView({ block: "center" }));
     await page.waitForFunction(() => document.querySelector('#posterWall [data-film="1948-hamlet"] img')?.naturalWidth > 0);
     assert.equal(await page.textContent("#posterWallStatus"), "8 of 8 posters");
+    // Every poster is asked for at Kuvert's own address, never one Kuvert Classic's plain copies share.
+    assert.ok(images.length > 8 && images.every((u) => u.endsWith("?cors=1")), images.find((u) => !u.endsWith("?cors=1")));
     assert.deepEqual(await problems(page), []);
     await context.close();
   }

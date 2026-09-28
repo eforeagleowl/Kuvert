@@ -67,7 +67,7 @@ test("both apps start offline after one visit, each from its own cache", async (
     await newApp(page);
     await controlledBy(page, "/sw.js");
     const cached = await page.evaluate(async () => (await caches.keys()).sort());
-    assert.ok(cached.some((k) => k.startsWith("kvapp-") && k !== "kvapp-posters"), cached.join());
+    assert.ok(cached.some((k) => k.startsWith("kvapp-") && !k.startsWith("kvapp-posters")), cached.join());
     assert.ok(cached.includes("kuvert-classic-1"), cached.join());
 
     await unplug(server);

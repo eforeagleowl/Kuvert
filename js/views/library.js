@@ -1,7 +1,7 @@
 // The collection: every film, filters and a forgiving search, decade coverage, the shelf, skipped and
 // recent views, and the watched archive with its poster wall.
 import { $, h, check, mark, emptyState, keepFocus } from "../ui/dom.js";
-import { IMG } from "../tmdb/client.js";
+import { imageUrl } from "../tmdb/client.js";
 import { byYear, decadeOf } from "../state/catalog.js";
 import { fmtWhen } from "../state/dates.js";
 import { plural, ratingLabel, starText, wallFilms, watchedFilms } from "../state/stats.js";
@@ -83,7 +83,7 @@ export class Library {
     return span;
   }
   thumbImage(path) {
-    return this.deferredImage(IMG + "w92" + path, (e) => e.target.remove());
+    return this.deferredImage(imageUrl("w92", path), (e) => e.target.remove());
   }
   // Rows fetch their poster when they scroll into view, two at a time.
   watchThumb(span) {
@@ -456,7 +456,7 @@ export class Library {
         tile.querySelector("img")?.remove();
         if (path)
           tile.querySelector(".wall-art").append(
-            this.deferredImage(IMG + "w342" + path, (e) => {
+            this.deferredImage(imageUrl("w342", path), (e) => {
               if (tile.dataset.poster !== path) return;
               pr.imageFailures.add(f.id);
               e.target.remove();

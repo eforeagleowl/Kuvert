@@ -6,7 +6,7 @@
 // purpose: no libraries, and nothing but the app and its posters is ever cached.
 
 // <stamp> written by tools/stamp.mjs (npm run stamp); do not edit by hand.
-const VERSION = "67e4a1e920af";
+const VERSION = "0af4cb601774";
 const FILES = [
   "./",
   "./manifest.webmanifest",
@@ -79,7 +79,7 @@ const FILES = [
 // </stamp>
 
 const CACHE = "kvapp-" + VERSION;
-const POSTERS = "kvapp-posters";
+const POSTERS = "kvapp-posters-2"; // -2: addresses carry ?cors=1, so the old entries were never used again
 const POSTER_LIMIT = 600;
 // The classic app's worker clears caches named "kuvert-*", so these names avoid that prefix.
 // Left behind by the old layout: the classic app's caches from when it lived here, and the

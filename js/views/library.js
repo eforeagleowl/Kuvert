@@ -12,6 +12,8 @@ export class Library {
   constructor(app) {
     this.app = app;
     this.posterRun = { controller: null, failures: 0, attempts: new Set(), imageFailures: new Set() };
+    // Films whose TMDB search found more than one candidate: only you can pick, from the film's ticket.
+    this.needsMatch = new Set();
     this.rowPosters = { observer: null, queue: [], tried: new Set(), busy: 0, failures: 0 };
     const store = app.store;
     $("libraryTabs").addEventListener("click", (e) => {
@@ -38,6 +40,32 @@ export class Library {
   }
 
   // ---------------------------------------------------------------- posters
+  // Library images load as they come near the screen. The app does this itself instead of leaving it to
+  // the browser's lazy loading, which some browsers never start inside the folding Watched section.
+  deferredImage(src, onError) {
+    const img = h("img", { alt: "", decoding: "async", crossOrigin: "anonymous", dataset: { src }, on: { error: onError } });
+    this.observeImage(img);
+    return img;
+  }
+  observeImage(img) {
+    if (!("IntersectionObserver" in window)) return void (img.src = img.dataset.src);
+    this.imageObserver ??= new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          this.imageObserver.unobserve(e.target);
+          e.target.src = e.target.dataset.src;
+        }
+      },
+      { rootMargin: "400px 0px" },
+    );
+    this.imageObserver.observe(img);
+  }
+  // Rows are rebuilt on every render: stop watching the old images, then pick up any still waiting.
+  reobserveImages() {
+    this.imageObserver?.disconnect();
+    for (const img of $("page-library").querySelectorAll("img[data-src]:not([src])")) this.observeImage(img);
+  }
   // A small poster beside a title once TMDB is connected. Rows keep their shape while it loads.
   thumb(f) {
     if (!this.app.details.connected) return null;
@@ -51,7 +79,7 @@ export class Library {
     return span;
   }
   thumbImage(path) {
-    return h("img", { alt: "", loading: "lazy", decoding: "async", crossOrigin: "anonymous", src: IMG + "w92" + path, on: { error: (e) => e.target.remove() } });
+    return this.deferredImage(IMG + "w92" + path, (e) => e.target.remove());
   }
   // Rows fetch their poster when they scroll into view, two at a time, and stop after three failures.
   watchThumb(span) {
@@ -86,8 +114,9 @@ export class Library {
       rp.busy++;
       details
         .fetchInfo(f)
-        .then(() => {
+        .then((d) => {
           rp.failures = 0;
+          if (d?.choices) this.needsMatch.add(f.id);
           this.fillThumbs(f);
         })
         .catch(() => rp.failures++)
@@ -197,6 +226,7 @@ export class Library {
       this.renderWatched();
     });
     this.renderWall();
+    this.reobserveImages();
     this.syncPosters();
   }
 
@@ -389,20 +419,11 @@ export class Library {
         tile.querySelector("img")?.remove();
         if (path)
           tile.querySelector(".wall-art").append(
-            h("img", {
-              alt: "",
-              loading: "lazy",
-              decoding: "async",
-              crossOrigin: "anonymous", // CORS, so the service worker may keep it for offline
-              src: IMG + "w342" + path,
-              on: {
-                error: (e) => {
-                  if (tile.dataset.poster !== path) return;
-                  pr.imageFailures.add(f.id);
-                  e.target.remove();
-                  this.renderWall();
-                },
-              },
+            this.deferredImage(IMG + "w342" + path, (e) => {
+              if (tile.dataset.poster !== path) return;
+              pr.imageFailures.add(f.id);
+              e.target.remove();
+              this.renderWall();
             }),
           );
       }
@@ -410,8 +431,14 @@ export class Library {
     });
     if (nodes.length !== wall.children.length || nodes.some((n, i) => wall.children[i] !== n)) keepFocus(() => wall.replaceChildren(...nodes));
     const count = films.filter((f) => p.posterPaths[f.id] && !pr.imageFailures.has(f.id)).length;
-    const pending = films.filter((f) => p.posterPaths[f.id] === undefined).length;
-    $("posterWallStatus").textContent = pr.controller ? "Collecting posters…" : !details.connected ? "Connect TMDB in Settings for posters." : count + " of " + plural(films.length, "poster");
+    const unmatched = new Set(films.filter((f) => p.posterPaths[f.id] === undefined && this.needsMatch.has(f.id)).map((f) => f.id));
+    const pending = films.filter((f) => p.posterPaths[f.id] === undefined && !unmatched.has(f.id)).length;
+    for (const tile of wall.children) tile.title = unmatched.has(tile.dataset.film) ? "Open to pick the right movie for its poster" : "";
+    $("posterWallStatus").textContent = pr.controller
+      ? "Collecting posters…"
+      : !details.connected
+        ? "Connect TMDB in Settings for posters."
+        : count + " of " + plural(films.length, "poster") + (unmatched.size ? " · " + unmatched.size + (unmatched.size === 1 ? " needs" : " need") + " you to pick the right movie: open it to choose" : "");
     $("loadPosters").hidden = (!details.connected || !pending) && !films.some((f) => pr.imageFailures.has(f.id));
     $("loadPosters").disabled = !!pr.controller;
     $("loadPosters").textContent = pr.controller ? "Loading posters…" : "Retry missing posters";
@@ -448,8 +475,9 @@ export class Library {
         const f = queue.shift();
         if (!store.p.seen.has(f.id)) continue;
         try {
-          await details.fetchInfo(f, controller.signal);
+          const d = await details.fetchInfo(f, controller.signal);
           if (controller.signal.aborted) return;
+          if (d?.choices) this.needsMatch.add(f.id);
           pr.attempts.add(f.id);
           pr.failures = 0;
           this.renderWall();

@@ -6,7 +6,7 @@
 // purpose: no libraries, and nothing but the app and its posters is ever cached.
 
 // <stamp> written by tools/stamp.mjs (npm run stamp); do not edit by hand.
-const VERSION = "3351af57ee49";
+const VERSION = "821db42d0ea7";
 const FILES = [
   "./",
   "./manifest.webmanifest",
@@ -140,16 +140,24 @@ async function page(req, url) {
   }
 }
 
+// Poster sizes only: backdrops and full-size lightbox images are large and fetched fresh each time.
+const KEEP = /\/t\/p\/w(92|154|185|342|500)\//;
 async function poster(req) {
-  const cache = await caches.open(POSTERS);
-  const hit = await cache.match(req);
-  if (hit) return hit;
+  const keep = KEEP.test(new URL(req.url).pathname);
+  let cache = null;
+  try {
+    cache = keep ? await caches.open(POSTERS) : null;
+    const hit = await cache?.match(req);
+    if (hit) return hit;
+  } catch {}
   const res = await fetch(req);
+  // Stored in the background, and a full or unavailable cache never costs the image itself.
   // CORS responses only: opaque ones can't be checked and cost browsers megabytes of quota each.
-  if (res.ok) {
-    await cache.put(req, res.clone());
-    trim(cache);
-  }
+  if (res.ok && cache)
+    cache
+      .put(req, res.clone())
+      .then(() => trim(cache))
+      .catch(() => {});
   return res;
 }
 

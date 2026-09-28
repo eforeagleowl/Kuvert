@@ -9,7 +9,8 @@ const CORS = { "access-control-allow-origin": "*", "access-control-allow-headers
 const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAIAAAA2iEnWAAAAFklEQVR4nGP4z8DAwMDAxMDAwMDAAAANHQEDasKb6QAAAABJRU5ErkJggg==", "base64");
 
 // Every title is found once, except Hamlet, which has two films that year: that one needs you to pick.
-async function standInTmdb(context) {
+// `busy`: how many searches TMDB turns away first, as it does when it gets too many requests.
+async function standInTmdb(context, { busy = 0 } = {}) {
   const films = new Map();
   const id = (s) => ([...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 17) % 900000) + 1000;
   await context.route("https://api.themoviedb.org/**", (route) => {
@@ -20,6 +21,7 @@ async function standInTmdb(context) {
     if (req.method() === "OPTIONS") return route.fulfill({ status: 204, headers: CORS });
     if (path === "/configuration") return json({ images: { secure_base_url: "https://image.tmdb.org/t/p/" } });
     if (path === "/search/movie") {
+      if (busy > 0) return busy--, json({ status_message: "Too many requests" }, 429);
       const q = u.searchParams.get("query"),
         y = u.searchParams.get("primary_release_year") || "1948";
       const make = (n) => {
@@ -91,4 +93,28 @@ test("watched films get their posters in the Library, and a film that needs a ma
     assert.deepEqual(await problems(page), []);
     await context.close();
   }
+});
+
+test("when TMDB turns lookups away, the poster wall says so, and carries on by itself afterwards", async () => {
+  const context = await newContext();
+  await standInTmdb(context, { busy: 6 });
+  const page = await openPage(context, "/");
+  await page.evaluate(() => {
+    document.getElementById("tmdbTok").value = "eyJhbGciOiJIUzI1NiJ9.test-read-access-token.signature-for-tests-only";
+    document.getElementById("tmdbSave").click();
+  });
+  await page.waitForFunction(() => window.kuvert.app.details.connected);
+  await page.evaluate(() => {
+    const { store, catalog } = window.kuvert.app;
+    for (const f of catalog.films.slice(0, 6)) store.markSeen(f.id, true);
+  });
+  await page.click('a[data-route="library"]:visible');
+  await page.click("#watchedArchive > summary");
+  // Three refusals in a row: lookups pause, and the wall says what TMDB said.
+  await page.waitForFunction(() => /Paused: Too many requests/.test(document.getElementById("posterWallStatus").textContent), null, { timeout: 10000 });
+  // The pause ends (here at once, instead of in 30 seconds) and every poster comes in, with no retry button pressed.
+  await page.evaluate(() => window.kuvert.app.library.resumeLookups());
+  await page.waitForFunction(() => document.getElementById("posterWallStatus").textContent === "6 of 6 posters", null, { timeout: 15000 });
+  assert.deepEqual(await problems(page), []);
+  await context.close();
 });

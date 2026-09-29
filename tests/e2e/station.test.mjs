@@ -2,6 +2,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { env, newContext, openPage, go, problems } from "./helpers.mjs";
+import { resolveList } from "../../js/data/lists.js";
+import { makeCatalog } from "../../js/state/catalog.js";
+import * as T from "../../js/station/timetable.js";
+
+// The built-in list, as the page has it, for working out a film's track: its ceremony, or for an
+// honorable mention (no ceremony) the steady made-up one.
+const catalog = makeCatalog(resolveList({ getItem: () => null }));
+const trackOf = (id) => T.track(catalog.byId.get(id), catalog);
 
 const ready = (page) => page.waitForFunction(() => window.kuvert.app.station.fontsReady && document.documentElement.dataset.page === "station" && !window.kuvert.app.station.busy);
 const drawn = (page) => page.waitForFunction(() => !window.kuvert.app.station.busy && !document.getElementById("stTicket").hidden);
@@ -46,17 +54,18 @@ test("the station: the board, a draw, the printed ticket, and over to Tonight wi
     const f = catalog.byId.get(id);
     return { ...f, number: catalog.ticketNumber(f) };
   }, b.current);
-  const T = await import("../../js/station/timetable.js");
   assert.ok(b.flaps[0].includes(T.fit(film, 26)), `the board reads ${b.flaps[0]}`);
   assert.equal(await page.textContent(".st-ttitle"), film.t);
   const ticket = await page.textContent("#stTicket");
   assert.match(ticket, new RegExp("Nr " + film.number + " / 275"));
   assert.match(ticket, /Kvällens (film|vinnare)|Nästa del/);
-  assert.match(ticket, new RegExp("Track" + film.c));
-  assert.match(ticket, new RegExp("Spår" + film.c));
+  const track = trackOf(film.id);
+  assert.match(ticket, new RegExp("Track" + track + "Ceremony"));
+  assert.match(ticket, new RegExp("Spår" + track + "\\d"));
+  assert.match(ticket, new RegExp("Ceremony" + (Number.isInteger(film.c) ? T.ceremonyLine(film) : "—")));
   assert.match(ticket, /Take your ticket/);
   assert.equal(await page.getAttribute("#stTicket", "class"), "st-ticket inked", "with reduced motion the ticket is simply there, stamped");
-  assert.match(await page.textContent("#stTicker"), new RegExp("Kvällens film: .* · Avgår \\d\\d:\\d\\d från spår " + film.c));
+  assert.match(await page.textContent("#stTicker"), new RegExp("Kvällens film: .* · Avgår \\d\\d:\\d\\d från spår " + track + " "));
   assert.match(await page.textContent("#stLive"), new RegExp("Tonight's film: "));
   assert.equal(await page.textContent("#stDrawMain"), "Dra igen");
 
@@ -101,9 +110,10 @@ test("the station: the board, a draw, the printed ticket, and over to Tonight wi
 test("a saved ticket is printed first at the station, never drawn over or named before", async () => {
   const context = await newContext();
   const page = await openPage(context, "/");
+  // An honorable mention: no ceremony, so it leaves from a made-up track.
   const film = await page.evaluate(() => {
     const { store, catalog, stage } = window.kuvert.app;
-    const f = catalog.films.find((x) => x.t.length > 12 && !x.tri);
+    const f = catalog.films.find((x) => x.t.length > 8 && !x.tri && !Number.isInteger(x.c));
     store.pick(f.id);
     stage.syncPick();
     return { id: f.id, t: f.t };
@@ -119,6 +129,9 @@ test("a saved ticket is printed first at the station, never drawn over or named 
   await drawn(page);
   assert.equal((await board(page)).current, film.id, "the saved ticket, not a new draw");
   assert.equal(await page.textContent(".st-ttitle"), film.t);
+  const track = trackOf(film.id);
+  assert.ok(track >= 1 && track <= 19);
+  assert.match(await page.textContent("#stTicket"), new RegExp("Track" + track + "Ceremony—"));
   await page.click("#stDraw");
   await drawn(page);
   assert.notEqual((await board(page)).current, film.id, "then Draw again draws a new film");
@@ -151,7 +164,7 @@ test("with full motion: the ticket prints and gets stamped once, the announcer s
   const spoken = await page.evaluate(() => window.__spoken);
   assert.equal(spoken.length, 1);
   assert.equal(spoken[0].lang, "en-GB");
-  assert.match(spoken[0].text, new RegExp(`^Tonight's film: ${cur.t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}, from ${cur.y}\\. .*The \\d\\d:\\d\\d service will depart from platform ${cur.c}\\. Please take your ticket, and enjoy the film\\.$`));
+  assert.match(spoken[0].text, new RegExp(`^Tonight's film: ${cur.t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}, from ${cur.y}\\. .*The \\d\\d:\\d\\d service will depart from platform ${trackOf(cur.id)}\\. Please take your ticket, and enjoy the film\\.$`));
   const still = () =>
     page.evaluate(() => {
       const t = document.getElementById("stTicket");

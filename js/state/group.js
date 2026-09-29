@@ -5,20 +5,21 @@ import { KEYS } from "../compat/keys.js";
 import { parseCode } from "../compat/codes.js";
 import { validateProgress } from "../compat/validate.js";
 import { LOCAL_LEGACY_IDS } from "../compat/legacy-ids.js";
+import { t } from "../i18n/index.js";
 
 const MAX_PEOPLE = 12;
 
 /** A friend's watched films, from a progress code or a backup file's text. */
 export function readFriend(text, ctx) {
   const v = String(text || "").trim();
-  if (!v) throw Error("Paste their progress code first.");
+  if (!v) throw Error(t("Paste their progress code first."));
   let d;
   if (v.startsWith("{")) {
     let obj;
     try {
       obj = JSON.parse(v);
     } catch {
-      throw Error("That isn't a Kuvert progress code or backup file.");
+      throw Error(t("That isn't a Kuvert progress code or backup file."));
     }
     d = validateProgress(obj, ctx, { legacyIds: LOCAL_LEGACY_IDS });
   } else d = parseCode(v, ctx, LOCAL_LEGACY_IDS); // an old code: read as the updated list
@@ -69,14 +70,14 @@ export class Group extends EventTarget {
     return this.people.filter((x) => x.seen.includes(id)).map((x) => x.name);
   }
   nextName() {
-    for (let n = 1; ; n++) if (!this.people.some((x) => x.name === "Friend " + n)) return "Friend " + n;
+    for (let n = 1; ; n++) if (!this.people.some((x) => x.name === t("Friend {n}", { n }))) return t("Friend {n}", { n });
   }
   /** Adds a friend (or refreshes one with the same name) from their code or backup. */
   add(name, text) {
     const seen = readFriend(text, this.store.catalog.ctx);
     const clean = String(name || "").trim().slice(0, 40) || this.nextName();
     const existing = this.people.find((x) => x.name.toLowerCase() === clean.toLowerCase());
-    if (!existing && this.people.length >= MAX_PEOPLE) throw Error("A group night fits " + MAX_PEOPLE + " friends.");
+    if (!existing && this.people.length >= MAX_PEOPLE) throw Error(t("A group night fits {n} friends.", { n: MAX_PEOPLE }));
     if (existing) Object.assign(existing, { seen, added: new Date().toISOString() });
     else this.people.push({ name: clean, seen, added: new Date().toISOString() });
     this.on = true;

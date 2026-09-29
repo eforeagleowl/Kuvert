@@ -11,6 +11,7 @@ import { parseCode, isModernCode } from "../compat/codes.js";
 import { buildListDefinition, readCustomLists, writeCustomLists, installListFromBackup } from "../data/lists.js";
 import { readBackupFile } from "../storage/files.js";
 import { defaultWatchDate } from "../state/dates.js";
+import { t, plural, LOCALE } from "../i18n/index.js";
 
 export class Dialogs {
   constructor(app) {
@@ -68,18 +69,18 @@ export class Dialogs {
   setDate(clear) {
     const v = $("watchDate").value;
     if (!clear && !validDate(v)) {
-      $("watchDate").setCustomValidity("Choose a valid date.");
+      $("watchDate").setCustomValidity(t("Choose a valid date."));
       $("watchDate").reportValidity();
       return;
     }
     const undo = this.store.setDate(this.dateId, clear ? null : v);
     $("dateDialog").close();
-    if (undo) this.app.toast.show("Watch date updated.", undo);
+    if (undo) this.app.toast.show(t("Watch date updated."), undo);
   }
 
   // ---------------------------------------------------------------- your note
   wireReview() {
-    this.reviewStars = new StarSlider($("reviewStars"), { label: "Your rating", size: "md", onChange: (v) => this.setReviewStars(v) });
+    this.reviewStars = new StarSlider($("reviewStars"), { label: t("Your rating"), size: "md", onChange: (v) => this.setReviewStars(v) });
     $("reviewStars").setAttribute("aria-labelledby", "reviewRatingLabel");
     $("reviewClear").addEventListener("click", () => this.setReviewStars(null));
     for (const r of document.querySelectorAll('input[name="reviewVerdict"]')) r.addEventListener("change", () => this.syncReviewShould());
@@ -122,7 +123,7 @@ export class Dialogs {
       snub: $("reviewShould").value,
     });
     $("reviewDialog").close();
-    this.app.toast.show("Your movie note was saved.", undo);
+    this.app.toast.show(t("Your movie note was saved."), undo);
   }
 
   // ---------------------------------------------------------------- mood tags
@@ -130,15 +131,15 @@ export class Dialogs {
     $("saveMoods").addEventListener("click", () => {
       const undo = this.store.setMoods(this.moodId, [...$("moodChoices").querySelectorAll("input:checked")].map((el) => el.value));
       $("moodDialog").close();
-      this.app.toast.show("Mood tags saved.", undo);
+      this.app.toast.show(t("Mood tags saved."), undo);
     });
     $("cancelMoods").addEventListener("click", () => $("moodDialog").close());
   }
   editMoods(id) {
     this.moodId = id;
-    $("moodTitle").textContent = "Moods · " + this.app.catalog.byId.get(id).t;
+    $("moodTitle").textContent = t("Moods · {title}", { title: this.app.catalog.byId.get(id).t });
     const selection = new Set(this.store.moodsFor(id));
-    $("moodChoices").replaceChildren(...MOODS.map((tag) => h("label", {}, h("input", { type: "checkbox", value: tag, checked: selection.has(tag) }), tag)));
+    $("moodChoices").replaceChildren(...MOODS.map((tag) => h("label", {}, h("input", { type: "checkbox", value: tag, checked: selection.has(tag) }), t(tag))));
     $("moodDialog").showModal();
   }
 
@@ -162,18 +163,18 @@ export class Dialogs {
   async submitCode() {
     const v = $("codeInput").value.trim();
     if (!v) {
-      $("codeError").textContent = "Paste a code first.";
+      $("codeError").textContent = t("Paste a code first.");
       return;
     }
     try {
-      if (!isModernCode(v) && this.app.list.custom) throw Error("Older codes only work with the built-in Kuvert list.");
+      if (!isModernCode(v) && this.app.list.custom) throw Error(t("Older codes only work with the built-in Kuvert list."));
       const data = isModernCode(v) ? parseCode(v, this.app.catalog.ctx) : null;
       $("codeDialog").close();
       const d = data || (await this.chooseLegacy(v));
       if (d) await this.requestRestore(d);
     } catch (e) {
-      $("codeError").textContent = e.message || "That code could not be read.";
-      if (!$("codeDialog").open) this.app.toast.show(e.message || "That code could not be read.");
+      $("codeError").textContent = t(e.message || "That code could not be read.");
+      if (!$("codeDialog").open) this.app.toast.show(t(e.message || "That code could not be read."));
     }
   }
   // Older codes don't say which list made them: ask before reading.
@@ -200,7 +201,7 @@ export class Dialogs {
       $("legacyDialog").close();
       p.resolve(d);
     } catch (e) {
-      $("legacyError").textContent = e.message;
+      $("legacyError").textContent = t(e.message);
     }
   }
   wireRestore() {
@@ -221,11 +222,11 @@ export class Dialogs {
       const added = [...d.seen].filter((id) => !p.seen.has(id)).length,
         removed = [...p.seen].filter((id) => !d.seen.has(id)).length,
         dateChanges = [...d.seen].filter((id) => p.seen.has(id) && (p.dates[id] || "") !== (d.dates[id] || "")).length;
-      $("restoreSummary").textContent = `Your current progress: ${p.seen.size} watched. Backup: ${d.seen.size} watched. Merge adds ${added}. Replace removes ${removed} current marks and changes ${dateChanges} existing dates.`;
+      $("restoreSummary").textContent = t("Your current progress: {now} watched. Backup: {backup} watched. Merge adds {added}. Replace removes {removed} current marks and changes {dates} existing dates.", { now: p.seen.size, backup: d.seen.size, added, removed, dates: dateChanges });
       $("restoreNote").textContent =
-        (d.saved ? "Backup saved " + new Date(d.saved).toLocaleString() + ". " : "") +
-        (d.legacy ? "Original-format backup: movie IDs will be migrated. Older text codes do not include watch dates. " : "") +
-        "Skipped movies, notes and recent picks are included when present. Merge keeps your existing notes; Replace uses the backup. Credentials are never imported.";
+        (d.saved ? t("Backup saved {when}. ", { when: new Date(d.saved).toLocaleString(LOCALE) }) : "") +
+        (d.legacy ? t("Original-format backup: movie IDs will be migrated. Older text codes do not include watch dates. ") : "") +
+        t("Skipped movies, notes and recent picks are included when present. Merge keeps your existing notes; Replace uses the backup. Credentials are never imported.");
       $("restoreDialog").showModal();
     });
   }
@@ -241,7 +242,7 @@ export class Dialogs {
       $("reconnect").hidden = true;
     }
     this.app.stage.syncPick();
-    this.app.toast.show("Progress " + (mode === "merge" ? "merged." : "replaced."), undo);
+    this.app.toast.show(t(mode === "merge" ? "Progress merged." : "Progress replaced."), undo);
     pending.resolve(true);
   }
   /** Reads a backup file and previews it; a backup for another list offers to switch first. */
@@ -262,11 +263,11 @@ export class Dialogs {
     const builtIn = [KUVERT.catalogue, ...KUVERT.olderCatalogues].includes(obj.catalogue);
     const def = obj.list && typeof obj.list === "object" ? obj.list : null;
     if (!builtIn && !def) return false;
-    const name = builtIn ? KUVERT.name + " (built-in)" : def.name + " · " + (def.films?.length || 0) + " films";
+    const name = builtIn ? KUVERT.name + t(" (built-in)") : def.name + " · " + plural(def.films?.length || 0, "film");
     const ok = await this.confirm({
-      title: "This backup is for another list",
-      text: "It belongs to " + name + ". Switch to that list" + (builtIn || readCustomLists(storage)[def.id] ? "" : " (it will be added)") + " and preview the restore there?",
-      confirm: "Switch list",
+      title: t("This backup is for another list"),
+      text: t(builtIn || readCustomLists(storage)[def.id] ? "It belongs to {name}. Switch to that list and preview the restore there?" : "It belongs to {name}. Switch to that list (it will be added) and preview the restore there?", { name }),
+      confirm: t("Switch list"),
     });
     if (!ok) return true;
     const target = builtIn ? "builtin" : installListFromBackup(storage, def).id;
@@ -287,7 +288,7 @@ export class Dialogs {
     try {
       this.requestRestore(validateProgress(JSON.parse(raw), this.app.catalog.ctx));
     } catch (e) {
-      this.app.toast.show(e.message || "That backup could not be restored.");
+      this.app.toast.show(t(e.message || "That backup could not be restored."));
     }
   }
 
@@ -295,12 +296,8 @@ export class Dialogs {
   letterboxd(plan, unmatched, onApply) {
     const { found, watchedHere, notYet } = plan;
     $("lbxSummary").textContent =
-      "Found " +
-      found.size +
-      " of your Letterboxd films on this list. " +
-      watchedHere.length +
-      " are marked watched in Kuvert. " +
-      (notYet.length ? notYet.length + " more you've logged but haven't drawn yet: their ratings will pre-fill your note when you watch them. They stay in the draw." : "");
+      t("Found {n} of your Letterboxd films on this list. {watched} are marked watched in Kuvert. ", { n: found.size, watched: watchedHere.length }) +
+      (notYet.length ? t("{n} more you've logged but haven't drawn yet: their ratings will pre-fill your note when you watch them. They stay in the draw.", { n: notYet.length }) : "");
     const opts = [
       ["lbxFillRatings", "Fill in {n} missing ratings", plan.missingRating.length, true],
       ["lbxReplaceRatings", "Replace {n} Kuvert ratings that differ from Letterboxd", plan.differentRating.length, false],
@@ -310,13 +307,13 @@ export class Dialogs {
     ].filter(([, , n]) => n);
     $("lbxOptions").replaceChildren(
       ...(opts.length
-        ? opts.map(([id, label, n, checked]) => h("label", {}, h("input", { type: "checkbox", id, checked }), " " + label.replace("{n}", n)))
-        : [h("p", { class: "fine", text: "Everything already matches. Nothing to import." })]),
+        ? opts.map(([id, label, n, checked]) => h("label", {}, h("input", { type: "checkbox", id, checked }), " " + t(label, { n })))
+        : [h("p", { class: "fine", text: t("Everything already matches. Nothing to import.") })]),
     );
     $("lbxApply").disabled = !opts.length;
     $("lbxUnmatchedBox").hidden = !unmatched.length;
-    $("lbxUnmatchedSummary").textContent = unmatched.length + " rated or logged films aren't on this list";
-    $("lbxUnmatched").replaceChildren(...unmatched.slice(0, 300).map((t) => h("li", { text: t })));
+    $("lbxUnmatchedSummary").textContent = t("{n} rated or logged films aren't on this list", { n: unmatched.length });
+    $("lbxUnmatched").replaceChildren(...unmatched.slice(0, 300).map((name) => h("li", { text: name })));
     const on = (id) => !!$(id)?.checked;
     $("lbxApply").onclick = () => {
       $("lbxDialog").close();
@@ -333,12 +330,12 @@ export class Dialogs {
   // ---------------------------------------------------------------- importing a list
   listDraft(rows) {
     const { storage } = this.app;
-    const def = buildListDefinition({ ...rows, name: rows.name || "My list" });
+    const def = buildListDefinition({ ...rows, name: rows.name || t("My list") });
     const series = Object.keys(def.series).length;
     $("listSummaryText").textContent =
-      def.films.length + " films" + (def.shelves ? " with award shelves" : "") + (series ? " and " + series + " series" : "") + ", " + Math.min(...def.films.map((f) => f.y)) + "–" + Math.max(...def.films.map((f) => f.y)) + ".";
+      plural(def.films.length, "film") + t(def.shelves ? " with award shelves" : "") + (series ? t(" and {n} series", { n: series }) : "") + ", " + Math.min(...def.films.map((f) => f.y)) + "–" + Math.max(...def.films.map((f) => f.y)) + ".";
     $("listName").value = def.name;
-    $("listSubtitle").value = rows.subtitle || "Drawn at random";
+    $("listSubtitle").value = rows.subtitle || t("Drawn at random");
     $("listError").textContent = "";
     const chosen = PALETTES[rows.palette] ? rows.palette : "kuvert";
     $("paletteChoices").replaceChildren(
@@ -348,14 +345,14 @@ export class Dialogs {
           {},
           h("input", { type: "radio", name: "listPalette", value: key, checked: key === chosen }),
           h("span", { class: "swatch", style: { background: "linear-gradient(135deg," + p.house + " 0 50%," + p.velvet + " 50% 75%," + p.brass + " 75%)" } }),
-          p.label,
+          t(p.label),
         ),
       ),
     );
     $("listSave").onclick = () => {
       try {
         const palette = document.querySelector('input[name="listPalette"]:checked')?.value || "kuvert";
-        const clean = buildListDefinition({ ...rows, name: $("listName").value.trim() || "My list", subtitle: $("listSubtitle").value.trim(), palette });
+        const clean = buildListDefinition({ ...rows, name: $("listName").value.trim() || t("My list"), subtitle: $("listSubtitle").value.trim(), palette });
         const lists = readCustomLists(storage);
         lists[clean.id] = clean;
         writeCustomLists(storage, lists);
@@ -363,7 +360,7 @@ export class Dialogs {
         $("listDialog").close();
         location.reload();
       } catch (e) {
-        $("listError").textContent = e.message;
+        $("listError").textContent = t(e.message);
       }
     };
     $("listCancel").onclick = () => $("listDialog").close();

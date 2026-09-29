@@ -1,12 +1,14 @@
 // The station: a split-flap departure board for the same films, filters and progress as the envelope.
 // Draw here and the board flips with tonight's film first, lit in brass; a ticket prints from the slot
 // and gets stamped. That ticket is tonight's ticket: "Take your ticket" opens it on Tonight.
-// A mode of Tonight rather than a tab. Not in SEAGAL mode.
+// The same board turns over to Ankomster, the arrivals: the films you've watched, latest first, with
+// your stars on the flaps. A mode of Tonight rather than a tab. Not in SEAGAL mode.
 import { $, h, s, reduceMotion, wait } from "../ui/dom.js";
 import { HORSE_BODY } from "../ui/horse.js";
 import { allWatched, plural } from "../state/stats.js";
 import { hasActiveFilters } from "../state/draw.js";
-import { defaultWatchDate } from "../state/dates.js";
+import { defaultWatchDate, dayLong } from "../state/dates.js";
+import { t, LOCALE, decimal, swedish } from "../i18n/index.js";
 import { Flaps } from "../station/flaps.js";
 import { StationAudio } from "../station/audio.js";
 import * as T from "../station/timetable.js";
@@ -18,8 +20,15 @@ const shuffle = (a) => {
   }
   return a;
 };
-const today = () => new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+const today = () => new Date().toLocaleDateString(LOCALE, { day: "numeric", month: "short", year: "numeric" });
 const REMARKS = { W: "Won", N: "Nominated", H: "Honorable mention" };
+// The two boards: their names (Swedish, then English) and their column labels.
+const BOARDS = {
+  dep: { sv: "Avgångar", en: "Departures", labels: { time: ["TID", "Time"], year: ["ÅR", "Year"], title: ["TILL", "To"], track: ["SPÅR", "Track"], rem: ["ANM.", "Remarks"] } },
+  arr: { sv: "Ankomster", en: "Arrivals", labels: { date: ["DATUM", "Date"], year: ["ÅR", "Year"], title: ["FRÅN", "From"], stars: ["BETYG", "Stars"] } },
+};
+// Each column's Swedish label, with the English under it (in Swedish mode, the Swedish alone).
+const labelsFor = (kind) => Object.fromEntries(Object.entries(BOARDS[kind].labels).map(([k, [sv, en]]) => [k, [sv, swedish ? "" : en]]));
 
 export class Station {
   constructor(app) {
@@ -35,18 +44,21 @@ export class Station {
     this.fontsReady = false;
     this.clockText = "";
     this.running = false;
+    this.kind = "dep";
     if (app.seagal) return;
     this.audio = new StationAudio(app.storage);
     this.board = new Flaps($("stFlaps"), {
       header: true,
       lamp: true,
       theme: this.el,
-      labels: { time: ["TID", "Time"], year: ["ÅR", "Year"], title: ["TILL", "To"], track: ["SPÅR", "Track"], rem: ["ANM.", "Remarks"] },
+      labels: labelsFor("dep"),
     });
     this.clock = new Flaps($("stClock"), { theme: this.el });
     this.frame = this.frame.bind(this);
 
     $("stDraw").addEventListener("click", () => this.draw());
+    $("stDep").addEventListener("click", () => this.setBoard("dep"));
+    $("stArr").addEventListener("click", () => this.setBoard("arr"));
     $("stSound").addEventListener("click", () => this.toggle("sound"));
     $("stVoice").addEventListener("click", () => this.toggle("voice"));
     // Any tap on the station lets the browser make sound from then on.
@@ -78,7 +90,12 @@ export class Station {
     this.setDrawLabel();
     // The flaps are painted with Geist: wait for it (briefly) so the atlas isn't drawn in a fallback face.
     const faces = document.fonts
-      ? Promise.all([document.fonts.load('600 32px "Geist"', "AÅÄÖ09"), document.fonts.load('400 32px "Geist"', "Time"), document.fonts.load('500 16px "Geist Mono"', "KU0")])
+      ? Promise.all([
+          document.fonts.load('600 32px "Geist"', "AÅÄÖ09½"),
+          document.fonts.load('400 32px "Geist"', "Time"),
+          document.fonts.load('500 16px "Geist Mono"', "KU0"),
+          document.fonts.load('400 32px "Noto Sans Symbols 2"', "★"),
+        ])
       : Promise.resolve();
     Promise.race([faces, wait(1800)])
       .catch(() => {})
@@ -123,7 +140,7 @@ export class Station {
     if (keep.length === this.rows.length) return;
     this.rows = keep;
     this.topUp();
-    this.paint();
+    if (this.kind === "dep") this.paint();
   }
   boardMessage() {
     if (this.rows.length) return "";
@@ -131,28 +148,46 @@ export class Station {
   }
   paint({ instant = false, base = 0 } = {}) {
     if (!this.layout) return;
-    const { catalog } = this.app,
+    const { catalog, store } = this.app,
       groups = this.layout.groups,
-      message = this.boardMessage(),
-      quick = instant || reduceMotion();
+      quick = instant || reduceMotion(),
+      arr = this.kind === "arr";
+    // Departures: the timetable. Arrivals: the latest films you've watched, tonight's lit in brass.
+    const rows = arr ? T.arrivals(store.p, catalog, this.size, defaultWatchDate()) : this.rows;
+    const message = arr ? (rows.length ? "" : "INGA ANKOMSTER") : this.boardMessage();
     for (let r = 0; r < this.board.rows.length; r++) {
-      const row = this.rows[r];
-      const strs = row ? T.rowStrings(row, groups, catalog) : groups.map(([k]) => (r === 0 && k === "title" ? message : ""));
-      this.board.setRow(r, strs, row?.hl ? 1 : 0, { delay: base + r * 90, instant: quick });
-      this.board.lamps[r] = row?.hl && !this.busy ? 1 : 0;
+      const row = rows[r],
+        lit = arr ? row?.tonight : row?.hl;
+      const strs = row ? (arr ? T.arrivalStrings(row, groups) : T.rowStrings(row, groups, catalog)) : groups.map(([k, n]) => (r === 0 && k === "title" ? message.slice(0, n) : ""));
+      this.board.setRow(r, strs, lit ? 1 : 0, { delay: base + r * 90, instant: quick });
+      this.board.lamps[r] = lit && !this.busy ? 1 : 0;
     }
     this.board.lampDirty = true;
     // The same board for screen readers, as a table.
-    $("stRows").replaceChildren(
-      ...this.rows.map((row) =>
-        h(
-          "tr",
-          {},
-          [T.hhmm(row.time), row.film.t, row.film.y, T.track(row.film, catalog), (row.hl ? "Tonight's film. " : "") + (REMARKS[row.film.s] || "")].map((v) => h("td", { text: String(v) })),
-        ),
-      ),
-    );
+    const cells = arr
+      ? (row) => [row.date ? dayLong(row.date) : "", row.film.t, row.film.y, row.rating ? t("{n} stars", { n: decimal(row.rating) }) : t("Not rated")]
+      : (row) => [T.hhmm(row.time), row.film.t, row.film.y, T.track(row.film, catalog), (row.hl ? t("Tonight's film.") + " " : "") + t(REMARKS[row.film.s] || "")];
+    $("stHead").replaceChildren(...(arr ? ["Date", "Film", "Year", "Stars"] : ["Time", "Film", "Year", "Track", "Remarks"]).map((c) => h("th", { scope: "col", text: t(c) })));
+    $("stRows").replaceChildren(...rows.map((row) => h("tr", {}, cells(row).map((v) => h("td", { text: String(v) })))));
     this.kick();
+  }
+  /** Turns the board over to the departures or the arrivals. */
+  setBoard(kind, { animate = true } = {}) {
+    if (this.app.seagal || kind === this.kind || this.busy) return;
+    this.kind = kind;
+    this.syncBoard();
+    this.layoutKey = "";
+    this.relayout({ animate });
+    this.setTicker(this.tickerFor());
+    $("stLive").textContent = kind === "arr" ? t("Arrivals: the films you've watched, latest first.") : t("Departures.");
+  }
+  syncBoard() {
+    const b = BOARDS[this.kind];
+    $("stBoardSv").textContent = b.sv;
+    $("stBoardEn").textContent = swedish ? "" : b.en;
+    $("stDep").setAttribute("aria-pressed", String(this.kind === "dep"));
+    $("stArr").setAttribute("aria-pressed", String(this.kind === "arr"));
+    this.board.opts.labels = labelsFor(this.kind);
   }
   frame(now) {
     const dt = Math.min(64, now - this.last);
@@ -170,10 +205,10 @@ export class Station {
     this.last = performance.now();
     requestAnimationFrame(this.frame);
   }
-  relayout() {
+  relayout({ animate = false } = {}) {
     const width = $("stFlapwrap").clientWidth;
     if (!width) return;
-    const L = T.chooseLayout(width);
+    const L = this.kind === "arr" ? T.chooseArrivals(width) : T.chooseLayout(width);
     const key = [L.groups.map((g) => g.join(":")).join(","), L.cw, L.rows, window.devicePixelRatio].join("|");
     if (key === this.layoutKey) return;
     this.layoutKey = key;
@@ -183,7 +218,7 @@ export class Station {
     if (this.rows.length > L.rows) this.rows = this.rows.slice(0, L.rows);
     else if (this.rows.length < L.rows && !this.busy) this.topUp();
     if (this.fontsReady) {
-      this.paint({ instant: true });
+      this.paint({ instant: !animate });
       this.clock.setRow(0, [this.clockText], 0, { instant: true });
     }
     this.kick();
@@ -211,9 +246,12 @@ export class Station {
     const width = run.firstChild.getBoundingClientRect().width || line.length * 11;
     run.style.setProperty("--dur", Math.max(12, width / 70).toFixed(1) + "s");
   }
-  idleTicker() {
+  /** What the ticker says for the board that's showing. */
+  tickerFor() {
     const { store, catalog, list } = this.app;
-    this.setTicker(T.idleTicker({ listName: list.name, count: this.pool().length, saved: this.pending(), allWatched: allWatched(store.p, catalog) }));
+    if (this.kind === "arr") return T.arrivalsTicker(T.arrivals(store.p, catalog, 1, defaultWatchDate()), store.p.seen.size);
+    if (this.drawn) return T.drawnTicker(this.drawn, catalog);
+    return T.idleTicker({ listName: list.name, count: this.pool().length, saved: this.pending(), allWatched: allWatched(store.p, catalog) });
   }
 
   // ---------------------------------------------------------------- the ticket
@@ -235,7 +273,7 @@ export class Station {
       track = T.track(f, catalog),
       date = today(),
       shelf = catalog.shelfOf(f);
-    const sub = f.y + (shelf ? " · " + shelf.label : "") + (f.tri ? " · " + catalog.series[f.tri] + ", part " + f.ord : "");
+    const sub = f.y + (shelf ? " · " + t(shelf.label) : "") + (f.tri ? " · " + t("{series}, part {n}", { series: catalog.series[f.tri], n: f.ord }) : "");
     const field = (label, value, extra) => h("div", {}, h("dt", { text: label }), h("dd", {}, value, extra || null));
     return [
       h(
@@ -248,15 +286,15 @@ export class Station {
         h(
           "dl",
           { class: "st-fields" },
-          field("Departs", time, h("small", { class: "st-when", id: "stWhen" })),
-          field("Track", String(track)),
-          field("Ceremony", T.ceremonyLine(f)),
+          field(t("Departs"), time, h("small", { class: "st-when", id: "stWhen" })),
+          field(t("Track"), String(track)),
+          field(t("Ceremony"), T.ceremonyLine(f)),
         ),
         h(
           "div",
           { class: "st-actions" },
-          h("button", { class: "st-take", type: "button", on: { click: () => this.take() } }, h("span", { lang: "sv", text: "Ta biljetten" }), " Take your ticket"),
-          h("p", { text: "Rate it and mark it watched there." }),
+          h("button", { class: "st-take", type: "button", on: { click: () => this.take() } }, h("span", { lang: "sv", text: "Ta biljetten" }), t(" Take your ticket")),
+          h("p", { text: t("Rate it and mark it watched there.") }),
         ),
       ),
       h(
@@ -275,7 +313,9 @@ export class Station {
     const el = $("stWhen");
     if (!el || !this.drawn) return;
     const m = T.minutesUntil(this.drawn.time);
-    el.replaceChildren(m > 0 ? h("span", {}, h("span", { lang: "sv", text: "om " + m + " min" }), " · in " + m + " min") : h("span", {}, h("span", { lang: "sv", text: "Ombordstigning" }), " · Now boarding"));
+    el.replaceChildren(
+      m > 0 ? h("span", {}, h("span", { lang: "sv", text: "om " + m + " min" }), t(" · in {m} min", { m })) : h("span", {}, h("span", { lang: "sv", text: "Ombordstigning" }), t(" · Now boarding")),
+    );
   }
   printTicket(row, { animate }) {
     const t = $("stTicket");
@@ -333,22 +373,21 @@ export class Station {
     const pending = this.pending(),
       again = !pending && !!this.drawn;
     $("stDrawMain").textContent = pending ? "Skriv ut biljetten" : again ? "Dra igen" : "Dra kvällens film";
-    $("stDrawSub").textContent = pending ? "Print your saved ticket" : again ? "Draw again" : "Draw tonight’s film";
+    // The English under the Swedish (just the Swedish in Swedish mode).
+    $("stDrawSub").textContent = swedish ? "" : pending ? "Print your saved ticket" : again ? "Draw again" : "Draw tonight’s film";
   }
   renderCount() {
     const { store, catalog } = this.app,
       n = this.pool().length;
     $("stCount").textContent = n
-      ? plural(n, "film") + " on the timetable" + (this.app.group?.on ? " · none of you has seen them" : "") + (hasActiveFilters(store.settings) ? " · tonight’s filters apply" : "")
-      : allWatched(store.p, catalog)
-        ? "Every film is watched."
-        : "No films match tonight’s filters.";
+      ? t("{films} on the timetable", { films: plural(n, "film") }) + (this.app.group?.on ? t(" · none of you has seen them") : "") + (hasActiveFilters(store.settings) ? t(" · tonight’s filters apply") : "")
+      : t(allWatched(store.p, catalog) ? "Every film is watched." : "No films match tonight’s filters.");
   }
   async draw() {
     this.audio.unlock();
     if (this.busy || !this.fontsReady || !this.visible) return;
     const { store, stage, catalog, toast } = this.app;
-    if (allWatched(store.p, catalog)) return toast.show("Every film is watched. Your final ticket waits on Tonight.");
+    if (allWatched(store.p, catalog)) return toast.show(t("Every film is watched. Your final ticket waits on Tonight."));
     let film;
     if (this.pending()) {
       // One from an earlier day: printing it answers "still on for tonight?".
@@ -356,10 +395,17 @@ export class Station {
       film = store.currentFilm;
     } else {
       const r = store.draw();
-      if (r.reason === "none") return toast.show("No eligible films. Check your skipped ticket or adjust tonight’s filters on Tonight.");
-      if (r.reason === "only") return toast.show("This is the only eligible ticket. Broaden the selection for another movie.");
+      if (r.reason === "none") return toast.show(t("No eligible films. Check your skipped ticket or adjust tonight’s filters on Tonight."));
+      if (r.reason === "only") return toast.show(t("This is the only eligible ticket. Broaden the selection for another movie."));
       film = r.film;
       stage.syncPick();
+    }
+    // Drawing happens on the departures board.
+    if (this.kind !== "dep") {
+      this.kind = "dep";
+      this.syncBoard();
+      this.layoutKey = "";
+      this.relayout();
     }
     this.busy = true;
     $("stDraw").setAttribute("aria-disabled", "true");
@@ -370,8 +416,8 @@ export class Station {
     const row = (this.drawn = this.rows[0]);
     this.hideTicket();
     this.board.blinkUntil = 0;
-    this.setTicker(T.UPDATING);
-    $("stLive").textContent = "Updating the timetable…";
+    this.setTicker(T.updating());
+    $("stLive").textContent = t("Updating the timetable…");
     this.paint();
     await this.board.whenIdle();
     const here = this.visible && this.drawn === row;
@@ -386,7 +432,7 @@ export class Station {
       if (here && !quick) await wait(500);
       this.printTicket(row, { animate: this.visible && !quick });
       if (this.visible) setTimeout(() => this.visible && this.drawn === row && this.audio.speak(T.announcement(row, catalog)), this.audio.sound && !quick ? 700 : 0);
-      $("stLive").textContent = `Tonight's film: ${film.t} (${film.y}). Departs ${T.hhmm(row.time)} from track ${T.track(film, catalog)}. Your ticket is printed below.`;
+      $("stLive").textContent = t("Tonight's film: {title} ({year}). Departs {time} from track {track}. Your ticket is printed below.", { title: film.t, year: film.y, time: T.hhmm(row.time), track: T.track(film, catalog) });
     }
     this.busy = false;
     $("stDraw").removeAttribute("aria-disabled");
@@ -429,8 +475,8 @@ export class Station {
       this.clock.setRow(0, [this.clockText], 0, { instant: true });
       this.countdown();
     }
-    if (this.drawn) this.setTicker(T.drawnTicker(this.drawn, this.app.catalog));
-    else this.idleTicker();
+    this.syncBoard();
+    this.setTicker(this.tickerFor());
     this.setDrawLabel();
     this.renderCount();
     clearInterval(this.clockTimer);
@@ -456,6 +502,7 @@ export class Station {
       this.show();
       return;
     }
+    if (this.kind === "arr") this.paint();
     this.setDrawLabel();
     this.renderCount();
   }

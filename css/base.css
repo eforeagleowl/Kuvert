@@ -15,6 +15,22 @@
   html:is([data-page="library"], [data-page="stats"]) {
     scroll-padding-top: 150px;
   }
+  /* Swedish: the page waits for js/i18n to translate it (main.js sets data-translated), and shows
+     itself anyway after a moment if that never happens. */
+  html[data-lang="sv"]:not([data-translated]) body {
+    visibility: hidden;
+    animation: kv-show 0s 1.5s forwards;
+  }
+  @keyframes kv-show {
+    to {
+      visibility: visible;
+    }
+  }
+  /* In Swedish, the English half of a bilingual label goes, and so do the Swedish kickers above page
+     titles, which would only repeat them. */
+  html[data-lang="sv"] :is(.en, .page-head > .kicker) {
+    display: none !important;
+  }
   body {
     margin: 0;
     min-height: 100dvh;

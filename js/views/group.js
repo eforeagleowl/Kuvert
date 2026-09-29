@@ -3,6 +3,7 @@
 import { $, h, icon } from "../ui/dom.js";
 import { plural } from "../state/stats.js";
 import { Group } from "../state/group.js";
+import { t, listOf } from "../i18n/index.js";
 
 export class GroupNight {
   constructor(app) {
@@ -42,26 +43,26 @@ export class GroupNight {
       $("groupName").value = "";
       $("groupCode").value = "";
       $("groupName").placeholder = this.group.nextName();
-      this.app.announce((r.refreshed ? "Updated " : "Added ") + r.name + ": " + plural(r.count, "film") + " watched.");
+      this.app.announce(t(r.refreshed ? "Updated {name}: {films} watched." : "Added {name}: {films} watched.", { name: r.name, films: plural(r.count, "film") }));
       this.renderDialog();
       $("groupName").focus();
     } catch (e) {
-      $("groupError").textContent = e.message || "That code couldn't be read.";
+      $("groupError").textContent = t(e.message || "That code couldn't be read.");
     }
   }
   // How many films are left for everyone, with tonight's filters.
   summary() {
     const { store } = this.app;
     const n = store.units().length;
-    if (!this.group.people.length) return "Add a friend to start.";
+    if (!this.group.people.length) return t("Add a friend to start.");
     const who = plural(this.group.people.length + 1, "person", "people");
-    if (!this.on) return "Group night is off. The draw uses only your own films.";
-    return n ? n + (n === 1 ? " film" : " films") + " none of the " + who + " has seen." : "Between the " + who + ", every film that's left has been seen. Try fewer filters, or turn group night off.";
+    if (!this.on) return t("Group night is off. The draw uses only your own films.");
+    return n ? t("{films} none of the {who} has seen.", { films: plural(n, "film"), who }) : t("Between the {who}, every film that's left has been seen. Try fewer filters, or turn group night off.", { who });
   }
   renderDialog() {
     const g = this.group;
     $("groupPeople").replaceChildren(
-      h("li", { class: "group-me" }, h("span", { class: "group-name", text: "You" }), h("span", { class: "group-count", text: plural(this.app.store.p.seen.size, "film") + " watched" })),
+      h("li", { class: "group-me" }, h("span", { class: "group-name", text: t("You") }), h("span", { class: "group-count", text: t("{films} watched", { films: plural(this.app.store.p.seen.size, "film") }) })),
       ...g.people.map((x, i) =>
         h(
           "li",
@@ -70,11 +71,11 @@ export class GroupNight {
             class: "group-name",
             value: x.name,
             maxLength: 40,
-            attrs: { "aria-label": "Name" },
+            attrs: { "aria-label": t("Name") },
             on: { change: (e) => g.rename(i, e.target.value) },
           }),
-          h("span", { class: "group-count", text: plural(x.seen.length, "film") + " watched" }),
-          h("button", { class: "btn btn-quiet btn-sm", type: "button", attrs: { "aria-label": "Remove " + x.name }, on: { click: () => (g.remove(i), this.renderDialog()) } }, icon("x")),
+          h("span", { class: "group-count", text: t("{films} watched", { films: plural(x.seen.length, "film") }) }),
+          h("button", { class: "btn btn-quiet btn-sm", type: "button", attrs: { "aria-label": t("Remove {name}", { name: x.name }) }, on: { click: () => (g.remove(i), this.renderDialog()) } }, icon("x")),
         ),
       ),
     );
@@ -94,7 +95,7 @@ export class GroupNight {
     line.hidden = !g.on || !f;
     if (g.on && f) {
       const who = g.seenBy(f.id);
-      line.textContent = who.length ? who.join(", ").replace(/, ([^,]*)$/, " and $1") + (who.length === 1 ? " has" : " have") + " seen this one." : "Group night: none of you has seen this one.";
+      line.textContent = who.length ? t(who.length === 1 ? "{names} has seen this one." : "{names} have seen this one.", { names: listOf(who) }) : t("Group night: none of you has seen this one.");
       line.classList.toggle("warn", who.length > 0);
     }
   }

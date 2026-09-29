@@ -35,7 +35,8 @@ test("long titles lose the subtitle, the 'The', then a word", () => {
   assert.equal(T.fit(film("2024-dune-part-two"), 26), "DUNE: PART TWO");
   assert.equal(T.fit(film("2024-dune-part-two"), 9), "DUNE 2");
   assert.equal(T.fit({ t: "The Best Years of Our Lives", y: 1946 }, 18), "BEST YEARS OF OUR");
-  assert.equal(T.fit({ t: "On the Waterfront", y: 1954 }, 9), "ON THE WA");
+  assert.equal(T.fit({ t: "On the Waterfront", y: 1954 }, 9), "ON THE W.");
+  assert.equal(T.fit({ t: "On the Waterfront", y: 1954 }, 16), "ON THE WATERFR.");
   assert.equal(T.fit({ t: "The Silence of the Lambs", y: 1991 }, 18), "SILENCE");
 });
 
@@ -114,4 +115,33 @@ test("the announcer is a British woman when the device has one", () => {
   const windows = [v("Microsoft David - English (United States)", "en-US"), v("Microsoft Zira - English (United States)", "en-US")];
   assert.match(britishVoice(windows).name, /Zira/);
   assert.equal(britishVoice([]), null);
+});
+
+test("arrivals: the latest watched first, with your stars, tonight's lit", () => {
+  const p = {
+    seen: new Set(["1959-ben-hur", "1972-the-godfather", "1954-on-the-waterfront", "1977-annie-hall"]),
+    dates: { "1959-ben-hur": "2026-09-20", "1972-the-godfather": "2026-09-29", "1954-on-the-waterfront": "2026-09-29" },
+    reviews: { "1959-ben-hur": { rating: 4.5 }, "1972-the-godfather": { rating: 5 } },
+  };
+  const rows = T.arrivals(p, catalog, 8, "2026-09-29");
+  // Same date: the one marked later first. Undated last.
+  assert.deepEqual(rows.map((r) => r.film.id), ["1954-on-the-waterfront", "1972-the-godfather", "1959-ben-hur", "1977-annie-hall"]);
+  assert.deepEqual(rows.map((r) => r.tonight), [true, true, false, false]);
+  assert.deepEqual(T.arrivalStrings(rows[2], [["date", 6], ["year", 4], ["title", 24], ["stars", 5]]), ["20 SEP", "1959", "BEN-HUR", "★★★★½"]);
+  assert.equal(T.flapDate("2026-05-03"), " 3 MAJ");
+  assert.equal(T.flapStars(3), "★★★");
+  assert.equal(T.flapStars(null), "");
+  for (const ch of "★½") assert.ok(T.CHAR_INDEX.has(ch));
+  assert.equal(T.arrivals(p, catalog, 2, "2026-09-29").length, 2);
+  assert.match(T.arrivalsTicker(rows, 4), /^Ankomster · 4 filmer har anlänt · Senast: On the Waterfront \(1954\) · .* · Arrivals · 4 films arrived/);
+  assert.match(T.arrivalsTicker([], 0), /^Inga ankomster ännu/);
+  const cols = (w) => T.chooseArrivals(w).groups.map(([k]) => k).join(",");
+  assert.equal(cols(1000), "date,year,title,stars");
+  assert.equal(cols(500), "date,title,stars");
+  assert.equal(cols(330), "title,stars");
+  for (const w of [260, 330, 500, 760, 1000]) {
+    const L = T.chooseArrivals(w);
+    const units = 1.2 + L.groups.reduce((a, [, n]) => a + n, 0) + 0.8 * (L.groups.length - 1);
+    assert.ok(units * L.cw <= w + 0.5, `${w}px fits`);
+  }
 });

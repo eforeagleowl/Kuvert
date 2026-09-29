@@ -13,12 +13,14 @@ to your home screen, and it works offline after your first visit.
 - **Tonight's filters.** Draw only films that fit the time you have, suit a mood, are on your streaming
   services, or are discs on your shelf.
 - **The station.** A split-flap departure board makes the same draw: the board flips, a chime rings, and
-  your ticket prints and gets stamped.
+  your ticket prints and gets stamped. Switch to *Ankomster* (arrivals) to see the films you've watched
+  lately, with your stars on the flaps.
 - **Your watchthrough.** Mark films watched, rate them, say whether the winner deserved it, and rank your
   favourites. The Library holds the whole list and a poster wall; Stats show your pace, streaks and
   milestones. The dala horse gets painted as you go.
 - **Group night.** Add your friends' codes, and the draw only picks films none of you has seen.
 - **Your own lists.** Import any film list, or bring your history in from Letterboxd.
+- **På svenska.** Switch the whole app to Swedish under Settings → Language.
 
 ## Your progress
 

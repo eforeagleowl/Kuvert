@@ -2,6 +2,7 @@
 // or the CSVs inside it). Everything is read in the browser; nothing is uploaded.
 import { validRating, validDate } from "../compat/validate.js";
 import { normalized } from "../tmdb/client.js";
+import { t } from "../i18n/index.js";
 
 // Minimal CSV parser (RFC 4180: quoted fields, doubled quotes, newlines in quotes).
 export function parseCSV(text) {
@@ -58,7 +59,7 @@ export async function unzip(file) {
       eocd = i;
       break;
     }
-  if (eocd < 0) throw Error("That ZIP file could not be read.");
+  if (eocd < 0) throw Error(t("That ZIP file could not be read."));
   const count = view.getUint16(eocd + 10, true);
   let p = view.getUint32(eocd + 16, true);
   const out = {};
@@ -79,7 +80,7 @@ export async function unzip(file) {
     let bytes;
     if (method === 0) bytes = data;
     else if (method === 8) {
-      if (typeof DecompressionStream === "undefined") throw Error("This browser can't open ZIP files. Choose the CSV files instead.");
+      if (typeof DecompressionStream === "undefined") throw Error(t("This browser can't open ZIP files. Choose the CSV files instead."));
       bytes = new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer());
     } else continue;
     out[base] = new TextDecoder().decode(bytes);
@@ -109,7 +110,7 @@ export function letterboxdMatcher(films) {
 export async function readLetterboxd(files, films) {
   const texts = {};
   for (const file of files) {
-    if (file.size > 30_000_000) throw Error(file.name + " is too large.");
+    if (file.size > 30_000_000) throw Error(t("{file} is too large.", { file: file.name }));
     if (/\.zip$/i.test(file.name) || file.type === "application/zip") Object.assign(texts, await unzip(file));
     else texts[file.name.toLowerCase().split("/").pop()] = await file.text();
   }
@@ -144,7 +145,7 @@ export async function readLetterboxd(files, films) {
     const rows = csvObjects(t);
     if (rows && rows[0] && ("rating" in rows[0] || "watched date" in rows[0])) take(rows, "diary");
   }
-  if (!diary && !ratings && !reviewsCsv && !watched && !other.length) throw Error("No Letterboxd files found. Choose the export ZIP, or ratings.csv and diary.csv.");
+  if (!diary && !ratings && !reviewsCsv && !watched && !other.length) throw Error(t("No Letterboxd files found. Choose the export ZIP, or ratings.csv and diary.csv."));
   take(watched, "watched");
   take(diary, "diary");
   take(reviewsCsv, "diary");
@@ -186,7 +187,7 @@ export function listRowsFromText(text, fileName) {
     };
   }
   const rows = csvObjects(text, ["year"]);
-  if (!rows) throw Error("The CSV needs a header row with title and year columns.");
+  if (!rows) throw Error(t("The CSV needs a header row with title and year columns."));
   // Letterboxd list exports carry the list name in their preamble.
   const pre = parseCSV(text);
   const metaAt = pre.findIndex((r) => r.map((x) => x.toLowerCase()).includes("name") && r.map((x) => x.toLowerCase()).includes("url"));

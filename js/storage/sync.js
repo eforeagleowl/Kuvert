@@ -8,6 +8,7 @@
 import { KEYS, GIST } from "../compat/keys.js";
 import { validateProgress } from "../compat/validate.js";
 import { progressSignature } from "../compat/serialize.js";
+import { t } from "../i18n/index.js";
 
 export class Sync extends EventTarget {
   /** @param {{ store: import("../state/store.js").Store, storage: Storage, fetch?: typeof fetch }} o */
@@ -64,13 +65,13 @@ export class Sync extends EventTarget {
         },
         body: body ? JSON.stringify(body) : undefined,
       });
-      if (r.status === 401) throw Error("GitHub didn't accept that token. Check it hasn't expired.");
-      if (r.status === 403 || r.status === 404) throw Error("The token can't read and write Gists. Use a classic token with the gist scope and try again.");
-      if (!r.ok) throw Error("GitHub is unavailable right now (" + r.status + "). Try again in a moment.");
+      if (r.status === 401) throw Error(t("GitHub didn't accept that token. Check it hasn't expired."));
+      if (r.status === 403 || r.status === 404) throw Error(t("The token can't read and write Gists. Use a classic token with the gist scope and try again."));
+      if (!r.ok) throw Error(t("GitHub is unavailable right now ({status}). Try again in a moment.", { status: r.status }));
       return r.status === 204 ? null : await r.json();
     } catch (e) {
-      if (e.name === "AbortError") throw Error("GitHub took too long to answer. Try again.");
-      if (e instanceof TypeError) throw Error("Couldn't reach GitHub. Check your connection.");
+      if (e.name === "AbortError") throw Error(t("GitHub took too long to answer. Try again."));
+      if (e instanceof TypeError) throw Error(t("Couldn't reach GitHub. Check your connection."));
       throw e;
     } finally {
       clearTimeout(timer);
@@ -154,7 +155,7 @@ export class Sync extends EventTarget {
       }
     } catch (e) {
       this.applying = false;
-      this.error = e.message || "Sync failed.";
+      this.error = e.message || t("Sync failed.");
       if (!quiet) result = { error: this.error };
     } finally {
       this.busy = false;

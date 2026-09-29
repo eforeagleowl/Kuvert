@@ -5,6 +5,7 @@ import { imageUrl } from "../tmdb/client.js";
 import { byYear, decadeOf } from "../state/catalog.js";
 import { fmtWhen } from "../state/dates.js";
 import { plural, ratingLabel, starText, wallFilms, watchedFilms } from "../state/stats.js";
+import { t, listOf, decimal } from "../i18n/index.js";
 
 const ARCHIVES = ["skipped", "recent", "missing", "shelf"];
 
@@ -148,7 +149,7 @@ export class Library {
     const pz = this.pause,
       tries = (pz.tries.get(f.id) || 0) + 1;
     pz.tries.set(f.id, tries);
-    pz.reason = e?.name === "AbortError" ? "TMDB took too long to answer." : e?.message || "TMDB didn't answer.";
+    pz.reason = e?.name === "AbortError" ? t("TMDB took too long to answer.") : t(e?.message || "TMDB didn't answer.");
     if (++pz.streak % 3 === 0) {
       const wait = Math.min(300000, 30000 * 2 ** (pz.streak / 3 - 1));
       pz.until = Date.now() + wait;
@@ -180,7 +181,7 @@ export class Library {
         class: "tick",
         type: "button",
         dataset: { key: "tick-" + f.id },
-        attrs: { "aria-pressed": String(seen), "aria-label": (seen ? "Mark unwatched: " : "Mark watched: ") + f.t },
+        attrs: { "aria-pressed": String(seen), "aria-label": t(seen ? "Mark unwatched: {title}" : "Mark watched: {title}", { title: f.t }) },
         on: { click: () => this.app.stage.toggleSeen(f.id) },
       },
       check(),
@@ -191,7 +192,7 @@ export class Library {
   }
   shelfTag(f) {
     const shelf = this.app.catalog.shelfOf(f);
-    return shelf ? h("span", { class: "tag " + f.s.toLowerCase(), text: shelf.chip }) : h("span");
+    return shelf ? h("span", { class: "tag " + f.s.toLowerCase(), text: t(shelf.chip) }) : h("span");
   }
   // A film row. "thumb" in `cells` becomes the poster thumbnail (when TMDB is connected).
   row(f, cells, cls = "") {
@@ -211,12 +212,12 @@ export class Library {
     for (const b of $("libraryTabs").querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.f === st.filter));
     $("missingTab").hidden = st.filter !== "missing";
     $("skippedTab").replaceChildren(this.app.sg("Skipped", "Cowardice"), h("span", { class: "n", text: String(p.skipped.size) }));
-    $("shelfTab").replaceChildren("Shelf", h("span", { class: "n", text: String(p.shelf.size) }));
-    $("missingTab").replaceChildren("Missing runtimes", h("span", { class: "n", text: String(missing.length) }));
+    $("shelfTab").replaceChildren(t("Shelf"), h("span", { class: "n", text: String(p.shelf.size) }));
+    $("missingTab").replaceChildren(t("Missing runtimes"), h("span", { class: "n", text: String(missing.length) }));
     $("shelfFilters").hidden = isArchive || !catalog.hasShelves;
     for (const b of $("shelfFilters").querySelectorAll("button")) {
       b.hidden = !catalog.usedShelves.has(b.dataset.s);
-      if (catalog.shelves[b.dataset.s]) b.textContent = catalog.shelves[b.dataset.s].chip;
+      if (catalog.shelves[b.dataset.s]) b.textContent = t(catalog.shelves[b.dataset.s].chip);
       b.setAttribute("aria-pressed", String(b.dataset.s === st.statusFilter));
     }
     if (document.activeElement !== $("search")) $("search").value = st.query;
@@ -237,9 +238,9 @@ export class Library {
             {
               class: "dec",
               type: "button",
-              title: dk + "s — " + c.w + " of " + c.t + " watched. Click to filter the list.",
+              title: t("{decade}s — {n} of {total} watched. Click to filter the list.", { decade: dk, n: c.w, total: c.t }),
               dataset: { key: "dec-" + dk },
-              attrs: { "aria-pressed": String(st.decadeFilter === dk), "aria-label": dk + "s: " + c.w + " of " + c.t + " watched" },
+              attrs: { "aria-pressed": String(st.decadeFilter === dk), "aria-label": t("{decade}s: {n} of {total} watched", { decade: dk, n: c.w, total: c.t }) },
               on: { click: () => store.set({ decadeFilter: st.decadeFilter === dk ? null : dk }) },
             },
             h("span", { text: "’" + String(dk).slice(2) }),
@@ -253,11 +254,11 @@ export class Library {
     const left = catalog.films.filter((f) => !p.seen.has(f.id));
     const parts = catalog.hasShelves
       ? Object.entries(catalog.shelves)
-          .map(([k, shelf]) => [left.filter((f) => f.s === k).length, shelf.plural.toLowerCase()])
+          .map(([k, shelf]) => [left.filter((f) => f.s === k).length, t(shelf.plural).toLowerCase()])
           .filter(([n]) => n)
-          .map(([n, label]) => n + " " + (n === 1 ? label.replace(/s$/, "") : label))
+          .map(([n, label]) => plural(n, label.replace(/s$/, ""), label))
       : [plural(left.length, "film")];
-    $("leftline").textContent = left.length ? new Intl.ListFormat("en", { type: "conjunction" }).format(parts) + this.app.sg(" still to watch.", " still at large.") : "Every film watched.";
+    $("leftline").textContent = left.length ? listOf(parts) + this.app.sg(" still to watch.", " still at large.") : t("Every film watched.");
 
     keepFocus(() => {
       this.renderList(isArchive);
@@ -288,10 +289,10 @@ export class Library {
     if (!rows.length) {
       $("list").replaceChildren(
         q
-          ? emptyState("No title matches “" + q + "”", "Try part of the title, a year, or a nickname like lotr.")
+          ? emptyState(t("No title matches “{q}”", { q }), t("Try part of the title, a year, or a nickname like lotr."))
           : st.filter === "unseen"
-            ? emptyState("Nothing left here", "Every film that matches these filters is watched or set aside.", { label: "Show all films", run: () => store.set({ filter: "all" }) })
-            : emptyState("Nothing matches these filters"),
+            ? emptyState(t("Nothing left here"), t("Every film that matches these filters is watched or set aside."), { label: t("Show all films"), run: () => store.set({ filter: "all" }) })
+            : emptyState(t("Nothing matches these filters")),
       );
       return;
     }
@@ -316,20 +317,22 @@ export class Library {
             ? [...catalog.films].sort((a, b) => a.y - b.y).filter((f) => p.shelf.has(f.id)).map((f) => f.id)
             : missingIds;
     const ids = source.filter((id) => !q || catalog.matchesSearch(catalog.byId.get(id), q));
-    $("archiveHint").textContent =
+    $("archiveHint").textContent = t(
       st.filter === "skipped"
         ? "Watch your skipped film before skipping another. Open it here and mark it watched when you finish. Older backups with several skips must be cleared by watching those films."
         : st.filter === "recent"
           ? "Your last five picks. Open a movie to return to it directly."
           : st.filter === "shelf"
             ? "Films you own on disc. With “What I can watch tonight” on, these always count as available. Search to add more, or tap “I own this on disc” on any ticket."
-            : "These movies do not yet have a saved runtime, including watched films. Open one to fetch its details, then use Change movie match if TMDB chose the wrong film.";
+            : "These movies do not yet have a saved runtime, including watched films. Open one to fetch its details, then use Change movie match if TMDB chose the wrong film.",
+    );
     // On the shelf view a search also offers films to add.
     const addable = st.filter === "shelf" && q ? catalog.films.filter((f) => !p.shelf.has(f.id) && catalog.matchesSearch(f, q)).slice(0, 12) : [];
     if (!ids.length && !addable.length) {
       list.replaceChildren(
         emptyState(
-          q
+          t(
+            q
             ? "No titles match your search."
             : st.filter === "skipped"
               ? "No skipped movies yet."
@@ -338,6 +341,7 @@ export class Library {
                 : st.filter === "shelf"
                   ? "No discs yet. Search above to add films you own."
                   : "Every available movie has a saved runtime.",
+          ),
         ),
       );
       return;
@@ -347,13 +351,13 @@ export class Library {
         h(
           "li",
           {},
-          h("div", { class: "archive-main" }, h("span", { class: "film-title", text: f.t }), h("span", { class: "archive-meta", text: f.y + " · not on your shelf" })),
+          h("div", { class: "archive-main" }, h("span", { class: "film-title", text: f.t }), h("span", { class: "archive-meta", text: f.y + t(" · not on your shelf") })),
           h("button", {
             class: "btn btn-sm",
             type: "button",
-            text: "Add to shelf",
+            text: t("Add to shelf"),
             dataset: { key: "shelfadd-" + f.id },
-            attrs: { "aria-label": "Add " + f.t + " to your shelf" },
+            attrs: { "aria-label": t("Add {title} to your shelf", { title: f.t }) },
             on: { click: () => this.app.toggleShelf(f.id) },
           }),
           h("span"),
@@ -361,18 +365,18 @@ export class Library {
       ),
       ...ids.map((id) => {
         const f = catalog.byId.get(id);
-        const meta = f.y + (p.seen.has(id) ? " · Watched" : p.skipped.has(id) ? " · Skipped" : "") + (p.runtimes[id] ? " · " + p.runtimes[id] + " min" : "");
+        const meta = f.y + (p.seen.has(id) ? t(" · Watched") : p.skipped.has(id) ? t(" · Skipped") : "") + (p.runtimes[id] ? " · " + p.runtimes[id] + " min" : "");
         const extra =
           st.filter === "shelf"
-            ? h("button", { class: "btn btn-sm", type: "button", text: "Remove", dataset: { key: "shelfoff-" + id }, attrs: { "aria-label": "Take " + f.t + " off your shelf" }, on: { click: () => this.app.toggleShelf(id) } })
+            ? h("button", { class: "btn btn-sm", type: "button", text: t("Remove"), dataset: { key: "shelfoff-" + id }, attrs: { "aria-label": t("Take {title} off your shelf", { title: f.t }) }, on: { click: () => this.app.toggleShelf(id) } })
             : p.seen.has(id)
-              ? h("button", { class: "btn btn-sm", type: "button", text: p.reviews[id] ? "Edit note" : "Add note", on: { click: () => this.app.dialogs.editReview(id) } })
+              ? h("button", { class: "btn btn-sm", type: "button", text: t(p.reviews[id] ? "Edit note" : "Add note"), on: { click: () => this.app.dialogs.editReview(id) } })
               : h("span");
         return h(
           "li",
           {},
           h("div", { class: "archive-main" }, this.title(f, "open-"), h("span", { class: "archive-meta", text: meta })),
-          h("button", { class: "btn btn-sm", type: "button", text: "Open", dataset: { key: "direct-" + id }, attrs: { "aria-label": "Open " + f.t }, on: { click: () => this.app.stage.openFilm(id) } }),
+          h("button", { class: "btn btn-sm", type: "button", text: t("Open"), dataset: { key: "direct-" + id }, attrs: { "aria-label": t("Open {title}", { title: f.t }) }, on: { click: () => this.app.stage.openFilm(id) } }),
           extra,
         );
       }),
@@ -385,7 +389,7 @@ export class Library {
     const watched = watchedFilms(p, catalog);
     $("seenCount").textContent = String(watched.length);
     if (!watched.length) {
-      $("seenList").replaceChildren(emptyState("Nothing watched yet", this.app.sg("Films you mark watched collect here, like stubs in a shoebox.", "Films you mark watched collect here.")));
+      $("seenList").replaceChildren(emptyState(t("Nothing watched yet"), this.app.sg("Films you mark watched collect here, like stubs in a shoebox.", "Films you mark watched collect here.")));
       return;
     }
     $("seenList").replaceChildren(
@@ -399,18 +403,18 @@ export class Library {
           h("button", {
             class: "when",
             type: "button",
-            text: p.dates[f.id] ? fmtWhen(p.dates[f.id]) : "+ date",
-            title: "Edit watch date",
+            text: p.dates[f.id] ? fmtWhen(p.dates[f.id]) : t("+ date"),
+            title: t("Edit watch date"),
             dataset: { key: "date-" + f.id },
-            attrs: { "aria-label": "Edit watch date for " + f.t },
+            attrs: { "aria-label": t("Edit watch date for {title}", { title: f.t }) },
             on: { click: () => this.app.dialogs.editDate(f.id) },
           }),
           h("button", {
             class: "btn btn-sm btn-quiet",
             type: "button",
-            text: r ? (r.rating ? ratingLabel(r.rating) + " · Note" : "Edit note") : "Add note",
+            text: r ? (r.rating ? ratingLabel(r.rating) + t(" · Note") : t("Edit note")) : t("Add note"),
             dataset: { key: "review-" + f.id },
-            attrs: { "aria-label": "Movie note for " + f.t },
+            attrs: { "aria-label": t("Movie note for {title}", { title: f.t }) },
             on: { click: () => this.app.dialogs.editReview(f.id) },
           }),
         ]);
@@ -450,7 +454,7 @@ export class Library {
       const badge = tile.querySelector(".wall-rank");
       badge.textContent = at >= 0 ? "#" + (at + 1) : "";
       badge.hidden = store.settings.wallSort !== "rank" || at < 0;
-      tile.setAttribute("aria-label", "Open your ticket for " + f.t + ", " + f.y + (r ? ", " + r + " stars" : "") + (at >= 0 ? ", ranked " + (at + 1) : ""));
+      tile.setAttribute("aria-label", t("Open your ticket for {title}, {year}", { title: f.t, year: f.y }) + (r ? t(", {n} stars", { n: decimal(r) }) : "") + (at >= 0 ? t(", ranked {n}", { n: at + 1 }) : ""));
       const path = store.posterPath(f.id) || "";
       if (tile.dataset.poster !== path) {
         tile.dataset.poster = path;
@@ -475,15 +479,16 @@ export class Library {
     for (const tile of wall.children) tile.title = unmatched.has(tile.dataset.film) ? "Open to pick the right movie for its poster" : "";
     const paused = this.paused() && pending > 0;
     $("posterWallStatus").textContent = paused
-      ? count + " of " + plural(films.length, "poster") + " · Paused: " + this.pause.reason + " Trying again shortly."
+      ? t("{n} of {posters} · Paused: {reason} Trying again shortly.", { n: count, posters: plural(films.length, "poster"), reason: this.pause.reason })
       : pr.controller
-        ? "Collecting posters…"
+        ? t("Collecting posters…")
         : !details.connected && !catalog.hasPosters
-          ? "Connect TMDB in Settings for posters."
-          : count + " of " + plural(films.length, "poster") + (unmatched.size ? " · " + unmatched.size + (unmatched.size === 1 ? " needs" : " need") + " you to pick the right movie: open it to choose" : "");
+          ? t("Connect TMDB in Settings for posters.")
+          : t("{n} of {posters}", { n: count, posters: plural(films.length, "poster") }) +
+            (unmatched.size ? t(unmatched.size === 1 ? " · 1 needs you to pick the right movie: open it to choose" : " · {n} need you to pick the right movie: open it to choose", { n: unmatched.size }) : "");
     $("loadPosters").hidden = (!details.connected || !pending) && !films.some((f) => pr.imageFailures.has(f.id));
     $("loadPosters").disabled = !!pr.controller;
-    $("loadPosters").textContent = pr.controller ? "Loading posters…" : "Retry missing posters";
+    $("loadPosters").textContent = t(pr.controller ? "Loading posters…" : "Retry missing posters");
   }
   stopPosters() {
     const pr = this.posterRun;

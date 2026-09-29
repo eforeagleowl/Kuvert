@@ -1,6 +1,7 @@
 // Stars from half a star to five. Tap a star (or its left half for a half), drag across, or use the
 // keyboard: arrows step by half, 1–5 jump, Home/End, Delete clears.
 import { s } from "./dom.js";
+import { t, decimal } from "../i18n/index.js";
 
 const STAR_PATH = "M12 2.6l2.83 5.9 6.47.8-4.77 4.45 1.24 6.42L12 17.02l-5.77 3.15 1.24-6.42L2.7 9.3l6.47-.8z";
 export { STAR_PATH };
@@ -13,7 +14,7 @@ export class StarSlider {
     el.className = "stars size-" + size;
     el.tabIndex = 0;
     el.setAttribute("role", "slider");
-    el.setAttribute("aria-label", label || "Your rating");
+    el.setAttribute("aria-label", label || t("Your rating"));
     el.setAttribute("aria-valuemin", "0");
     el.setAttribute("aria-valuemax", "5");
     el.replaceChildren();
@@ -86,7 +87,7 @@ export class StarSlider {
   setValue(v) {
     this.value = v ?? null;
     this.el.setAttribute("aria-valuenow", String(this.value || 0));
-    this.el.setAttribute("aria-valuetext", this.value ? this.value + (this.value === 1 ? " star" : " stars") : "No rating");
+    this.el.setAttribute("aria-valuetext", this.value ? t(this.value === 1 ? "1 star" : "{n} stars", { n: decimal(this.value) }) : t("No rating"));
     this.paint(this.value);
   }
   commit(v) {

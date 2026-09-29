@@ -3,6 +3,7 @@
 // makes a copy easy to put somewhere else, and reminds you on Tonight when there's no recent copy.
 import { KEYS, BACKUP_FILE } from "../compat/keys.js";
 import { download } from "./files.js";
+import { t } from "../i18n/index.js";
 
 const DAY = 864e5;
 /** When Tonight reminds you: this many films or days since your last copy, once you've watched a few. */
@@ -79,7 +80,7 @@ export class Safekeeping {
     const data = this.store.data();
     if (this.canShareFile) {
       try {
-        await navigator.share({ files: [this.backupFile(data)], title: "Kuvert progress" });
+        await navigator.share({ files: [this.backupFile(data)], title: t("Kuvert progress") });
         this.store.recordBackup(data, "download"); // "download": the classic app's word for a copy elsewhere
         this.ask();
         return "shared";
@@ -107,16 +108,16 @@ export class Safekeeping {
     if (last && last.signature === store.signature()) return null;
     const meta = this.read();
     if (meta.snoozed && Date.parse(meta.snoozed) > now) return null;
-    if (!last) return n === 1 ? "Your watched film lives only in this browser." : "Your " + n + " watched films live only in this browser.";
+    if (!last) return n === 1 ? t("Your watched film lives only in this browser.") : t("Your {n} watched films live only in this browser.", { n });
     const since = Number.isInteger(meta.count) ? n - meta.count : null;
-    if (since !== null && since >= REMIND.films) return "You've watched " + since + " films since your last copy.";
+    if (since !== null && since >= REMIND.films) return t("You've watched {n} films since your last copy.", { n: since });
     const days = Math.floor((now - Date.parse(last.at)) / DAY);
-    if (days >= REMIND.days) return "Your last copy is " + days + " days old.";
+    if (days >= REMIND.days) return t("Your last copy is {n} days old.", { n: days });
     return null;
   }
   /** One line for Settings about how safe this browser's copy is. */
   statusText() {
-    if (this.persisted === true) return "This browser keeps Kuvert's data permanently. A copy elsewhere still guards against a lost phone or a deleted home-screen icon.";
-    return "This browser may clear Kuvert's data to free up space or after a long time away, and deleting a home-screen icon deletes its data too. Keep a copy somewhere else.";
+    if (this.persisted === true) return t("This browser keeps Kuvert's data permanently. A copy elsewhere still guards against a lost phone or a deleted home-screen icon.");
+    return t("This browser may clear Kuvert's data to free up space or after a long time away, and deleting a home-screen icon deletes its data too. Keep a copy somewhere else.");
   }
 }

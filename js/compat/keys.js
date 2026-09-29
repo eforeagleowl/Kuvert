@@ -19,6 +19,7 @@ export const KEYS = Object.freeze({
   unreadable: (key) => "kuvert:unreadable:" + key, // a save that couldn't be read, kept exactly as it was
   group: (listId) => "kuvert:group:" + listId, // group night: { on, people: [{ name, seen, added }] }
   station: (k) => "kuvert:station:" + k, // the station's "sound" and "voice" switches: "on" | "off"
+  lang: "kuvert:lang", // "sv" for Swedish; English otherwise
   // sessionStorage
   clearance: "kuvert:clearance", // show the SEAGAL boot screen once
   pendingRestore: "kuvert:pendingRestore", // a backup to preview after switching lists

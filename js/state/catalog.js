@@ -25,16 +25,13 @@ function initials(words) {
   return w.map((x) => x[0]).join("");
 }
 
-export function ordinal(n) {
-  const s = ["th", "st", "nd", "rd"],
-    v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
-}
+import { ordinal, t, listOf } from "../i18n/index.js";
+export { ordinal };
 function joinTitles(titles, more) {
   const shown = titles.slice(0, 3),
     extra = titles.length - shown.length + (more || 0);
-  if (!extra) return shown.length > 1 ? shown.slice(0, -1).join(", ") + " and " + shown.at(-1) : shown[0];
-  return shown.join(", ") + " and " + extra + " more";
+  if (!extra) return listOf(shown);
+  return t("{titles} and {n} more", { titles: shown.join(", "), n: extra });
 }
 
 // TMDB's terms allow keeping its data for six months.
@@ -89,23 +86,23 @@ export function makeCatalog(list, { posters = {} } = {}) {
   }
 
   // Oscar night: what each film was up against, from the `c` (ceremony) field.
-  const ceremonyName = list.custom ? "ceremony" : "Academy Awards";
+  const ceremonyName = t(list.custom ? "ceremony" : "Academy Awards");
   const fieldSize = (c) => (list.custom ? null : BEST_PICTURE_FIELD[c - 1] || null);
   const ceremonyFilms = (c) => films.filter((f) => f.c === c && (f.s === "W" || f.s === "N"));
   const ceremonyWinner = (c) => ceremonyFilms(c).find(isWinner) || null;
   // "Lost to Rocky at the 49th Academy Awards." / "Beat Taxi Driver, All the President's Men and 2 more at …"
   function oscarLine(f) {
     if (!f || !Number.isInteger(f.c) || (f.s !== "W" && f.s !== "N")) return "";
-    const at = " at the " + ordinal(f.c) + " " + ceremonyName + ".";
+    const at = t(" at the {ord} {ceremony}.", { ord: ordinal(f.c), ceremony: ceremonyName });
     if (isWinner(f)) {
       const others = ceremonyFilms(f.c).filter((x) => x !== f),
         total = fieldSize(f.c),
         more = total ? Math.max(0, total - 1 - others.length) : 0;
-      if (others.length) return "Beat " + joinTitles(others.map((x) => x.t), more) + at;
-      return total ? "Beat " + (total - 1) + " other nominees" + at : "Won" + at;
+      if (others.length) return t("Beat {titles}", { titles: joinTitles(others.map((x) => x.t), more) }) + at;
+      return total ? t("Beat {n} other nominees", { n: total - 1 }) + at : t("Won") + at;
     }
     const w = ceremonyWinner(f.c);
-    return w ? "Lost to " + w.t + at : "Nominated" + at;
+    return w ? t("Lost to {title}", { title: w.t }) + at : t("Nominated") + at;
   }
 
   const decades = [...new Set(films.map(decadeOf))].sort((a, b) => a - b);

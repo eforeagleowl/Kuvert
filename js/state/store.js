@@ -10,6 +10,7 @@ import { DEFAULT_SETTINGS, AVAILABILITY_TTL, DIRECTORY_TTL, validTime, finishDea
 import { defaultWatchDate } from "./dates.js";
 import { earnedIds, computeMilestones, ratingOf, watchedFilms } from "./stats.js";
 import { emptyProgress, keepLocal, replace, bySync } from "./merge.js";
+import { t } from "../i18n/index.js";
 
 const FILTERS = ["unseen", "all", "skipped", "recent", "missing", "shelf"];
 const WALL_SORTS = ["recent", "rank", "stars", "year"];
@@ -104,7 +105,7 @@ export class Store extends EventTarget {
       try {
         this.tmdbToken = s.getItem(KEYS.tmdb) || null;
       } catch {}
-      return "Saved progress could not be read. You can restore a backup in Settings.";
+      return t("Saved progress could not be read. You can restore a backup in Settings.");
     }
   }
   /** Leaves an unreadable save behind (it stays under its spare key) and saves from now on. */

@@ -3,6 +3,7 @@
 // Both have their own switch on the station, on until turned off, remembered on this device.
 import { audio } from "../ui/sounds.js";
 import { KEYS } from "../compat/keys.js";
+import { swedish } from "../i18n/index.js";
 
 export class StationAudio {
   constructor(storage) {
@@ -152,17 +153,18 @@ export class StationAudio {
       this.voices = speechSynthesis.getVoices() || [];
     } catch {}
   }
-  /** The voice to use, or null for the browser's default (still asked to speak British English). */
+  /** The voice to use, or null for the browser's default (still asked for the right language). */
   pick() {
-    return britishVoice(this.voices);
+    return swedish ? swedishVoice(this.voices) : britishVoice(this.voices);
   }
   speak(text) {
     if (!this.voice || !("speechSynthesis" in window)) return;
-    const voice = this.pick();
+    const voice = this.pick(),
+      want = swedish ? /^sv/i : /^en[-_]gb/i;
     try {
       const u = new SpeechSynthesisUtterance(text);
       if (voice) u.voice = voice;
-      u.lang = /^en[-_]gb/i.test(voice?.lang || "") ? voice.lang : "en-GB";
+      u.lang = want.test(voice?.lang || "") ? voice.lang : swedish ? "sv-SE" : "en-GB";
       u.rate = 0.95;
       speechSynthesis.cancel();
       speechSynthesis.speak(u);
@@ -191,4 +193,13 @@ export function britishVoice(voices) {
     gb[0] ||
     null
   );
+}
+
+// In Swedish mode she's a Swedish woman, like SJ's announcements: Apple's Alva and Klara, Microsoft's
+// Sofie and Hillevi, Google's svenska; then any Swedish voice that isn't a known man.
+const SV_FEMALE = /\b(female|alva|klara|sofie|hillevi|astrid|ingrid|elsa|maja)\b/i;
+const SV_MALE = /\b(male|oskar|mattias|bengt|erik)\b/i;
+export function swedishVoice(voices) {
+  const sv = voices.filter((v) => /^sv/i.test(v.lang || ""));
+  return sv.find((v) => SV_FEMALE.test(v.name)) || sv.find((v) => !SV_MALE.test(v.name)) || sv[0] || null;
 }

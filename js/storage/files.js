@@ -1,6 +1,7 @@
 // Backup files. Where the browser allows it (File System Access), the first backup picks a file and
 // Kuvert keeps it up to date after every change; elsewhere a backup is a download.
 import { IDB, BACKUP_FILE } from "../compat/keys.js";
+import { t } from "../i18n/index.js";
 
 export async function idbStore(action, value) {
   let db;
@@ -147,14 +148,14 @@ export class FileBackup extends EventTarget {
   message() {
     const s = this.store;
     return this.warn
-      ? "Couldn’t update your file. Use Back up progress to try again."
+      ? t("Couldn’t update your file. Use Back up progress to try again.")
       : this.handle
-        ? (this.pending ? "Saving to " : "Saved to ") + this.handle.name
+        ? t(this.pending ? "Saving to {file}" : "Saved to {file}", { file: this.handle.name })
         : s.storageOK
-          ? "Saved in this browser · " + s.p.seen.size + " watched"
+          ? t("Saved in this browser · {n} watched", { n: s.p.seen.size })
           : s.dirty
-            ? "Unsaved changes · Save progress to keep them"
-            : s.p.seen.size + " watched · Keep a backup";
+            ? t("Unsaved changes · Save progress to keep them")
+            : t("{n} watched · Keep a backup", { n: s.p.seen.size });
   }
 }
 

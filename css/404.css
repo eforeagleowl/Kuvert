@@ -1,0 +1,62 @@
+/* The page GitHub Pages shows for an address that doesn't exist (404.html): a Carolean who has lost his
+   way, and his meatballs. */
+.nf {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--s-3);
+  min-height: 100dvh;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: var(--s-6) var(--gutter) var(--s-7);
+  box-sizing: border-box;
+  text-align: center;
+}
+.nf-art {
+  width: min(420px, 100%);
+  height: auto;
+  margin-bottom: var(--s-2);
+}
+.nf-code {
+  margin: 0;
+  color: var(--brass);
+  font: 600 var(--fs-2) / 1 var(--font-mono);
+  letter-spacing: 0.3em;
+}
+.nf-title {
+  display: grid;
+  gap: var(--s-1);
+  margin: 0;
+  color: var(--paper);
+  font: 600 clamp(2.2rem, 8vw, 3.2rem) / 1.05 var(--font-display);
+}
+.nf-en {
+  color: var(--muted);
+  font: 400 var(--fs-5) / 1.2 var(--font-ui);
+}
+.nf-text {
+  max-width: 36ch;
+  margin: 0;
+  color: var(--muted);
+}
+.nf-home {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2px var(--s-2);
+  min-height: 48px;
+  margin-top: var(--s-3);
+  padding: var(--s-2) var(--s-5);
+  border-radius: var(--r-pill);
+  background: linear-gradient(180deg, var(--brass-hi), var(--brass) 60%);
+  color: var(--ink);
+  font: 600 var(--fs-3) / 1.2 var(--font-ui);
+  text-decoration: none;
+}
+.nf-home span {
+  font: italic 600 1.2rem / 1 var(--font-display);
+}
+.nf-home:hover {
+  filter: brightness(1.05);
+}

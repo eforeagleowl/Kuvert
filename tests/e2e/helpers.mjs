@@ -2,12 +2,13 @@
 // Every page is watched for script errors, console errors and CSP / Trusted Types violations.
 import { after, before } from "node:test";
 import { chromium } from "playwright";
-import { serve } from "../../tools/serve.mjs";
+import { serve, CLASSIC } from "../../tools/serve.mjs";
 
 export const env = { url: "", server: null, browser: null };
 
 before(async () => {
-  Object.assign(env, await serve());
+  // Retired Kuvert Classic is back at /classic/ here, so the tests can check Kuvert still reads its saves.
+  Object.assign(env, await serve(0, { mounts: CLASSIC }));
   env.browser = await chromium.launch();
 });
 after(async () => {

@@ -190,3 +190,26 @@ test("sync: tonight's ticket and the ranking follow the newest change", () => {
   assert.equal(out.current, "d");
   assert.deepEqual(out.rankings, ["a", "b"]);
 });
+
+test("the list's own posters: used while fresh, only for the built-in list, and your own match first", async () => {
+  const { freshPosters } = await import("../../js/state/catalog.js");
+  const posters = { "1959-ben-hur": [665, "/benhur.jpg"] };
+  const now = new Date("2026-10-01T12:00:00Z");
+  assert.equal(freshPosters(posters, "2026-09-29", now), posters);
+  assert.deepEqual(freshPosters(posters, "2026-03-01", now), {}, "older than six months: not used");
+  assert.deepEqual(freshPosters(posters, null, now), {});
+  const storage = new MemoryStorage();
+  const list = resolveList(storage);
+  const catalog = makeCatalog(list, { posters });
+  const store = new Store({ list, catalog, storage, now: () => now });
+  store.load();
+  assert.equal(catalog.hasPosters, true);
+  assert.equal(catalog.tmdbId("1959-ben-hur"), 665);
+  assert.equal(store.posterPath("1959-ben-hur"), "/benhur.jpg");
+  assert.equal(store.posterPath("1972-the-godfather"), undefined);
+  store.recordDetails("1959-ben-hur", { posterPath: "/mine.jpg" });
+  assert.equal(store.posterPath("1959-ben-hur"), "/mine.jpg", "your own lookup wins");
+  const custom = makeCatalog({ id: "mine", custom: true, name: "Mine", films: [{ t: "Ben-Hur", y: 1959, id: "1959-ben-hur" }] }, { posters });
+  assert.equal(custom.poster("1959-ben-hur"), null, "imported lists don't borrow the built-in list's posters");
+  assert.equal(custom.hasPosters, false);
+});

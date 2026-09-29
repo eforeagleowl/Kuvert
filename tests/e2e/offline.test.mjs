@@ -1,6 +1,6 @@
-// Offline, for real: the server goes away and both apps must still start, each from its own worker
-// and cache. And the upgrade your devices go through: the old layout (Kuvert Classic at the root,
-// the rebuild in /next/) replaced by the new one (Kuvert at the root, Classic in /classic/).
+// Offline, for real: the server goes away and Kuvert must still start from its own worker and cache.
+// And the moves your devices went through: the old layout (Kuvert Classic at the root, the rebuild in
+// /next/) replaced by Kuvert at the root, and then Kuvert Classic retiring from /classic/.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -14,6 +14,20 @@ import { serve } from "../../tools/serve.mjs";
 const REPO = fileURLToPath(new URL("../..", import.meta.url));
 // The first release of the rebuild, when it lived in /next/ (pull request #1).
 const OLD_LAYOUT = "b346c2e38ce8ce839aacbaf5536efdd921839dac";
+// The last release with Kuvert Classic at /classic/ (pull request #13).
+const WITH_CLASSIC = "9db6b5c2f6fea0ebf7928bd574d872d764d05872";
+
+// A published version of the site, exactly as it was, in a folder of its own.
+function checkout(commit) {
+  const dir = mkdtempSync(join(tmpdir(), "kuvert-old-"));
+  try {
+    execFileSync("sh", ["-c", `git -C "${REPO}" archive ${commit} | tar -x -C "${dir}"`]);
+  } catch {
+    rmSync(dir, { recursive: true, force: true });
+    throw new Error(`Commit ${commit} isn't in this clone. Fetch the full history (CI checks out with fetch-depth: 0).`);
+  }
+  return dir;
+}
 
 async function browse(server) {
   const browser = await chromium.launch();
@@ -56,19 +70,15 @@ async function unplug(server) {
   await new Promise((r) => server.close(r));
 }
 
-test("both apps start offline after one visit, each from its own cache", async () => {
+test("Kuvert starts offline after one visit", async () => {
   const { server, url } = await serve();
   const { page, errors, close } = await browse(server);
   try {
-    await page.goto(url + "/classic/");
-    await classicApp(page);
-    await controlledBy(page, "/classic/sw.js");
     await page.goto(url + "/");
     await newApp(page);
     await controlledBy(page, "/sw.js");
     const cached = await page.evaluate(async () => (await caches.keys()).sort());
     assert.ok(cached.some((k) => k.startsWith("kvapp-") && !k.startsWith("kvapp-posters")), cached.join());
-    assert.ok(cached.includes("kuvert-classic-1"), cached.join());
 
     await unplug(server);
 
@@ -77,10 +87,6 @@ test("both apps start offline after one visit, each from its own cache", async (
     assert.equal(await page.evaluate(() => document.fonts.check("16px Geist")), true, "fonts come from the cache");
     await page.click("#drawBtn");
     await page.waitForSelector("#ticket:not([hidden])");
-
-    await page.goto(url + "/classic/");
-    await classicApp(page);
-    assert.equal(await page.evaluate(() => !!window.kuvert), false, "the classic page, not the new one");
     assert.deepEqual(errors, []);
   } finally {
     await close();
@@ -89,13 +95,7 @@ test("both apps start offline after one visit, each from its own cache", async (
 
 test("upgrading from the old layout keeps your progress and moves everyone to the main address", async () => {
   // The old layout, exactly as it was published.
-  const old = mkdtempSync(join(tmpdir(), "kuvert-old-"));
-  try {
-    execFileSync("sh", ["-c", `git -C "${REPO}" archive ${OLD_LAYOUT} | tar -x -C "${old}"`]);
-  } catch {
-    rmSync(old, { recursive: true, force: true });
-    throw new Error(`Commit ${OLD_LAYOUT} isn't in this clone. Fetch the full history (CI checks out with fetch-depth: 0).`);
-  }
+  const old = checkout(OLD_LAYOUT);
   const { server, url, setRoot } = await serve(0, { root: old });
   const { page, errors, close } = await browse(server);
   try {
@@ -135,23 +135,58 @@ test("upgrading from the old layout keeps your progress and moves everyone to th
     assert.equal(await page.evaluate(() => document.documentElement.dataset.page), "stats");
     await until(page, async () => !(await navigator.serviceWorker.getRegistrations()).some((r) => r.scope.endsWith("/next/")));
 
-    // Kuvert Classic, at its new address, reads the same progress.
-    await page.goto(url + "/classic/");
-    await classicApp(page);
-    assert.deepEqual(await page.evaluate(() => [...seen].sort()), watched);
-    await controlledBy(page, "/classic/sw.js");
+    // Kuvert Classic's address forwards there too.
+    await page.goto(url + "/classic/#stats");
+    await page.waitForURL(url + "/#stats");
+    await newApp(page);
 
-
-    // And both work offline.
+    // And it works offline.
     await unplug(server);
     await page.goto(url + "/");
     await newApp(page);
     assert.equal(await page.evaluate(() => window.kuvert.app.store.p.seen.size), watched.length);
-    await page.goto(url + "/classic/");
-    await classicApp(page);
     assert.deepEqual(errors, []);
   } finally {
     await close();
     rmSync(old, { recursive: true, force: true });
+  }
+});
+
+test("Kuvert Classic retires: its address forwards to Kuvert with your progress, and its worker leaves", async () => {
+  const before = checkout(WITH_CLASSIC);
+  const { server, url, setRoot } = await serve(0, { root: before });
+  const { page, errors, close } = await browse(server);
+  try {
+    // Before: Kuvert Classic installed at /classic/, with films watched in it.
+    await page.goto(url + "/classic/");
+    await classicApp(page);
+    const watched = await page.evaluate(() => {
+      const ids = FILMS.map((f) => f.id).slice(40, 46);
+      ids.forEach((id) => seen.add(id));
+      persistBrowser();
+      return ids.sort();
+    });
+    await controlledBy(page, "/classic/sw.js");
+    assert.ok((await page.evaluate(() => caches.keys())).includes("kuvert-classic-1"));
+
+    // Classic retires.
+    setRoot(REPO);
+
+    // Its address opens Kuvert, on the page you asked for, with the same progress.
+    await page.goto("about:blank");
+    await page.goto(url + "/classic/#library");
+    await page.waitForURL(url + "/#library");
+    await newApp(page);
+    assert.equal(await page.evaluate(() => document.documentElement.dataset.page), "library");
+    assert.deepEqual(await page.evaluate(() => [...window.kuvert.app.store.p.seen].sort()), watched);
+    // Classic's worker and what it kept are gone.
+    await until(page, async () => {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      return !regs.some((r) => r.scope.endsWith("/classic/")) && !(await caches.keys()).some((k) => k.startsWith("kuvert-classic-"));
+    });
+    assert.deepEqual(errors, []);
+  } finally {
+    await close();
+    rmSync(before, { recursive: true, force: true });
   }
 });

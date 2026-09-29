@@ -545,6 +545,11 @@ export class Store extends EventTarget {
     }
     this.persist();
   }
+  /** A film's poster: the one your own TMDB lookup found, or else the list's own (js/data/posters.js). */
+  posterPath(id) {
+    const own = this.p.posterPaths[id];
+    return own || this.catalog.poster?.(id) || own;
+  }
   recordDetails(id, { tmdbId, runtime, posterPath, moods, availability, region }) {
     if (tmdbId) this.p.matches[id] = tmdbId;
     if (moods) this.p.moodSuggestions[id] = moods;

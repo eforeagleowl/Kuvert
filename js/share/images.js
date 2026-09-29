@@ -187,7 +187,7 @@ export class Share {
     const ctx = canvas.getContext("2d");
     if (this.app.seagal && "fontVariantCaps" in ctx) ctx.fontVariantCaps = "small-caps";
     this.backdrop(ctx, W, H, c);
-    const [poster, paper, horse] = await Promise.all([loadPoster(p.posterPaths[f.id]), loadImage("assets/paper.webp").catch(() => null), this.horse(c)]);
+    const [poster, paper, horse] = await Promise.all([loadPoster(this.app.store.posterPath(f.id)), loadImage("assets/paper.webp").catch(() => null), this.horse(c)]);
     const x = 90,
       y = 150,
       w = W - 180,

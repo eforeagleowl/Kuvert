@@ -1,0 +1,9 @@
+# GitHub Pages publishes the app, not the tests, tools and notes that sit beside it in the repo.
+exclude:
+  - tests
+  - tools
+  - docs
+  - node_modules
+  - package.json
+  - package-lock.json
+  - README.md

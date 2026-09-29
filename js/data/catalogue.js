@@ -1,4 +1,4 @@
-// Generated from classic/index.html by tools/extract-legacy.mjs. Do not edit by hand.
+// The built-in list, and everything it needs. This is the list itself: edit it here.
 // Each film keeps a permanent id; `tri`/`ord` mark parts of a series; `c` is the Academy Awards
 // ceremony (1st–98th) where a winner or nominee competed for Best Picture.
 

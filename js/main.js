@@ -25,11 +25,12 @@ import { Stats } from "./views/stats.js";
 import { Settings } from "./views/settings.js";
 import { Rails } from "./views/rails.js";
 import { GroupNight } from "./views/group.js";
+import { Station } from "./views/station.js";
 import { Share } from "./share/images.js";
 import { enterSeagal, installSeagal, makeStandDown } from "./fun/seagal.js";
 import { PALETTES } from "./data/catalogue.js";
 
-const PAGES = ["tonight", "library", "stats", "settings"];
+const PAGES = ["tonight", "station", "library", "stats", "settings"];
 
 function safeStorage() {
   try {
@@ -128,38 +129,44 @@ app.confetti = () => {
 
 // ---------------------------------------------------------------- the router
 // Pages live at #tonight, #library, #stats and #settings; tab switches slide in the direction of travel.
+// #station is a mode of Tonight (its tab stays lit): the board rises into view, and sinks away again.
 let page = null;
 app.router = {
   get page() {
     return page;
   },
+  /** Shows a page. Resolves once it's in place (after the transition, where there is one). */
   show(name, { focus = true, push = true } = {}) {
-    if (!PAGES.includes(name)) name = "tonight";
+    if (!PAGES.includes(name) || (name === "station" && seagal)) name = "tonight";
     if (name === page) {
       if (focus && name !== "tonight") $(name === "library" ? "libraryHeading" : name + "Heading")?.focus({ preventScroll: true });
-      return;
+      return Promise.resolve();
     }
     const from = page;
-    const dir = from && PAGES.indexOf(name) < PAGES.indexOf(from) ? "back" : "forward";
+    const dir = name === "station" ? "station" : from === "station" && name === "tonight" ? "envelope" : from && PAGES.indexOf(name) < PAGES.indexOf(from) ? "back" : "forward";
     page = name;
     if (push && from) history.pushState({ page: name }, "", "#" + name);
+    const tab = name === "station" ? "tonight" : name;
     const swap = () => {
       for (const p of PAGES) $("page-" + p).hidden = p !== name;
       document.documentElement.dataset.page = name;
       for (const a of document.querySelectorAll("a[data-route]"))
-        if (a.dataset.route === name) a.setAttribute("aria-current", "page");
+        if (a.dataset.route === tab && !a.closest(".page")) a.setAttribute("aria-current", "page");
         else a.removeAttribute("aria-current");
+      if (from === "station") app.station.hide();
+      if (name === "station") app.station.show();
       render();
       if (from) window.scrollTo({ top: 0 });
     };
-    (from ? transition(swap, [dir]) : Promise.resolve(swap())).then(() => {
+    const shown = (from ? transition(swap, [dir]) : Promise.resolve(swap())).then(() => {
       if (name === "stats") app.stats.enter();
       if (name === "library") app.library.syncPosters();
     });
     if (focus && from) {
-      const heading = { library: "libraryHeading", stats: "statsHeading", settings: "settingsHeading" }[name];
+      const heading = { station: "stationHeading", library: "libraryHeading", stats: "statsHeading", settings: "settingsHeading" }[name];
       requestAnimationFrame(() => (heading ? $(heading) : $("drawBtn"))?.focus({ preventScroll: true }));
     }
+    return shown;
   },
 };
 document.addEventListener("click", (e) => {
@@ -182,6 +189,7 @@ app.evening = new Evening(app);
 app.settings = new Settings(app);
 app.rails = new Rails(app);
 app.group = new GroupNight(app);
+app.station = new Station(app);
 if (seagal) installSeagal(app);
 $("braveLink").addEventListener("click", () => storage && enterSeagal(storage));
 const standDown = makeStandDown(app);
@@ -212,6 +220,7 @@ function render() {
   app.horse.render();
   app.rails.render();
   app.group.render();
+  if (page === "station") app.station.render();
   if (page === "library") app.library.render();
   if (page === "stats") app.stats.render();
   if (page === "settings") app.settings.render();
@@ -277,7 +286,13 @@ document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") t.blur();
     return;
   }
+  // The station: Enter draws, Escape heads back to the envelope (unless it's closing a message).
+  if (page === "station" && e.key === "Escape" && !e.defaultPrevented) return app.router.show("tonight");
   if (t?.closest?.('button,a,summary,[role="button"],[role="slider"]')) return;
+  if (page === "station" && e.key === "Enter") {
+    e.preventDefault();
+    return app.station.draw();
+  }
   if (page !== "tonight") return;
   const stage = app.stage;
   if (e.key === "Enter") {

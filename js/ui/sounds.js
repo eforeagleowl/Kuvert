@@ -12,7 +12,8 @@ export function soundsOn(storage) {
     return false;
   }
 }
-function audio() {
+/** The page's one audio context, woken if the browser put it to sleep. The station shares it. */
+export function audio() {
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return null;
   ctx ??= new AC();

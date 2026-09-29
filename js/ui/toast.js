@@ -50,7 +50,10 @@ export class Toast {
     t.addEventListener("pointerup", end);
     t.addEventListener("pointercancel", end);
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && !t.hidden && !document.querySelector("dialog[open]")) this.hide();
+      if (e.key === "Escape" && !t.hidden && !document.querySelector("dialog[open]")) {
+        e.preventDefault();
+        this.hide();
+      }
     });
   }
   show(message, undo = null, { action = null, duration = null } = {}) {

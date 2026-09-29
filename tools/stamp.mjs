@@ -8,8 +8,8 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const SW = join(ROOT, "sw.js");
-// The app: the page, its manifest and these folders. Everything else in the repo (Kuvert Classic in
-// classic/, tools, tests, docs) stays out.
+// The app: the page, its manifest and these folders. Everything else in the repo (the forwarding pages
+// in classic/ and next/, the 404 page, tools, tests, docs) stays out.
 const PAGES = ["index.html", "manifest.webmanifest"];
 const DIRS = ["css", "js", "assets"];
 const ICONS = ["favicon.svg", "icon-180.png", "icon-192.png", "icon-512.png", "icon-maskable-512.png"];

@@ -37,8 +37,20 @@ function joinTitles(titles, more) {
   return shown.join(", ") + " and " + extra + " more";
 }
 
-/** @param {ReturnType<import("../data/lists.js").resolveList>} list */
-export function makeCatalog(list) {
+// TMDB's terms allow keeping its data for six months.
+const POSTERS_KEEP_DAYS = 182;
+/** The list's own posters while they're fresh enough to use: film id → [TMDB id, poster path]. */
+export function freshPosters(posters, at, now = new Date()) {
+  if (!at || !posters) return {};
+  const age = (now.getTime() - new Date(at + "T00:00:00Z").getTime()) / 86400000;
+  return age >= 0 && age <= POSTERS_KEEP_DAYS ? posters : {};
+}
+
+/**
+ * @param {ReturnType<import("../data/lists.js").resolveList>} list
+ * @param {{ posters?: Record<string, [number, string]> }} [o] the built-in list's posters (js/data/posters.js)
+ */
+export function makeCatalog(list, { posters = {} } = {}) {
   const films = list.films;
   const byId = new Map(films.map((f) => [f.id, f]));
   const shelves = list.shelves || {};
@@ -113,6 +125,10 @@ export function makeCatalog(list) {
     series: list.series || {},
     seriesParts: (key) => films.filter((f) => f.tri === key).sort((a, b) => a.ord - b.ord),
     ticketNumber: (f) => String(ticketOrder.get(f.id)).padStart(width, "0"),
+    // The list's own TMDB match and poster for a film, if it has them (the built-in list only).
+    hasPosters: list.id === "builtin" && Object.keys(posters).length > 0,
+    tmdbId: (id) => (list.id === "builtin" && Object.hasOwn(posters, id) ? posters[id][0] : null),
+    poster: (id) => (list.id === "builtin" && Object.hasOwn(posters, id) ? posters[id][1] : null),
     matchesSearch,
     oscarLine,
     ceremonyFilms,

@@ -1,12 +1,12 @@
-// Generates tests/fixtures/golden.json by driving the ORIGINAL app (classic/index.html) in a headless browser.
+// Generates tests/fixtures/golden.json by driving the ORIGINAL app (tests/classic/index.html) in a headless browser.
 // It records what the original writes (codes, backup files, browser saves, signatures) and how it reads
 // every older format, including the errors it raises. tests/unit/compat.test.mjs holds the rebuild to it.
 // Run: node tools/golden.mjs
 import { writeFileSync, mkdirSync } from "node:fs";
 import { chromium } from "playwright";
-import { serve } from "./serve.mjs";
+import { serve, CLASSIC } from "./serve.mjs";
 
-const { server, url } = await serve();
+const { server, url } = await serve(0, { mounts: CLASSIC });
 const browser = await chromium.launch();
 
 async function openOriginal(setup) {

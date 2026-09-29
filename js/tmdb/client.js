@@ -4,9 +4,9 @@
 
 export const IMG = "https://image.tmdb.org/t/p/";
 // Every TMDB image Kuvert shows or draws, at an address of its own. TMDB only sends its CORS header when
-// asked in CORS mode, and lets browsers keep images for a year. Kuvert Classic loads the same posters as
-// plain images, so a browser that has shown them there hands its stored copy (no CORS header) to Kuvert's
-// CORS request and the image fails. Classic's copies never have this marker, so they're never reused.
+// asked in CORS mode, and lets browsers keep images for a year. Kuvert Classic (now retired) loaded the same
+// posters as plain images, and a browser that showed them there still hands its stored copy (no CORS
+// header) to Kuvert's CORS request, so the image fails. Classic's copies never had this marker.
 export const imageUrl = (size, path) => IMG + size + path + "?cors=1";
 
 export function tmdbAuth(token) {
@@ -100,7 +100,9 @@ export class Details {
       store.recordDetails(f.id, { posterPath: null, moods: store.p.moodSuggestions[f.id] || [] });
       return { album: true };
     }
-    let id = store.p.matches[f.id];
+    // Your own choice of match first, then the list's own (js/data/posters.js), then a search.
+    const known = store.p.matches[f.id] || store.catalog.tmdbId?.(f.id) || null;
+    let id = known;
     if (!id) {
       let s = await this.call("/search/movie", { query: f.t, primary_release_year: f.y, include_adult: false }, signal);
       const exact = (s.results || []).filter((x) => exactMatch(x, f));
@@ -111,7 +113,7 @@ export class Details {
       }
     }
     const d = await this.call("/movie/" + id, { append_to_response: "credits,watch/providers,release_dates" }, signal);
-    if (!store.p.matches[f.id] && !exactMatch(d, f)) return { choices: [d] };
+    if (!known && !exactMatch(d, f)) return { choices: [d] };
     if (signal?.aborted || (store.p.matches[f.id] && store.p.matches[f.id] !== id)) throw new DOMException("Aborted", "AbortError");
     const offers = d["watch/providers"]?.results?.[region]?.flatrate || [];
     store.recordDetails(f.id, {

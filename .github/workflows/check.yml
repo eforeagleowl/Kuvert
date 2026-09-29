@@ -1,6 +1,6 @@
 # Runs Kuvert's checks: the service worker stamp, the unit tests (the save formats against fixtures
-# recorded from Kuvert Classic) and the browser tests (both apps together, offline, and the upgrade
-# from the old layout, which needs the full history).
+# recorded from Kuvert Classic) and the browser tests (Classic's saves and codes, offline, and the moves
+# from older layouts, which need the full history).
 name: Check
 
 on:

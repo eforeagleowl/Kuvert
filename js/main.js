@@ -11,7 +11,7 @@ import { Dialogs } from "./ui/dialogs.js";
 import { Horse } from "./ui/horse.js";
 import { makeSounds } from "./ui/sounds.js";
 import { resolveList } from "./data/lists.js";
-import { makeCatalog } from "./state/catalog.js";
+import { makeCatalog, freshPosters } from "./state/catalog.js";
 import { Store } from "./state/store.js";
 import { weekStreak, tallyNote, plural } from "./state/stats.js";
 import { Sync } from "./storage/sync.js";
@@ -29,6 +29,7 @@ import { Station } from "./views/station.js";
 import { Share } from "./share/images.js";
 import { enterSeagal, installSeagal, makeStandDown } from "./fun/seagal.js";
 import { PALETTES } from "./data/catalogue.js";
+import { POSTERS, POSTERS_AT } from "./data/posters.js";
 
 const PAGES = ["tonight", "station", "library", "stats", "settings"];
 
@@ -46,7 +47,7 @@ function safeStorage() {
 const storage = safeStorage();
 const seagal = document.documentElement.dataset.mode === "seagal";
 const list = resolveList(storage || { getItem: () => null });
-const catalog = makeCatalog(list);
+const catalog = makeCatalog(list, { posters: freshPosters(POSTERS, POSTERS_AT) });
 const store = new Store({ list, catalog, storage });
 const loadError = store.load();
 

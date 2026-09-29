@@ -6,10 +6,11 @@
 // purpose: no libraries, and nothing but the app and its posters is ever cached.
 
 // <stamp> written by tools/stamp.mjs (npm run stamp); do not edit by hand.
-const VERSION = "df321796fd7e";
+const VERSION = "ac81d00d136d";
 const FILES = [
   "./",
   "./manifest.webmanifest",
+  "./css/404.css",
   "./css/base.css",
   "./css/components.css",
   "./css/fonts.css",
@@ -27,6 +28,7 @@ const FILES = [
   "./js/compat/validate.js",
   "./js/data/catalogue.js",
   "./js/data/lists.js",
+  "./js/data/posters.js",
   "./js/fun/seagal.js",
   "./js/import/importers.js",
   "./js/main.js",
@@ -86,11 +88,11 @@ const FILES = [
 const CACHE = "kvapp-" + VERSION;
 const POSTERS = "kvapp-posters-2"; // -2: addresses carry ?cors=1, so the old entries were never used again
 const POSTER_LIMIT = 600;
-// The classic app's worker clears caches named "kuvert-*", so these names avoid that prefix.
-// Left behind by the old layout: the classic app's caches from when it lived here, and the
-// rebuild's from when it lived in ./next/.
-const RETIRED = (k) => /^kuvert-[0-9a-f]{10}$/.test(k) || k.startsWith("kvnext-");
-// Kuvert Classic has its own worker in ./classic/; ./next/ only forwards here.
+// These names avoid "kuvert-": Kuvert Classic's worker cleared every cache with that prefix.
+// Left behind by older layouts: Kuvert Classic's caches (from the root, and from ./classic/ before it
+// retired) and the rebuild's from when it lived in ./next/.
+const RETIRED = (k) => /^kuvert-[0-9a-f]{10}$/.test(k) || k.startsWith("kuvert-classic-") || k.startsWith("kvnext-");
+// ./classic/ and ./next/ only forward here now, each with a worker that removes itself.
 const BASE = new URL("./", self.registration.scope).pathname;
 const ELSEWHERE = [BASE + "classic/", BASE + "next/"];
 

@@ -70,11 +70,13 @@ export class Library {
     this.imageObserver?.disconnect();
     for (const img of $("page-library").querySelectorAll("img[data-src]:not([src])")) this.observeImage(img);
   }
-  // A small poster beside a title once TMDB is connected. Rows keep their shape while it loads.
+  // A small poster beside a title, from the list's own posters or once TMDB is connected. Rows keep
+  // their shape while it loads.
   thumb(f) {
-    if (!this.app.details.connected) return null;
+    const { details, store, catalog } = this.app;
+    if (!details.connected && !catalog.hasPosters) return null;
     const span = h("span", { class: "thumb", dataset: { film: f.id }, attrs: { "aria-hidden": "true" } });
-    const path = this.app.store.p.posterPaths[f.id];
+    const path = store.posterPath(f.id);
     if (path) span.append(this.thumbImage(path));
     else {
       span.append(mark("dala-mark", "poster-mark"));
@@ -111,7 +113,7 @@ export class Library {
       { details, store } = this.app;
     while (rp.busy < 2 && rp.queue.length && details.connected && !this.paused()) {
       const f = rp.queue.shift();
-      if (store.p.posterPaths[f.id] !== undefined) {
+      if (store.posterPath(f.id) !== undefined) {
         this.fillThumbs(f);
         continue;
       }
@@ -164,7 +166,7 @@ export class Library {
     this.syncPosters();
   }
   fillThumbs(f) {
-    const path = this.app.store.p.posterPaths[f.id];
+    const path = this.app.store.posterPath(f.id);
     if (!path) return;
     for (const span of document.querySelectorAll('.thumb[data-film="' + CSS.escape(f.id) + '"]')) if (!span.querySelector("img")) span.replaceChildren(this.thumbImage(path));
   }
@@ -449,7 +451,7 @@ export class Library {
       badge.textContent = at >= 0 ? "#" + (at + 1) : "";
       badge.hidden = store.settings.wallSort !== "rank" || at < 0;
       tile.setAttribute("aria-label", "Open your ticket for " + f.t + ", " + f.y + (r ? ", " + r + " stars" : "") + (at >= 0 ? ", ranked " + (at + 1) : ""));
-      const path = p.posterPaths[f.id] || "";
+      const path = store.posterPath(f.id) || "";
       if (tile.dataset.poster !== path) {
         tile.dataset.poster = path;
         pr.imageFailures.delete(f.id);
@@ -467,16 +469,16 @@ export class Library {
       return tile;
     });
     if (nodes.length !== wall.children.length || nodes.some((n, i) => wall.children[i] !== n)) keepFocus(() => wall.replaceChildren(...nodes));
-    const count = films.filter((f) => p.posterPaths[f.id] && !pr.imageFailures.has(f.id)).length;
-    const unmatched = new Set(films.filter((f) => p.posterPaths[f.id] === undefined && this.needsMatch.has(f.id)).map((f) => f.id));
-    const pending = films.filter((f) => p.posterPaths[f.id] === undefined && !unmatched.has(f.id)).length;
+    const count = films.filter((f) => store.posterPath(f.id) && !pr.imageFailures.has(f.id)).length;
+    const unmatched = new Set(films.filter((f) => store.posterPath(f.id) === undefined && this.needsMatch.has(f.id)).map((f) => f.id));
+    const pending = films.filter((f) => store.posterPath(f.id) === undefined && !unmatched.has(f.id)).length;
     for (const tile of wall.children) tile.title = unmatched.has(tile.dataset.film) ? "Open to pick the right movie for its poster" : "";
     const paused = this.paused() && pending > 0;
     $("posterWallStatus").textContent = paused
       ? count + " of " + plural(films.length, "poster") + " · Paused: " + this.pause.reason + " Trying again shortly."
       : pr.controller
         ? "Collecting posters…"
-        : !details.connected
+        : !details.connected && !catalog.hasPosters
           ? "Connect TMDB in Settings for posters."
           : count + " of " + plural(films.length, "poster") + (unmatched.size ? " · " + unmatched.size + (unmatched.size === 1 ? " needs" : " need") + " you to pick the right movie: open it to choose" : "");
     $("loadPosters").hidden = (!details.connected || !pending) && !films.some((f) => pr.imageFailures.has(f.id));
@@ -505,7 +507,7 @@ export class Library {
       pr = this.posterRun;
     if (!this.wallVisible() || !details.connected) return this.stopPosters();
     if (pr.controller || this.paused()) return;
-    const queue = watchedFilms(store.p, catalog).filter((f) => store.p.posterPaths[f.id] === undefined && !pr.attempts.has(f.id));
+    const queue = watchedFilms(store.p, catalog).filter((f) => store.posterPath(f.id) === undefined && !pr.attempts.has(f.id));
     if (!queue.length) return;
     const controller = new AbortController();
     pr.controller = controller;

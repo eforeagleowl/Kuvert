@@ -1,0 +1,48 @@
+# Keeps the built-in list's posters (js/data/posters.js) fresh, so everyone sees posters without a TMDB
+# key of their own. TMDB's terms allow keeping its data for six months: this refreshes them every month,
+# and Kuvert stops using any that are older than six months.
+# Needs a repository secret named TMDB_TOKEN: a TMDB "API Read Access Token".
+name: Refresh posters
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 5 1 * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: posters
+
+jobs:
+  posters:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Fetch posters from TMDB
+        env:
+          TMDB_TOKEN: ${{ secrets.TMDB_TOKEN }}
+        run: |
+          if [ -z "$TMDB_TOKEN" ]; then
+            echo "::warning::No TMDB_TOKEN secret yet: add one under Settings → Secrets and variables → Actions."
+            exit 0
+          fi
+          node tools/posters.mjs
+      - name: Stamp the service worker
+        run: node tools/stamp.mjs
+      - name: Unit tests
+        run: npm test
+      - name: Publish
+        run: |
+          if git diff --quiet; then echo "Nothing changed."; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Refresh posters from TMDB"
+          git push origin HEAD:main

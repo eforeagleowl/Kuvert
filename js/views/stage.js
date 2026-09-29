@@ -783,8 +783,11 @@ export class Stage {
       return;
     }
     if (!details.connected) {
-      this.ticket.classList.add("no-details");
-      $("infoStatus").textContent = "Connect TMDB in Settings for the poster and details.";
+      // The list's own poster still shows; the rest needs a TMDB key.
+      const poster = this.store.posterPath(f.id);
+      if (poster) this.image($("poster"), poster, "w342", f.t + " poster");
+      else this.ticket.classList.add("no-details");
+      $("infoStatus").textContent = poster ? "Connect TMDB in Settings for the runtime, cast and where to stream it." : "Connect TMDB in Settings for the poster and details.";
       return;
     }
     $("infoStatus").textContent = seagal ? ["Consulting ponytail…", "Calibrating aikido…", "Decrypting case file…", "Waking the body double…"][Math.floor(Math.random() * 4)] : "Loading movie details…";

@@ -212,3 +212,35 @@ test("SEAGAL has no station", async () => {
   assert.deepEqual(await problems(page), []);
   await context.close();
 });
+
+test("Ankomster: the board turns over to the films you've watched, with your stars, and back to draw", async () => {
+  const context = await newContext();
+  const page = await openPage(context, "/");
+  await page.evaluate(() => {
+    const { store } = window.kuvert.app;
+    store.markSeen("1959-ben-hur", true);
+    store.rate("1959-ben-hur", 4.5);
+    store.markSeen("1972-the-godfather", true);
+    store.p.dates["1972-the-godfather"] = "2001-01-01";
+  });
+  await page.click("#toStation");
+  await ready(page);
+  await page.click("#stArr");
+  assert.equal(await page.getAttribute("#stArr", "aria-pressed"), "true");
+  assert.equal(await page.textContent("#stBoardSv"), "Ankomster");
+  const flaps = await page.evaluate(() => window.kuvert.app.station.board.text());
+  assert.match(flaps[0], /BEN-HUR.*\|★★★★½/, flaps[0]);
+  assert.match(flaps[1], /GODFATHER/, "watched longer ago: further down");
+  assert.equal(flaps[2].trim().replace(/[|\s]/g, ""), "", "nothing else has arrived");
+  assert.equal(await page.evaluate(() => window.kuvert.app.station.board.lamps[0]), 1, "watched tonight: lit");
+  assert.deepEqual(await page.$$eval("#stHead th", (ths) => ths.map((th) => th.textContent)), ["Date", "Film", "Year", "Stars"]);
+  assert.match(await page.textContent("#stRows"), /Ben-Hur.*4\.5 stars/);
+  assert.match(await page.textContent("#stTicker"), /Ankomster · 2 filmer har anlänt · Senast: Ben-Hur \(1959\) ★★★★½/);
+  // Drawing turns it back to the departures.
+  await page.click("#stDraw");
+  await drawn(page);
+  assert.equal(await page.getAttribute("#stDep", "aria-pressed"), "true");
+  assert.equal(await page.textContent("#stBoardSv"), "Avgångar");
+  assert.deepEqual(await problems(page), []);
+  await context.close();
+});

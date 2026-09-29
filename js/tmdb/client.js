@@ -1,6 +1,7 @@
 // Film details from TMDB: poster, runtime, genres (for mood hints), credits and where to stream it.
 // Details are bound to a film's permanent id; an ambiguous search asks which film you mean, once.
 // Kuvert only talks to TMDB once you've connected your own credential.
+import { t } from "../i18n/index.js";
 
 export const IMG = "https://image.tmdb.org/t/p/";
 // Every TMDB image Kuvert shows or draws, at an address of its own. TMDB only sends its CORS header when
@@ -16,7 +17,7 @@ export function tmdbAuth(token) {
 
 export async function tmdb(token, path, params = {}, signal) {
   const a = tmdbAuth(token);
-  if (!a) throw Error("Connect TMDB in Settings for movie details.");
+  if (!a) throw Error(t("Connect TMDB in Settings for movie details."));
   const u = new URL("https://api.themoviedb.org/3" + path);
   Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
   const headers = {};
@@ -31,11 +32,13 @@ export async function tmdb(token, path, params = {}, signal) {
     const r = await fetch(u, { headers, signal: controller.signal });
     if (!r.ok)
       throw Error(
-        r.status === 429
-          ? "Too many requests. Wait a moment, then try again."
-          : r.status === 401
-            ? "Your TMDB credential was not accepted. Reconnect in Settings."
-            : "Movie details are temporarily unavailable.",
+        t(
+          r.status === 429
+            ? "Too many requests. Wait a moment, then try again."
+            : r.status === 401
+              ? "Your TMDB credential was not accepted. Reconnect in Settings."
+              : "Movie details are temporarily unavailable.",
+        ),
       );
     return await r.json();
   } finally {
@@ -137,7 +140,7 @@ export class Details {
   }
   async providers(region) {
     const data = await this.call("/watch/providers/movie", { watch_region: region, language: "en-US" });
-    if (!Array.isArray(data.results)) throw Error("The service list could not be read. Try again.");
+    if (!Array.isArray(data.results)) throw Error(t("The service list could not be read. Try again."));
     return data.results
       .filter((p) => Number.isSafeInteger(p.provider_id) && p.provider_id > 0 && typeof p.provider_name === "string")
       .map((p) => ({ id: p.provider_id, name: p.provider_name }));

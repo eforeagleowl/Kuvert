@@ -4,6 +4,7 @@ import { $, h, s } from "../ui/dom.js";
 import { decadeOf } from "../state/catalog.js";
 import { fmtDay } from "../state/dates.js";
 import { recentWatched, starText } from "../state/stats.js";
+import { t, decimal } from "../i18n/index.js";
 
 const BLOOMS_PER_SIDE = 8;
 
@@ -49,7 +50,7 @@ export class Rails {
                   class: "stub",
                   type: "button",
                   dataset: { key: "stub-" + f.id },
-                  attrs: { "aria-label": "Open your ticket for " + f.t + (r ? ", " + r + (r === 1 ? " star" : " stars") : "") },
+                  attrs: { "aria-label": t("Open your ticket for {title}", { title: f.t }) + (r ? ", " + t(r === 1 ? "1 star" : "{n} stars", { n: decimal(r) }) : "") },
                   on: { click: () => stage.openFilm(f.id) },
                 },
                 h("b", { text: f.t }),
@@ -58,7 +59,7 @@ export class Rails {
               ),
             );
           })
-        : [h("li", {}, h("div", { class: "stub empty-stub" }, h("b", { text: "Your stubs land here" }), h("small", { text: "After your first film" })))]),
+        : [h("li", {}, h("div", { class: "stub empty-stub" }, h("b", { text: t("Your stubs land here") }), h("small", { text: t("After your first film") })))]),
     );
     const byDec = new Map();
     for (const f of catalog.films) {
@@ -79,7 +80,7 @@ export class Rails {
                 class: "dec-row" + (c.w === c.t ? " done" : ""),
                 type: "button",
                 dataset: { key: "rdec-" + dk },
-                attrs: { "aria-label": dk + "s: " + c.w + " of " + c.t + " watched. Show them in the Library." },
+                attrs: { "aria-label": t("{decade}s: {n} of {total} watched. Show them in the Library.", { decade: dk, n: c.w, total: c.t }) },
                 on: {
                   click: () => {
                     store.set({ decadeFilter: dk });
@@ -87,7 +88,7 @@ export class Rails {
                   },
                 },
               },
-              h("span", { text: dk + "s" }),
+              h("span", { text: t("{decade}s", { decade: dk }) }),
               h("span", { class: "meter" }, h("i", { style: { "--p": Math.round((c.w / c.t) * 100) + "%" } })),
               h("span", { text: c.w + "/" + c.t }),
             ),

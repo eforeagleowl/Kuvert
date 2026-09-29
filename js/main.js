@@ -29,6 +29,7 @@ import { Station } from "./views/station.js";
 import { Share } from "./share/images.js";
 import { enterSeagal, installSeagal, makeStandDown } from "./fun/seagal.js";
 import { PALETTES } from "./data/catalogue.js";
+import { t, translatePage } from "./i18n/index.js";
 import { POSTERS, POSTERS_AT } from "./data/posters.js";
 
 const PAGES = ["tonight", "station", "library", "stats", "settings"];
@@ -44,6 +45,10 @@ function safeStorage() {
   }
 }
 
+// Swedish mode translates the page's own text before anything else reads it.
+translatePage();
+document.documentElement.dataset.translated = "";
+
 const storage = safeStorage();
 const seagal = document.documentElement.dataset.mode === "seagal";
 const list = resolveList(storage || { getItem: () => null });
@@ -58,7 +63,7 @@ const app = {
   list,
   catalog,
   store,
-  sg: (normal, sgWord) => (seagal ? sgWord : normal),
+  sg: (normal, sgWord) => (seagal ? sgWord : t(normal)),
   play: makeSounds(storage),
   announce,
   streak: () => weekStreak(store.p, catalog),
@@ -74,7 +79,7 @@ app.toast = new Toast({
     // A stub stays up if it's still watched; otherwise tonight's ticket catches up.
     if (app.stage.mode === "watched" && shown && store.p.seen.has(shown.id) && shown.id !== snapshot.current) app.stage.renderWatched();
     else app.stage.syncPick();
-    app.toast.show("Change undone.");
+    app.toast.show(t("Change undone."));
     if (!$("drawBtn").hidden) $("drawBtn").focus();
   },
 });
@@ -87,12 +92,12 @@ app.toggleShelf = (id) => {
   const undo = store.toggleShelf(id),
     f = catalog.byId.get(id);
   app.stage.paintShelf();
-  app.toast.show(f.t + (store.p.shelf.has(id) ? " is on your shelf." : " is off your shelf."), undo);
+  app.toast.show(t(store.p.shelf.has(id) ? "{title} is on your shelf." : "{title} is off your shelf.", { title: f.t }), undo);
 };
 app.setVerdict = (id, value, { quiet = false } = {}) => {
   const undo = store.setVerdict(id, value);
   const v = store.p.verdicts[id];
-  const said = v ? ": " + { yes: "deserved it", no: "didn't deserve it", unsure: "not sure" }[v] + "." : ": verdict cleared.";
+  const said = v ? ": " + t({ yes: "deserved it", no: "didn't deserve it", unsure: "not sure" }[v]) + "." : t(": verdict cleared.");
   if (quiet) announce(catalog.byId.get(id).t + said);
   else app.toast.show(catalog.byId.get(id).t + said, undo);
 };
@@ -102,7 +107,7 @@ app.fillShouldHaveWon = (select, wrap, f, verdict = store.p.verdicts[f.id]) => {
   wrap.hidden = !show;
   if (!show) return;
   const rivals = catalog.ceremonyFilms(f.c).filter((x) => x !== f);
-  select.replaceChildren(new Option("Pick a film…", ""), ...rivals.map((x) => new Option(x.t, x.id)), new Option("A nominee not on my list", "other"));
+  select.replaceChildren(new Option(t("Pick a film…"), ""), ...rivals.map((x) => new Option(x.t, x.id)), new Option(t("A nominee not on my list"), "other"));
   select.value = store.p.snubs[f.id] || "";
 };
 app.confetti = () => {
@@ -211,9 +216,9 @@ function render() {
   const cheer = seagal ? null : tallyNote(n, total);
   $("tally").replaceChildren(
     h("b", { text: String(n) }),
-    " of " + total,
-    h("span", { class: "tally-word", text: seagal ? " targets neutralized" : " watched" }),
-    cheer ? h("span", { class: "cheer", lang: "sv", title: cheer[1], text: cheer[0] }) : "",
+    t(" of {total}", { total }),
+    h("span", { class: "tally-word", text: seagal ? " targets neutralized" : t(" watched") }),
+    cheer ? h("span", { class: "cheer", lang: "sv", title: t(cheer[1]), text: cheer[0] }) : "",
   );
   $("progressFill").style.setProperty("--p", (total ? (n / total) * 100 : 0) + "%");
   app.stage.render();
@@ -242,7 +247,7 @@ store.addEventListener("change", (e) => {
 // ---------------------------------------------------------------- keeping progress safe
 $("keepCopySave").addEventListener("click", async () => {
   const r = await app.safekeeping.saveCopy();
-  if (r) app.toast.show(r === "file" ? "Saved to your backup file. Kuvert keeps it up to date." : r === "shared" ? "Copy saved. Keep it somewhere you'll find it." : "Copy downloaded. Keep it somewhere you'll find it.");
+  if (r) app.toast.show(t(r === "file" ? "Saved to your backup file. Kuvert keeps it up to date." : r === "shared" ? "Copy saved. Keep it somewhere you'll find it." : "Copy downloaded. Keep it somewhere you'll find it."));
   app.renderSoon();
 });
 $("keepCopyLater").addEventListener("click", () => {
@@ -253,21 +258,21 @@ $("unreadableRestore").addEventListener("click", () => app.settings.open("openFi
 $("unreadableDownload").addEventListener("click", () => store.unreadable && download(store.unreadable.text, "kuvert-unreadable-save.json"));
 $("unreadableFresh").addEventListener("click", async () => {
   const ok = await app.dialogs.confirm({
-    title: "Start fresh?",
-    text: "Kuvert starts saving again from zero. The save it couldn't read stays in this browser under its own name, so it can still be recovered.",
-    confirm: "Start fresh",
+    title: t("Start fresh?"),
+    text: t("Kuvert starts saving again from zero. The save it couldn't read stays in this browser under its own name, so it can still be recovered."),
+    confirm: t("Start fresh"),
   });
   if (!ok) return;
   store.startFresh();
-  app.toast.show("Starting fresh. The unreadable save is still kept aside.");
+  app.toast.show(t("Starting fresh. The unreadable save is still kept aside."));
 });
 
 // The list's own name, counts and colours.
 for (const el of document.querySelectorAll("[data-count]")) el.textContent = String(catalog.films.length);
 if (!seagal) {
   for (const el of document.querySelectorAll("[data-name]")) el.textContent = list.name;
-  for (const el of document.querySelectorAll("[data-subtitle]")) el.textContent = list.subtitle;
-  document.title = list.name + (list.custom ? "" : " — Best Picture watchthrough");
+  for (const el of document.querySelectorAll("[data-subtitle]")) el.textContent = list.custom ? list.subtitle : t(list.subtitle);
+  document.title = list.name + (list.custom ? "" : t(" — Best Picture watchthrough"));
   const palette = PALETTES[list.palette];
   if (list.custom && palette) document.querySelector('meta[name="theme-color"]')?.setAttribute("content", palette.house);
 }
@@ -339,7 +344,7 @@ if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
     let hadController = !!navigator.serviceWorker.controller;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       if (!hadController) return (hadController = true);
-      app.toast.show("A new version of Kuvert is ready.", null, { action: { label: "Reload", run: () => location.reload() }, duration: 12000 });
+      app.toast.show(t("A new version of Kuvert is ready."), null, { action: { label: t("Reload"), run: () => location.reload() }, duration: 12000 });
     });
   } catch {}
 }

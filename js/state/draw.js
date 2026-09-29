@@ -1,6 +1,7 @@
 // Tonight's draw: which films can come out of the envelope, and picking one.
 // A series counts as one ticket and plays in order: only its first unwatched part is in the draw.
 import { decadeOf } from "./catalog.js";
+import { t } from "../i18n/index.js";
 
 export const AVAILABILITY_TTL = 24 * 60 * 60 * 1000;
 export const DIRECTORY_TTL = 7 * 24 * 60 * 60 * 1000;
@@ -128,14 +129,14 @@ export function nextSeriesPart(p, catalog, f) {
 // Tonight's preferences as removable chips.
 export function preferenceChips(settings, catalog, formatDeadline) {
   const parts = [];
-  if (settings.moodFilter) parts.push({ kind: "mood", label: settings.moodFilter });
+  if (settings.moodFilter) parts.push({ kind: "mood", label: t(settings.moodFilter) });
   if (settings.timeMode === "finish")
-    parts.push({ kind: "time", label: settings.finishTime ? "Finish by " + formatDeadline() : "Choose a finish time" });
-  else if (settings.runtimeLimit) parts.push({ kind: "time", label: settings.runtimeLimit === -120 ? "Over 2 hours" : "2 hours or less" });
-  if (settings.subscriptionOnly) parts.push({ kind: "services", label: "Watchable tonight" });
+    parts.push({ kind: "time", label: settings.finishTime ? t("Finish by {time}", { time: formatDeadline() }) : t("Choose a finish time") });
+  else if (settings.runtimeLimit) parts.push({ kind: "time", label: t(settings.runtimeLimit === -120 ? "Over 2 hours" : "2 hours or less") });
+  if (settings.subscriptionOnly) parts.push({ kind: "services", label: t("Watchable tonight") });
   if (settings.drawSelection) {
-    if (settings.decadeFilter !== null) parts.push({ kind: "decade", label: settings.decadeFilter + "s" });
-    if (settings.statusFilter) parts.push({ kind: "award", label: catalog.shelves[settings.statusFilter]?.plural || "" });
+    if (settings.decadeFilter !== null) parts.push({ kind: "decade", label: t("{decade}s", { decade: settings.decadeFilter }) });
+    if (settings.statusFilter) parts.push({ kind: "award", label: t(catalog.shelves[settings.statusFilter]?.plural || "") });
     if (settings.query.trim()) parts.push({ kind: "search", label: "“" + settings.query.trim() + "”" });
   }
   return parts;

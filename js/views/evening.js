@@ -7,6 +7,7 @@ import { KEYS } from "../compat/keys.js";
 import { clockLabel, defaultWatchDate, drawnDayLabel, isLateNight } from "../state/dates.js";
 import { baseDrawFilms, missingForDraw, remainingMinutes, preferenceChips, hasActiveFilters } from "../state/draw.js";
 import { allWatched } from "../state/stats.js";
+import { t, plural } from "../i18n/index.js";
 
 export class Evening {
   constructor(app) {
@@ -70,7 +71,7 @@ export class Evening {
   setOpen(open) {
     $("preferencesPanel").hidden = !open;
     $("adjustPreferences").setAttribute("aria-expanded", String(open));
-    $("adjustPreferences").querySelector("span").textContent = open ? "Close" : "Adjust";
+    $("adjustPreferences").querySelector("span").textContent = t(open ? "Close" : "Adjust");
     if (open) $("runtimeLimit").focus({ preventScroll: true });
     else $("adjustPreferences").focus({ preventScroll: true });
   }
@@ -101,8 +102,8 @@ export class Evening {
       expired = !!st.finishTime && remainingMinutes(st) <= 0;
     const choices = st.selectedServices[st.country] || [],
       providers = store.caches.providerDirectories[st.country]?.providers || [];
-    const labels = choices.map((id) => providers.find((x) => x.id === id)?.name || "Service " + id);
-    $("servicesSummary").textContent = labels.length ? labels.join(", ") + " · " + st.country : "No services selected for " + st.country + ".";
+    const labels = choices.map((id) => providers.find((x) => x.id === id)?.name || t("Service {id}", { id }));
+    $("servicesSummary").textContent = labels.length ? labels.join(", ") + " · " + st.country : t("No services selected for {country}.", { country: st.country });
     $("finishField").hidden = st.timeMode !== "finish";
     $("clearFinish").hidden = !st.finishTime;
     if (st.finishTime) {
@@ -110,34 +111,34 @@ export class Evening {
         tomorrow = new Date(st.finishDeadline).toDateString() !== new Date().toDateString();
       $("finishHint").textContent =
         remaining > 0
-          ? remaining + " min available · finish " + (tomorrow ? "tomorrow " : "") + "at " + this.formatDeadline() + ". Starts now; no breaks included."
-          : "This finish time has passed. Choose a new time or clear it.";
-    } else $("finishHint").textContent = "Assumes you start now. An earlier time means tomorrow.";
+          ? t(tomorrow ? "{n} min available · finish tomorrow at {time}. Starts now; no breaks included." : "{n} min available · finish at {time}. Starts now; no breaks included.", { n: remaining, time: this.formatDeadline() })
+          : t("This finish time has passed. Choose a new time or clear it.");
+    } else $("finishHint").textContent = t("Assumes you start now. An earlier time means tomorrow.");
 
     // Keeping progress safe: the unreadable-save notice, or a reminder to keep a copy.
     $("unreadable").hidden = !store.writeLocked;
     const remind = this.app.safekeeping.reminder();
     $("keepCopy").hidden = !remind || stage.open || !!store.writeLocked;
-    if (remind) $("keepCopyText").textContent = remind + (this.app.safekeeping.canShareFile && !this.app.files.canPick ? " Send one to Notes, Files or iCloud Drive with one tap." : " A backup file takes one click.");
+    if (remind) $("keepCopyText").textContent = remind + t(this.app.safekeeping.canShareFile && !this.app.files.canPick ? " Send one to Notes, Files or iCloud Drive with one tap." : " A backup file takes one click.");
 
     // The eligible count.
-    const drawWord = seagal ? (eligible === 1 ? "live target" : "live targets") : eligible === 1 ? "eligible ticket" : "eligible tickets";
+    const drawWord = seagal ? (eligible === 1 ? "live target" : "live targets") : t(eligible === 1 ? "eligible ticket" : "eligible tickets");
     $("eligibleCount").textContent = this.app.group?.on
-      ? eligible + (eligible === 1 ? " film" : " films") + this.app.sg(" none of you has seen", " no one in the squad has neutralized") + (active ? " · tonight’s filters apply" : "")
+      ? plural(eligible, "film") + this.app.sg(" none of you has seen", " no one in the squad has neutralized") + (active ? t(" · tonight’s filters apply") : "")
       : eligible + " " + drawWord + (active ? this.app.sg(" · tonight’s filters apply", " · rules of engagement apply") : this.app.sg(" · drawing from all unseen films", " · all hostiles in play"));
 
     // Missing details for tonight's filters.
     $("metadataTools").hidden = !(this.checking || (active && (pending > 0 || eligible === 0)));
     const messages = [];
-    if (noTime) messages.push("Choose a finish time in Adjust, or select Any length.");
-    else if (expired) messages.push("Your finish time has passed. Adjust it to draw a film.");
-    else if (st.subscriptionOnly && !choices.length && !p.shelf.size) messages.push("Choose your streaming services in Settings, or add discs to your shelf.");
-    else if (active && !eligible) messages.push("No films match this combination. Adjust or clear a filter.");
-    if (pending && !noTime && !expired) messages.push(pending + (pending === 1 ? " film needs details before it can enter this draw." : " films need details before they can enter this draw."));
-    if (st.moodFilter && films.some((f) => !store.moodsFor(f.id).length) && !pending) messages.push("Films without mood tags are excluded. You can edit their tags in Film details.");
-    if (pending && !this.app.details.connected && !noTime && !expired) messages.push("Connect TMDB in Settings to check them.");
+    if (noTime) messages.push(t("Choose a finish time in Adjust, or select Any length."));
+    else if (expired) messages.push(t("Your finish time has passed. Adjust it to draw a film."));
+    else if (st.subscriptionOnly && !choices.length && !p.shelf.size) messages.push(t("Choose your streaming services in Settings, or add discs to your shelf."));
+    else if (active && !eligible) messages.push(t("No films match this combination. Adjust or clear a filter."));
+    if (pending && !noTime && !expired) messages.push(t(pending === 1 ? "1 film needs details before it can enter this draw." : "{n} films need details before they can enter this draw.", { n: pending }));
+    if (st.moodFilter && films.some((f) => !store.moodsFor(f.id).length) && !pending) messages.push(t("Films without mood tags are excluded. You can edit their tags in Film details."));
+    if (pending && !this.app.details.connected && !noTime && !expired) messages.push(t("Connect TMDB in Settings to check them."));
     $("metadataHint").textContent = messages.join(" ");
-    $("checkDetails").textContent = this.checking ? "Stop checking" : "Check missing movie details";
+    $("checkDetails").textContent = t(this.checking ? "Stop checking" : "Check missing movie details");
     $("checkDetails").hidden = !this.checking && (!pending || noTime || expired);
 
     // Preference chips.
@@ -152,7 +153,7 @@ export class Evening {
                 class: "chip",
                 type: "button",
                 dataset: { preference: kind },
-                attrs: { "aria-label": "Remove " + label + " filter" },
+                attrs: { "aria-label": t("Remove {label} filter", { label }) },
                 on: {
                   click: () => {
                     store.removePreference(kind);
@@ -166,7 +167,7 @@ export class Evening {
               h("span", { class: "x", attrs: { "aria-hidden": "true" } }, icon("x")),
             ),
           )
-        : [h("span", { class: "chip chip-quiet", text: "Any mood · Any length · All services" })]),
+        : [h("span", { class: "chip chip-quiet", text: t("Any mood · Any length · All services") })]),
     );
     if (focused) $("activeChips").querySelector('[data-preference="' + focused + '"]')?.focus({ preventScroll: true });
     $("clearFilters").hidden = !chips.length;
@@ -176,8 +177,8 @@ export class Evening {
     $("skipReminder").hidden = !skippedIds.length;
     if (skippedIds.length) {
       $("skipReminderText").textContent =
-        skippedIds.length === 1 ? "One film set aside. Watch it before setting aside another." : skippedIds.length + " skipped films in your saved progress. Watch them before setting aside another.";
-      $("openSkipped").textContent = "Open " + catalog.byId.get(skippedIds[0]).t;
+        skippedIds.length === 1 ? t("One film set aside. Watch it before setting aside another.") : t("{n} skipped films in your saved progress. Watch them before setting aside another.", { n: skippedIds.length });
+      $("openSkipped").textContent = t("Open {title}", { title: catalog.byId.get(skippedIds[0]).t });
     }
 
     // On the ticket: when you'd finish if you start now, and an intermission for 3+ hour films.
@@ -188,7 +189,7 @@ export class Evening {
     if (run >= 180) {
       const half = Math.round(run / 2),
         at = new Date(Date.now() + half * 60000);
-      $("intermission").replaceChildren(h("b", { lang: "sv", text: "Paus" }), " Halfway is " + Math.floor(half / 60) + "h " + (half % 60) + "m in, around " + clockLabel(at) + " if you start now. Time for a fika.");
+      $("intermission").replaceChildren(h("b", { lang: "sv", text: "Paus" }), t(" Halfway is {h}h {m}m in, around {time} if you start now. Time for a fika.", { h: Math.floor(half / 60), m: half % 60, time: clockLabel(at) }));
     }
     const end = onTicket && p.runtimes[cur.id] ? new Date(Date.now() + p.runtimes[cur.id] * 60000) : null;
     $("finishEstimate").hidden = !end;
@@ -196,8 +197,8 @@ export class Evening {
       $("finishEstimate").textContent =
         this.app.sg("Start now · finishes around ", "Deploy now · extraction around ") +
         clockLabel(end) +
-        (end.toDateString() !== new Date().toDateString() ? " tomorrow" : "") +
-        (st.finishTime && end.getTime() > st.finishDeadline ? " · past your finish time" : "");
+        (end.toDateString() !== new Date().toDateString() ? t(" tomorrow") : "") +
+        (st.finishTime && end.getTime() > st.finishDeadline ? t(" · past your finish time") : "");
 
     // Your saved ticket (house rule: a film is pulled on the evening you watch it; an older ticket asks first).
     // It stays sealed: nothing here names the film, so opening the envelope is still the reveal.
@@ -206,7 +207,7 @@ export class Evening {
     if (resume) {
       const stale = !!p.drawnOn && p.drawnOn < defaultWatchDate();
       $("resumePick").classList.toggle("stale", stale);
-      $("resumeLabel").textContent = stale ? "A ticket drawn " + drawnDayLabel(p.drawnOn) + " is still sealed · still on for tonight?" : this.app.sg("Your saved ticket, still sealed", "Active mission, still classified");
+      $("resumeLabel").textContent = stale ? t("A ticket drawn {day} is still sealed · still on for tonight?", { day: drawnDayLabel(p.drawnOn) }) : this.app.sg("Your saved ticket, still sealed", "Active mission, still classified");
       $("resumeFilm").textContent = this.app.sg("Open it", "Open the file");
       $("resumeFilm").hidden = stale;
       $("staleActions").hidden = !stale;
@@ -224,13 +225,13 @@ export class Evening {
     }
     if (!details.connected) {
       this.app.settings.openMovieSettings();
-      this.app.toast.show("Connect TMDB to check movie details.");
+      this.app.toast.show(t("Connect TMDB to check movie details."));
       return;
     }
     const env = store.env();
     const pending = baseDrawFilms(env).filter((f) => refresh || missingForDraw(env, f));
     if (!pending.length) {
-      this.app.toast.show("Movie details are up to date for this selection.");
+      this.app.toast.show(t("Movie details are up to date for this selection."));
       return;
     }
     const controller = new AbortController(),
@@ -244,7 +245,7 @@ export class Evening {
       lastError = "";
     const unresolvedIds = [];
     const status = refresh ? $("serviceStatus") : $("metadataStatus");
-    status.textContent = "Checking 0 of " + pending.length + " films…";
+    status.textContent = t("Checking 0 of {total} films…", { total: pending.length });
     this.app.renderSoon();
     const worker = async () => {
       while (next < pending.length && !signal.aborted && region === store.settings.country) {
@@ -264,7 +265,7 @@ export class Evening {
           if (++failures >= 3) controller.abort();
         }
         completed++;
-        status.textContent = "Checked " + completed + " of " + pending.length + " films…";
+        status.textContent = t("Checked {n} of {total} films…", { n: completed, total: pending.length });
         this.app.renderSoon();
       }
     };
@@ -272,14 +273,10 @@ export class Evening {
     this.checking = null;
     store.persist();
     status.replaceChildren(
-      (signal.aborted ? "Stopped. " : "Finished. ") +
-        completed +
-        " of " +
-        pending.length +
-        " checked" +
-        (unresolved ? " · " + unresolved + " unresolved. Open a film to confirm its match or edit its mood tags." : ".") +
-        (lastError ? " " + lastError : ""),
-      ...unresolvedIds.slice(0, 3).flatMap((id) => [" ", h("button", { class: "link", type: "button", text: "Open " + this.app.catalog.byId.get(id).t, on: { click: () => this.app.stage.openFilm(id) } })]),
+      t(signal.aborted ? "Stopped. {n} of {total} checked" : "Finished. {n} of {total} checked", { n: completed, total: pending.length }) +
+        (unresolved ? t(" · {n} unresolved. Open a film to confirm its match or edit its mood tags.", { n: unresolved }) : ".") +
+        (lastError ? " " + t(lastError) : ""),
+      ...unresolvedIds.slice(0, 3).flatMap((id) => [" ", h("button", { class: "link", type: "button", text: t("Open {title}", { title: this.app.catalog.byId.get(id).t }), on: { click: () => this.app.stage.openFilm(id) } })]),
     );
     this.app.renderSoon();
   }

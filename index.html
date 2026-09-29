@@ -355,9 +355,13 @@
       <a class="st-leave" id="leaveStation" href="#tonight" data-route="tonight"><svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg><span lang="sv">Tillbaka till kuvertet</span> Back to the envelope</a>
     </header>
     <p class="st-tagline">Every film on your list leaves from here. Draw one and take the ticket.</p>
+    <div class="st-switch" role="group" aria-label="Board">
+      <button type="button" id="stDep" aria-pressed="true"><b lang="sv">Avgångar</b> <span>Departures</span></button>
+      <button type="button" id="stArr" aria-pressed="false"><b lang="sv">Ankomster</b> <span>Arrivals</span></button>
+    </div>
     <section class="st-board" aria-labelledby="stationHeading">
       <div class="st-board-top">
-        <h2 class="st-title" id="stationHeading" tabindex="-1"><b lang="sv">Avgångar</b><span>Departures</span></h2>
+        <h2 class="st-title" id="stationHeading" tabindex="-1"><b lang="sv" id="stBoardSv">Avgångar</b><span id="stBoardEn">Departures</span></h2>
         <div class="st-clockwrap" aria-hidden="true"><span lang="sv">Klockan</span><canvas id="stClock"></canvas></div>
       </div>
       <div class="st-flapwrap" id="stFlapwrap"><canvas id="stFlaps" aria-hidden="true"></canvas></div>
@@ -365,7 +369,7 @@
       <div class="sr-only">
         <table>
           <caption>Departures</caption>
-          <thead><tr><th scope="col">Time</th><th scope="col">Film</th><th scope="col">Year</th><th scope="col">Track</th><th scope="col">Remarks</th></tr></thead>
+          <thead><tr id="stHead"><th scope="col">Time</th><th scope="col">Film</th><th scope="col">Year</th><th scope="col">Track</th><th scope="col">Remarks</th></tr></thead>
           <tbody id="stRows"></tbody>
         </table>
       </div>
@@ -522,7 +526,7 @@
     </header>
     <div class="settings">
       <nav class="settings-nav" aria-label="Settings sections">
-        <a href="#backup">Your data</a><a href="#sgMoviesBlock">Movie details</a><a href="#sgListsBlock">Lists &amp; imports</a><a href="#soundGroup">Sound</a><a href="#aboutSection">About</a>
+        <a href="#backup">Your data</a><a href="#sgMoviesBlock">Movie details</a><a href="#sgListsBlock">Lists &amp; imports</a><a href="#languageGroup">Language</a><a href="#soundGroup">Sound</a><a href="#aboutSection">About</a>
       </nav>
       <div class="settings-main">
         <section class="group" id="backup" aria-labelledby="sgData">
@@ -635,6 +639,17 @@
           </div>
         </section>
 
+        <section class="group" id="languageGroup" aria-labelledby="sgLanguage">
+          <h3 id="sgLanguage">Language</h3>
+          <div class="card setting">
+            <div class="seg" id="languageChoice" role="group" aria-label="Language">
+              <button type="button" data-lang="en" lang="en" aria-pressed="true">English</button>
+              <button type="button" data-lang="sv" lang="sv" aria-pressed="false">Svenska</button>
+            </div>
+            <p class="fine">Kuvert in English with a little Swedish, or all of it in Swedish. Only on this device.</p>
+          </div>
+        </section>
+
         <section class="group" id="soundGroup" aria-labelledby="sgSound">
           <h3 id="sgSound">Sound</h3>
           <div class="card setting">
@@ -684,11 +699,11 @@
 <!-- Wide screens: stubs of your latest films on the left, progress per decade on the right, and kurbits
      flowers down both margins that get painted as you go. -->
 <aside class="rail rail-left" aria-labelledby="stubRailHead">
-  <p class="rail-head" id="stubRailHead"><span lang="sv">Senast sedda</span>Recently watched</p>
+  <p class="rail-head" id="stubRailHead"><span lang="sv">Senast sedda</span><span class="en">Recently watched</span></p>
   <ul class="rail-list" id="stubList"></ul>
 </aside>
 <aside class="rail rail-right" aria-labelledby="decadeRailHead">
-  <p class="rail-head" id="decadeRailHead"><span lang="sv">Årtionden</span>By decade</p>
+  <p class="rail-head" id="decadeRailHead"><span lang="sv">Årtionden</span><span class="en">By decade</span></p>
   <ul class="rail-list" id="decadeRailList"></ul>
 </aside>
 <div class="kurbits kurbits-left" id="kurbitsLeft" aria-hidden="true"></div>

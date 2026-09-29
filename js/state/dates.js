@@ -1,6 +1,7 @@
 // Kuvert's calendar. An evening lasts until 04:00: a film finished after midnight belongs to the
 // evening it started on. Dates are stored as "YYYY-MM-DD" in local time.
 export { validDate } from "../compat/validate.js";
+import { t, LOCALE, swedish } from "../i18n/index.js";
 
 export const LATE_NIGHT_CUTOFF_HOUR = 4;
 
@@ -16,7 +17,7 @@ export const todayISO = (now = new Date()) => isoDay(now);
 export const isoToDate = (s) => new Date(s + "T12:00:00");
 export const isLateNight = (now = new Date()) => now.getHours() < LATE_NIGHT_CUTOFF_HOUR;
 
-const fmt = (s, opts) => isoToDate(s).toLocaleDateString("en-GB", opts);
+const fmt = (s, opts) => isoToDate(s).toLocaleDateString(LOCALE, opts);
 export const fmtDay = (s) => fmt(s, { weekday: "short", day: "numeric", month: "short" });
 export const fmtWhen = (s) => fmt(s, { day: "numeric", month: "short", year: "2-digit" });
 export const dayLong = (s) => fmt(s, { weekday: "short", day: "numeric", month: "short", year: "numeric" });
@@ -31,9 +32,9 @@ export function clockLabel(date) {
 // How long ago a ticket was drawn, for "Drawn yesterday · still on for tonight?"
 export function drawnDayLabel(iso, now = new Date()) {
   const days = Math.round((isoToDate(defaultWatchDate(now)) - isoToDate(iso)) / 86400000);
-  if (days <= 1) return "yesterday";
-  if (days < 7) return isoToDate(iso).toLocaleDateString("en-GB", { weekday: "long" });
-  return isoToDate(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  if (days <= 1) return t("yesterday");
+  if (days < 7) return (swedish ? "i " : "") + isoToDate(iso).toLocaleDateString(LOCALE, { weekday: "long" });
+  return (swedish ? "den " : "") + isoToDate(iso).toLocaleDateString(LOCALE, { day: "numeric", month: "short" });
 }
 
 export function mondayOf(d) {

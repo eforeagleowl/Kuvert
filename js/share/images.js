@@ -7,6 +7,7 @@ import { slugify } from "../data/lists.js";
 import { dayLong } from "../state/dates.js";
 import { rankedFilms, ratingOf } from "../state/stats.js";
 import { download } from "../storage/files.js";
+import { t, plural } from "../i18n/index.js";
 
 const F_SEAGAL = '"Michroma", "Arial Black", sans-serif';
 const RETICLE = "M50 3a42 42 0 1 0 0.01 0zM50 10a35 35 0 1 1 -0.01 0z M47 0h6v30h-6zM47 60h6v30h-6zM4 42h30v6h-30zM66 42h30v6h-30zM50 40a5 5 0 1 0 0.01 0z";
@@ -284,7 +285,7 @@ export class Share {
     const cy = py + 112 + (lines.length - 1) * 80 + 58;
     ctx.fillStyle = "#6B6153";
     ctx.font = F.f("500 24px " + F.mono);
-    spaced(ctx, (f.y + (catalog.shelfOf(f) ? " · " + catalog.shelfOf(f).label : "")).toUpperCase(), tx, cy, 3);
+    spaced(ctx, (f.y + (catalog.shelfOf(f) ? " · " + t(catalog.shelfOf(f).label) : "")).toUpperCase(), tx, cy, 3);
     const line = catalog.oscarLine(f);
     if (line) {
       ctx.fillStyle = "#4A3B33";
@@ -309,9 +310,9 @@ export class Share {
       ctx.fillStyle = "#536076";
       ctx.font = F.f("500 26px " + F.mono);
       ctx.textAlign = "left";
-      ctx.fillText(p.dates[f.id] ? "Watched " + dayLong(p.dates[f.id]) : "Watched", x + 56, by + (r ? 110 : 30));
+      ctx.fillText(p.dates[f.id] ? t("Watched {day}", { day: dayLong(p.dates[f.id]) }) : t("Watched"), x + 56, by + (r ? 110 : 30));
       const rk = p.rankings.filter((id) => p.seen.has(id)).indexOf(f.id);
-      if (rk >= 0) ctx.fillText("#" + (rk + 1) + " in my ranking", x + 56, by + (r ? 150 : 70));
+      if (rk >= 0) ctx.fillText(t("#{n} in my ranking", { n: rk + 1 }), x + 56, by + (r ? 150 : 70));
       ctx.save();
       ctx.translate(x + w - 250, by + 50);
       ctx.rotate((-12 * Math.PI) / 180);
@@ -370,7 +371,7 @@ export class Share {
     spaced(ctx, this.sg("My ranking", "TARGET LIST"), 76, 236, 0);
     ctx.fillStyle = "#B9C5D2";
     ctx.font = F.f("400 28px " + F.body);
-    spaced(ctx, this.sg(list.name, "SEAGAL") + " · " + total + (total === 1 ? " film" : " films"), 80, 302, 0);
+    spaced(ctx, this.sg(list.name, "SEAGAL") + " · " + plural(total, "film"), 80, 302, 0);
     ctx.strokeStyle = "rgba(227,195,110,.55)";
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -410,7 +411,7 @@ export class Share {
       ctx.fillStyle = "#B9C5D2";
       ctx.font = F.f("400 26px " + F.body);
       ctx.textAlign = "left";
-      ctx.fillText("…and " + (total - films.length) + " more", 80, top + perCol * rowH + 30);
+      ctx.fillText(t("…and {n} more", { n: total - films.length }), 80, top + perCol * rowH + 30);
     }
     this.brand(ctx, W, H - 64, horse, c, F);
     return canvas;
@@ -418,7 +419,7 @@ export class Share {
 
   async deliver(canvas, fileName, title) {
     const blob = await new Promise((res) => canvas.toBlob(res, "image/png"));
-    if (!blob) throw Error("The image couldn't be made.");
+    if (!blob) throw Error(t("The image couldn't be made."));
     const file = new File([blob], fileName, { type: "image/png" });
     if (navigator.canShare?.({ files: [file] })) {
       try {
@@ -437,9 +438,9 @@ export class Share {
     try {
       const name = "kuvert-" + slugify(f.t) + ".png";
       const out = await this.deliver(await this.ticketCanvas(f), name, f.t + " · " + this.app.list.name);
-      if (out === "saved") this.app.toast.show("Ticket image saved as " + name + ".");
+      if (out === "saved") this.app.toast.show(t("Ticket image saved as {file}.", { file: name }));
     } catch (e) {
-      this.app.toast.show(e.message || "The ticket image couldn't be made.");
+      this.app.toast.show(t(e.message || "The ticket image couldn't be made."));
     } finally {
       this.sharing = false;
     }
@@ -448,10 +449,10 @@ export class Share {
     if (this.sharing || !rankedFilms(this.app.store.p, this.app.catalog).length) return;
     this.sharing = true;
     try {
-      const out = await this.deliver(await this.rankingCanvas(), "kuvert-ranking.png", "My ranking · " + this.app.list.name);
-      if (out === "saved") this.app.toast.show("Ranking image saved as kuvert-ranking.png.");
+      const out = await this.deliver(await this.rankingCanvas(), "kuvert-ranking.png", t("My ranking") + " · " + this.app.list.name);
+      if (out === "saved") this.app.toast.show(t("Ranking image saved as {file}.", { file: "kuvert-ranking.png" }));
     } catch (e) {
-      this.app.toast.show(e.message || "The ranking image couldn't be made.");
+      this.app.toast.show(t(e.message || "The ranking image couldn't be made."));
     } finally {
       this.sharing = false;
     }

@@ -5,6 +5,7 @@
 import { $, s, reduceMotion } from "./dom.js";
 import { paintStage, nextPaint, PAINT_NAMES, plural } from "../state/stats.js";
 import { isLateNight } from "../state/dates.js";
+import { t } from "../i18n/index.js";
 
 export const HORSE_BODY =
   "M8 30 L12 20 L20 10 L24 4 L28 9 C40 10 50 18 54 30 L68 27 C78 28 83 32 84 36 L92 42 L87 54 L79 50 L84 84 L73 84 L71 53 L46 54 L49 84 L38 84 L38 50 L33 45 C28 40 26 34 24 30 L14 34 Z";
@@ -79,12 +80,12 @@ export class Horse {
       stage = paintStage(n, total),
       next = nextPaint(n, total);
     for (const svg of document.querySelectorAll("svg.dala")) for (let k = 1; k <= 5; k++) svg.classList.toggle("p" + k, stage >= k);
-    this.el.title = "Dalahäst · " + PAINT_NAMES[stage] + (next ? ". Next: the " + next.name + " at " + plural(next.need, "film") + "." : ". Fully painted.");
+    this.el.title = "Dalahäst · " + t(PAINT_NAMES[stage]) + (next ? t(". Next: the {paint} at {films}.", { paint: t(next.name), films: plural(next.need, "film") }) : t(". Fully painted."));
     if (this.stage !== null && stage > this.stage) {
       // A new coat of paint, earned just now.
       if (!reduceMotion()) this.el.classList.add("painted");
       this.speak("Nymålad!");
-      this.announce("The dala horse got its " + PAINT_NAMES[stage] + ".");
+      this.announce(t("The dala horse got its {paint}.", { paint: t(PAINT_NAMES[stage]) }));
     }
     this.stage = stage;
     this.sleepy();

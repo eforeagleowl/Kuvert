@@ -9,6 +9,17 @@ import { readLetterboxd, letterboxdPlan, listRowsFromText } from "../import/impo
 import { progressSignature } from "../compat/serialize.js";
 import { soundsOn } from "../ui/sounds.js";
 import { plural } from "../state/stats.js";
+import { LANG, LOCALE, swedish, t } from "../i18n/index.js";
+
+// Country names in Swedish mode come from the browser, in Swedish.
+const regionName = (code) => {
+  if (!swedish) return null;
+  try {
+    return new Intl.DisplayNames(["sv"], { type: "region" }).of(code);
+  } catch {
+    return null;
+  }
+};
 
 export const APP_VERSION = "4.0";
 export const BUILT = "27 Sep 2026";
@@ -28,9 +39,9 @@ export class Settings {
     on("syncNow", () => this.syncNow());
     on("syncDisconnect", async () => {
       const ok = await dialogs.confirm({
-        title: "Turn off sync on this device?",
-        text: "Your progress stays in this browser and in the gist. You can reconnect with the same token later.",
-        confirm: "Turn off sync",
+        title: t("Turn off sync on this device?"),
+        text: t("Your progress stays in this browser and in the gist. You can reconnect with the same token later."),
+        confirm: t("Turn off sync"),
       });
       if (ok) sync.disconnect();
     });
@@ -39,18 +50,18 @@ export class Settings {
     window.addEventListener("online", () => this.syncNow({ quiet: true }));
 
     // ------------------------------------------------ backup file and code
-    $("fhint").textContent = files.canPick ? "After the first backup, Kuvert keeps that file up to date." : "Download a backup to move to another device or keep an extra copy.";
+    $("fhint").textContent = t(files.canPick ? "After the first backup, Kuvert keeps that file up to date." : "Download a backup to move to another device or keep an extra copy.");
     on("saveFile", async () => {
-      if (app.store.writeLocked) return app.toast.show("Restore a backup or start fresh first: Kuvert couldn't read this browser's save.");
+      if (app.store.writeLocked) return app.toast.show(t("Restore a backup or start fresh first: Kuvert couldn't read this browser's save."));
       const out = await files.save();
-      if (out === "download") app.toast.show("Progress backup download requested.");
+      if (out === "download") app.toast.show(t("Progress backup download requested."));
       this.renderBackup();
     });
     // The share sheet, where there is one: Notes, Files, iCloud Drive, Mail.
     $("shareCopy").hidden = !app.safekeeping.canShareFile;
     on("shareCopy", async () => {
       const r = await app.safekeeping.saveCopy({ share: true });
-      if (r) app.toast.show("Copy saved. Keep it somewhere you'll find it.");
+      if (r) app.toast.show(t("Copy saved. Keep it somewhere you'll find it."));
       this.renderBackup();
     });
     on("openFile", async () => {
@@ -60,7 +71,7 @@ export class Settings {
         if (!picked.file) return $("fileInput").click();
         await dialogs.readProgress(picked.file, picked.handle);
       } catch (e) {
-        app.toast.show(e.message || "Could not load that file.");
+        app.toast.show(t(e.message || "Could not load that file."));
       }
     });
     on(
@@ -70,7 +81,7 @@ export class Settings {
         try {
           if (f) await dialogs.readProgress(f);
         } catch (err) {
-          app.toast.show(err.message || "Could not read that backup.");
+          app.toast.show(t(err.message || "Could not read that backup."));
         }
         e.target.value = "";
       },
@@ -81,37 +92,37 @@ export class Settings {
         const got = await files.reconnect();
         if (got) await dialogs.readProgress(got.file, got.handle);
       } catch (e) {
-        app.toast.show(e.message?.startsWith("File access") ? e.message : "Could not reconnect. Use Load progress to select the file again.");
+        app.toast.show(t(e.message?.startsWith("File access") ? e.message : "Could not reconnect. Use Load progress to select the file again."));
       }
     });
     files.remembered().then((h) => {
       if (h && !files.handle) {
-        $("reconnect").textContent = "Reconnect " + h.name;
+        $("reconnect").textContent = t("Reconnect {name}", { name: h.name });
         $("reconnect").hidden = false;
       }
     });
     files.addEventListener("change", () => app.renderSoon());
     on("copyCode", async () => {
       const ok = await copyText(store.code(), null);
-      if (ok) app.toast.show("Progress code copied.");
+      if (ok) app.toast.show(t("Progress code copied."));
       else {
         $("code").focus();
         $("code").select();
-        app.toast.show("Select and copy the progress code.");
+        app.toast.show(t("Select and copy the progress code."));
       }
     });
     on("loadCode", () => dialogs.openCode());
     on("resetBtn", async () => {
       const ok = await dialogs.confirm({
-        title: "Clear all progress?",
-        text: "This removes every watched mark, date, note, ranking and verdict for " + app.list.name + ". You can undo it straight after.",
-        confirm: "Clear all progress",
+        title: t("Clear all progress?"),
+        text: t("This removes every watched mark, date, note, ranking and verdict for {list}. You can undo it straight after.", { list: app.list.name }),
+        confirm: t("Clear all progress"),
         danger: true,
       });
       if (!ok) return;
       const undo = store.reset();
       app.stage.syncPick();
-      app.toast.show("Progress cleared.", undo);
+      app.toast.show(t("Progress cleared."), undo);
     });
 
     // ------------------------------------------------ TMDB
@@ -128,7 +139,7 @@ export class Settings {
       this.renderTmdb();
       app.stage.showInfo(app.stage.shown);
       app.renderSoon();
-      app.toast.show("Disconnected. Older backups made by the original app may still contain your credential.");
+      app.toast.show(t("Disconnected. Older backups made by the original app may still contain your credential."));
     });
     on("loadAll", () => this.loadAll());
     on("showMissing", () => {
@@ -160,10 +171,10 @@ export class Settings {
         e.target.value = "";
         if (!f) return;
         try {
-          if (f.size > 5_000_000) throw Error("That file is too large for a movie list.");
+          if (f.size > 5_000_000) throw Error(t("That file is too large for a movie list."));
           dialogs.listDraft(listRowsFromText(await f.text(), f.name));
         } catch (err) {
-          app.toast.show(err.message || "That list could not be read.");
+          app.toast.show(t(err.message || "That list could not be read."));
         }
       },
       "change",
@@ -171,14 +182,14 @@ export class Settings {
     on("exportList", () => {
       const { fileName, body } = exportableList(app.list);
       download(JSON.stringify(body, null, 2), fileName);
-      app.toast.show("List exported as " + fileName + ".");
+      app.toast.show(t("List exported as {file}.", { file: fileName }));
     });
     on("deleteList", async () => {
       if (!app.list.custom) return;
       const ok = await dialogs.confirm({
-        title: "Delete " + app.list.name + "?",
-        text: "This removes the list and its progress from this browser. Back up your progress first if you might want it again.",
-        confirm: "Delete list",
+        title: t("Delete {list}?", { list: app.list.name }),
+        text: t("This removes the list and its progress from this browser. Back up your progress first if you might want it again."),
+        confirm: t("Delete list"),
         danger: true,
       });
       if (!ok) return;
@@ -198,23 +209,36 @@ export class Settings {
         const chosen = [...(e.target.files || [])];
         e.target.value = "";
         if (!chosen.length) return;
-        $("lbxStatus").textContent = "Reading your export…";
+        $("lbxStatus").textContent = t("Reading your export…");
         try {
           const result = await readLetterboxd(chosen, app.catalog.films);
           $("lbxStatus").textContent = "";
           dialogs.letterboxd(letterboxdPlan(result, store.p), result.unmatched, (changes) => {
             const { undo, n } = store.applyLetterboxd(changes);
-            $("lbxStatus").textContent = "Imported " + n + " changes from Letterboxd.";
-            app.toast.show("Letterboxd import finished: " + n + " changes.", undo);
+            $("lbxStatus").textContent = t("Imported {n} changes from Letterboxd.", { n });
+            app.toast.show(t("Letterboxd import finished: {n} changes.", { n }), undo);
           });
         } catch (err) {
-          $("lbxStatus").textContent = err.message || "That file could not be read.";
+          $("lbxStatus").textContent = t(err.message || "That file could not be read.");
         }
       },
       "change",
     );
 
-    // ------------------------------------------------ sound and About
+    // ------------------------------------------------ language, sound and About
+    // Switching reloads the page, which is translated as it starts (js/i18n). SEAGAL only speaks English.
+    $("languageGroup").hidden = app.seagal;
+    document.querySelector('.settings-nav a[href="#languageGroup"]').hidden = app.seagal;
+    for (const b of $("languageChoice").querySelectorAll("button")) {
+      b.setAttribute("aria-pressed", String(b.dataset.lang === LANG));
+      b.addEventListener("click", () => {
+        if (b.dataset.lang === LANG) return;
+        try {
+          storage.setItem(KEYS.lang, b.dataset.lang);
+        } catch {}
+        location.reload();
+      });
+    }
     $("paperSounds").checked = soundsOn(storage);
     on(
       "paperSounds",
@@ -226,7 +250,7 @@ export class Settings {
       },
       "change",
     );
-    $("aboutVersion").textContent = APP_VERSION + " · built " + BUILT;
+    $("aboutVersion").textContent = APP_VERSION + t(" · built ") + BUILT;
     on("aboutLink", () => this.open("aboutSection"));
     this.renderLists();
     this.renderTmdb();
@@ -268,12 +292,12 @@ export class Settings {
     const last = store.lastBackup;
     const stale = !last || last.signature !== progressSignature(store.data());
     let text = !last
-      ? "No file backup yet. Back up progress to keep an extra copy."
-      : (last.kind === "download" ? "Last backup download: " : "Last file backup: ") + new Date(last.at).toLocaleString() + (stale ? " · Your progress has newer changes." : " · Up to date.");
+      ? t("No file backup yet. Back up progress to keep an extra copy.")
+      : t(last.kind === "download" ? "Last backup download: " : "Last file backup: ") + new Date(last.at).toLocaleString(LOCALE) + t(stale ? " · Your progress has newer changes." : " · Up to date.");
     let warn = stale;
     // With sync on, the gist is a second copy, so the file backup stops nagging.
     if (sync.on && sync.last) {
-      text = "Sync keeps a copy in your gist (last synced " + new Date(sync.last.at).toLocaleString() + "). A file backup is optional." + (last ? " " + text : "");
+      text = t("Sync keeps a copy in your gist (last synced {when}). A file backup is optional.", { when: new Date(sync.last.at).toLocaleString(LOCALE) }) + (last ? " " + text : "");
       warn = false;
     }
     $("backupStatus").textContent = text;
@@ -289,12 +313,12 @@ export class Settings {
     const token = $("syncToken").value.trim();
     if (!token) return;
     $("syncConnect").disabled = true;
-    this.renderSync("Connecting to GitHub…");
+    this.renderSync(t("Connecting to GitHub…"));
     try {
       await this.app.sync.connect(token);
       $("syncToken").value = "";
       await this.syncNow();
-      if (!this.app.sync.error) this.app.toast.show("Sync is on. Connect your other device with the same token.");
+      if (!this.app.sync.error) this.app.toast.show(t("Sync is on. Connect your other device with the same token."));
     } catch (e) {
       this.app.sync.error = e.message;
       this.renderSync();
@@ -305,9 +329,9 @@ export class Settings {
   async syncNow({ quiet = false } = {}) {
     const r = await this.app.sync.syncNow({ quiet });
     if (!r) return;
-    if (r.error) return this.app.toast.show("Sync didn't finish: " + r.error);
+    if (r.error) return this.app.toast.show(t("Sync didn't finish: {error}", { error: t(r.error) }));
     this.app.stage.syncPick();
-    this.app.toast.show(r.applied === "merge" ? "Synced: merged changes from both devices." : "Synced progress from your other device.", r.undo);
+    this.app.toast.show(t(r.applied === "merge" ? "Synced: merged changes from both devices." : "Synced progress from your other device."), r.undo);
   }
   renderSync(busyText = "") {
     const { sync, store } = this.app;
@@ -318,14 +342,14 @@ export class Settings {
     $("syncState").textContent =
       busyText ||
       (sync.busy
-        ? "Syncing…"
+        ? t("Syncing…")
         : sync.error
-          ? "Sync problem: " + sync.error
+          ? t("Sync problem: {error}", { error: t(sync.error) })
           : sync.on
             ? last
-              ? "Sync is on. Last synced " + new Date(last.at).toLocaleString() + (last.signature !== store.signature() ? " · changes waiting to upload." : ".")
-              : "Sync is on."
-            : "Keep your devices in step through a secret GitHub Gist. It's unlisted: only someone with its exact link can open it.");
+              ? t("Sync is on. Last synced {when}", { when: new Date(last.at).toLocaleString(LOCALE) }) + t(last.signature !== store.signature() ? " · changes waiting to upload." : ".")
+              : t("Sync is on.")
+            : t("Keep your devices in step through a secret GitHub Gist. It's unlisted: only someone with its exact link can open it."));
     $("syncState").classList.toggle("warn", !!sync.error);
   }
 
@@ -335,7 +359,7 @@ export class Settings {
     $("tmdbConnectRow").hidden = on;
     $("tmdbHelp").hidden = on;
     $("tmdbConnected").hidden = !on;
-    $("tmdbState").textContent = on ? "Connected. Streaming availability comes from JustWatch via TMDB." : "Optional. Adds the poster, runtime and where to stream each film.";
+    $("tmdbState").textContent = t(on ? "Connected. Streaming availability comes from JustWatch via TMDB." : "Optional. Adds the poster, runtime and where to stream each film.");
   }
   async connectTmdb() {
     const { store, details, stage } = this.app;
@@ -344,7 +368,7 @@ export class Settings {
     const before = store.tmdbToken;
     store.tmdbToken = value;
     $("tmdbSave").disabled = true;
-    $("tmdbState").textContent = "Checking…";
+    $("tmdbState").textContent = t("Checking…");
     try {
       await details.call("/configuration");
       store.setTmdbToken(value);
@@ -356,7 +380,7 @@ export class Settings {
       this.app.renderSoon();
     } catch (e) {
       store.tmdbToken = before;
-      $("tmdbState").textContent = e.name === "AbortError" ? "Connection timed out. Try again." : e.message;
+      $("tmdbState").textContent = t(e.name === "AbortError" ? "Connection timed out. Try again." : e.message);
     } finally {
       $("tmdbSave").disabled = false;
     }
@@ -366,7 +390,7 @@ export class Settings {
       const countries = await this.app.details.countries();
       if (!countries) return;
       const current = this.app.store.settings.country;
-      $("country").replaceChildren(...countries.map((c) => new Option(c.english_name, c.iso_3166_1)));
+      $("country").replaceChildren(...countries.map((c) => new Option(regionName(c.iso_3166_1) || c.english_name, c.iso_3166_1)));
       if (!countries.some((c) => c.iso_3166_1 === current)) $("country").add(new Option(current, current));
       $("country").value = current;
     } catch {
@@ -380,7 +404,7 @@ export class Settings {
     const query = $("serviceSearch").value.trim().toLowerCase();
     const all = store.caches.providerDirectories[region]?.providers || [],
       selected = st.selectedServices[region] || [];
-    const providers = [...all, ...selected.filter((id) => !all.some((p) => p.id === id)).map((id) => ({ id, name: "Saved service " + id }))];
+    const providers = [...all, ...selected.filter((id) => !all.some((p) => p.id === id)).map((id) => ({ id, name: t("Saved service {id}", { id }) }))];
     providers.sort((a, b) => Number(selected.includes(b.id)) - Number(selected.includes(a.id)) || a.name.localeCompare(b.name));
     const shown = providers.filter((p) => p.name.toLowerCase().includes(query));
     $("serviceChoices").replaceChildren(
@@ -404,10 +428,10 @@ export class Settings {
               provider.name,
             ),
           )
-        : [h("p", { class: "fine", text: all.length ? "No service matches that search." : details.connected ? "Load the service list for " + region + "." : "Connect TMDB in Settings to load services." })]),
+        : [h("p", { class: "fine", text: all.length ? t("No service matches that search.") : details.connected ? t("Load the service list for {region}.", { region }) : t("Connect TMDB in Settings to load services.") })]),
     );
-    $("servicesCountry").textContent = "Services in " + region + " · uses your streaming country above";
-    $("loadServices").textContent = all.length ? "Refresh services" : "Load services";
+    $("servicesCountry").textContent = t("Services in {region} · uses your streaming country above", { region });
+    $("loadServices").textContent = t(all.length ? "Refresh services" : "Load services");
     $("loadServices").disabled = this.providerLoading;
     $("refreshAvailability").disabled = !!this.app.evening.checking;
   }
@@ -415,22 +439,22 @@ export class Settings {
     const { store, details } = this.app;
     if (!details.connected) {
       this.openMovieSettings();
-      return this.app.toast.show("Connect TMDB to choose your streaming services.");
+      return this.app.toast.show(t("Connect TMDB to choose your streaming services."));
     }
     const region = store.settings.country,
       cached = store.caches.providerDirectories[region];
     if (!force && cached && Date.now() - cached.at < 7 * 24 * 60 * 60 * 1000) return this.renderServices();
     const run = ++this.providerRun;
     this.providerLoading = true;
-    $("serviceStatus").textContent = "Loading services for " + region + "…";
+    $("serviceStatus").textContent = t("Loading services for {region}…", { region });
     this.renderServices();
     try {
       const providers = await details.providers(region);
       if (run !== this.providerRun || region !== store.settings.country) return;
       store.setProviderDirectory(region, providers);
-      $("serviceStatus").textContent = providers.length ? "Services updated. Choose the subscriptions you have." : "No services are listed for this country.";
+      $("serviceStatus").textContent = t(providers.length ? "Services updated. Choose the subscriptions you have." : "No services are listed for this country.");
     } catch (e) {
-      if (run === this.providerRun) $("serviceStatus").textContent = e.name === "AbortError" ? "Service list timed out. Try again." : e.message;
+      if (run === this.providerRun) $("serviceStatus").textContent = t(e.name === "AbortError" ? "Service list timed out. Try again." : e.message);
     } finally {
       if (run === this.providerRun) {
         this.providerLoading = false;
@@ -450,13 +474,13 @@ export class Settings {
     const done = catalog.films.filter((f) => this.detailsLoaded(f)).length,
       missing = catalog.films.filter((f) => !store.p.runtimes[f.id]).length;
     $("loaderStatus").textContent = details.connected
-      ? "Loaded for " + done + " of " + catalog.films.length + " films. Time and mood filters only use films with details."
-      : "Connect TMDB above to load posters, runtimes and moods for every film at once.";
+      ? t("Loaded for {n} of {total} films. Time and mood filters only use films with details.", { n: done, total: catalog.films.length })
+      : t("Connect TMDB above to load posters, runtimes and moods for every film at once.");
     $("loaderMeter").style.setProperty("--p", (done / catalog.films.length) * 100 + "%");
-    $("loadAll").textContent = this.loader ? "Stop loading" : done === catalog.films.length ? "Refresh every film" : "Load details for every film";
+    $("loadAll").textContent = t(this.loader ? "Stop loading" : done === catalog.films.length ? "Refresh every film" : "Load details for every film");
     $("loadAll").disabled = !details.connected && !this.loader;
     $("showMissing").hidden = !!this.loader || !missing || missing === catalog.films.length;
-    $("showMissing").textContent = "Show the " + plural(missing, "film") + " still missing a runtime";
+    $("showMissing").textContent = t("Show the {films} still missing a runtime", { films: plural(missing, "film") });
   }
   async loadAll() {
     const { catalog, details, store } = this.app;
@@ -474,7 +498,7 @@ export class Settings {
       lastError = "";
     const unresolved = [];
     this.renderLoader();
-    $("loaderProgress").textContent = "Loading 0 of " + queue.length + "…";
+    $("loaderProgress").textContent = t("Loading 0 of {total}…", { total: queue.length });
     const worker = async () => {
       while (next < queue.length && !signal.aborted) {
         const f = queue[next++];
@@ -489,7 +513,7 @@ export class Settings {
           if (++failures >= 4) controller.abort();
         }
         completed++;
-        $("loaderProgress").textContent = "Loading " + completed + " of " + queue.length + "…";
+        $("loaderProgress").textContent = t("Loading {n} of {total}…", { n: completed, total: queue.length });
         this.renderLoader();
       }
     };
@@ -497,14 +521,10 @@ export class Settings {
     this.loader = null;
     store.save("details"); // runtimes and matches travel with sync and backups
     $("loaderProgress").replaceChildren(
-      (signal.aborted ? "Stopped after " : "Finished: ") +
-        completed +
-        " of " +
-        queue.length +
-        " checked." +
-        (unresolved.length ? " " + plural(unresolved.length, "film needs", "films need") + " a match choice." : "") +
-        (lastError && signal.aborted ? " " + lastError : ""),
-      ...unresolved.slice(0, 5).flatMap((f) => [" ", h("button", { class: "link", type: "button", text: "Match " + f.t, on: { click: () => this.app.stage.openFilm(f.id) } })]),
+      t(signal.aborted ? "Stopped after {n} of {total} checked." : "Finished: {n} of {total} checked.", { n: completed, total: queue.length }) +
+        (unresolved.length ? t(unresolved.length === 1 ? " 1 film needs a match choice." : " {n} films need a match choice.", { n: unresolved.length }) : "") +
+        (lastError && signal.aborted ? " " + t(lastError) : ""),
+      ...unresolved.slice(0, 5).flatMap((f) => [" ", h("button", { class: "link", type: "button", text: t("Match {title}", { title: f.t }), on: { click: () => this.app.stage.openFilm(f.id) } })]),
     );
     this.renderLoader();
   }
@@ -513,7 +533,7 @@ export class Settings {
   renderLists() {
     const { list, storage } = this.app;
     const lists = readCustomLists(storage);
-    $("listSelect").replaceChildren(new Option(KUVERT.name + " (built-in)", "builtin"), ...Object.values(lists).map((l) => new Option(l.name + " · " + l.films.length + " films", l.id)));
+    $("listSelect").replaceChildren(new Option(KUVERT.name + t(" (built-in)"), "builtin"), ...Object.values(lists).map((l) => new Option(l.name + " · " + plural(l.films.length, "film"), l.id)));
     $("listSelect").value = list.id;
     $("deleteList").hidden = !list.custom;
   }
@@ -521,7 +541,7 @@ export class Settings {
     const { list, store, dialogs, storage } = this.app;
     if (id === list.id) return;
     if (store.dirty) {
-      const ok = await dialogs.confirm({ title: "Switch lists?", text: "Some changes couldn't be saved in this browser. Back up your progress first, or switch anyway.", confirm: "Switch anyway" });
+      const ok = await dialogs.confirm({ title: t("Switch lists?"), text: t("Some changes couldn't be saved in this browser. Back up your progress first, or switch anyway."), confirm: t("Switch anyway") });
       if (!ok) {
         $("listSelect").value = list.id;
         return;

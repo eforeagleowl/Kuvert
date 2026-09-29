@@ -2,6 +2,7 @@
 // left to right, on the film's year before the envelope opens. Each tube holds all ten digits stacked
 // behind a mesh, the way the real ones do; only the lit one glows.
 import { h, reduceMotion } from "../ui/dom.js";
+import { t } from "../i18n/index.js";
 
 export class Nixie {
   constructor(root, container, { onTick } = {}) {
@@ -33,7 +34,7 @@ export class Nixie {
     const digits = year == null ? [null, null, null, null] : String(year).padStart(4, "0").slice(-4).split("").map(Number);
     this.tubes.forEach((t, i) => this.set(t, digits[i]));
     this.root.classList.toggle("lit", year != null);
-    this.container.setAttribute("aria-label", year == null ? "No year yet" : "Year " + year);
+    this.container.setAttribute("aria-label", year == null ? t("No year yet") : t("Year {year}", { year }));
   }
   stop() {
     if (this.rolling) {
@@ -61,11 +62,11 @@ export class Nixie {
         next = this.tubes.map(() => 0),
         done = this.tubes.map(() => false);
       const frame = (now) => {
-        const t = now - start;
+        const elapsed = now - start;
         let ticked = false;
         this.tubes.forEach((tube, i) => {
           if (done[i]) return;
-          if (t >= landAt[i]) {
+          if (elapsed >= landAt[i]) {
             done[i] = true;
             this.set(tube, target[i]);
             tube.tube.classList.remove("settle");
@@ -74,10 +75,10 @@ export class Nixie {
             ticked = true;
             return;
           }
-          if (t >= next[i]) {
+          if (elapsed >= next[i]) {
             // Faster at first, slowing as it nears its landing time.
-            const left = (landAt[i] - t) / landAt[i];
-            next[i] = t + 34 + (1 - left) * 110;
+            const left = (landAt[i] - elapsed) / landAt[i];
+            next[i] = elapsed + 34 + (1 - left) * 110;
             let d;
             do d = Math.floor(Math.random() * 10);
             while (d === tube.lit);
@@ -89,7 +90,7 @@ export class Nixie {
         if (done.every(Boolean)) {
           this.rolling = null;
           this.value = year;
-          this.container.setAttribute("aria-label", "Year " + year);
+          this.container.setAttribute("aria-label", t("Year {year}", { year }));
           resolve();
         } else this.rolling.raf = requestAnimationFrame(frame);
       };

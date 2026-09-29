@@ -2,9 +2,10 @@
 import { byYear, decadeOf } from "./catalog.js";
 import { validDate, isoToDate, isoDay, defaultWatchDate, mondayOf } from "./dates.js";
 
-export const plural = (n, one, many = one + "s") => n + " " + (n === 1 ? one : many);
+import { t, decimal } from "../i18n/index.js";
+export { plural } from "../i18n/index.js";
 export const starText = (r) => "★".repeat(Math.floor(r)) + (r % 1 ? "½" : "");
-export const ratingLabel = (r) => starText(r) + " " + (Number.isInteger(r) ? r : r.toFixed(1));
+export const ratingLabel = (r) => starText(r) + " " + decimal(r);
 export const ratingOf = (p, id) => p.reviews[id]?.rating ?? null;
 
 // A word for the stars, in Swedish with the English beside it.
@@ -107,7 +108,7 @@ export function paceData(p, catalog, now = new Date()) {
   return { perWeek, remaining, finish, days, since: watchedDates[0], count: watchedDates.length };
 }
 export function paceText(perWeek) {
-  return perWeek >= 1 ? (Math.round(perWeek * 10) / 10).toString().replace(/\.0$/, "") + " a week" : "1 every " + Math.round(7 / perWeek) + " days";
+  return perWeek >= 1 ? t("{n} a week", { n: decimal(Math.round(perWeek * 10) / 10) }) : t("1 every {n} days", { n: Math.round(7 / perWeek) });
 }
 
 export function watchDayCounts(p, catalog) {
@@ -176,32 +177,34 @@ export function computeMilestones(p, catalog) {
     add(
       // The final stamp keeps its old id so earned history carries across list changes.
       n === total ? "watched-all" : "watched-" + n,
-      n === 1 ? "The first ticket" : n === total ? "The whole envelope" : n + " films watched",
-      n === 1 ? "Every watchthrough begins with one film." : n === total ? "Every film in your collection, watched." : "Your cinema history, one film at a time.",
+      n === 1 ? t("The first ticket") : n === total ? t("The whole envelope") : t("{n} films watched", { n }),
+      t(n === 1 ? "Every watchthrough begins with one film." : n === total ? "Every film in your collection, watched." : "Your cinema history, one film at a time."),
       watched.length,
       n,
       String(n),
     );
   const decades = new Set(films.map((f) => Math.floor(f.y / 10))),
     visited = new Set(watched.map((f) => Math.floor(f.y / 10)));
-  add("decades", "Across the decades", "Watch a film from every decade in the collection.", visited.size, decades.size, "ERA");
+  add("decades", t("Across the decades"), t("Watch a film from every decade in the collection."), visited.size, decades.size, "ERA");
   const winners = films.filter(catalog.isWinner),
     winnerGoal = Math.min(10, winners.length);
   if (winnerGoal)
     add(
       "winners",
-      "Winner’s circle",
-      "Watch " + (winnerGoal === 10 ? "ten" : winnerGoal) + " " + catalog.shelfOf(winners[0]).label.toLowerCase() + "s.",
+      t("Winner’s circle"),
+      catalog.shelfOf(winners[0]).label === "Best Picture winner" && winnerGoal === 10
+        ? t("Watch ten Best Picture winners.")
+        : "Watch " + (winnerGoal === 10 ? "ten" : winnerGoal) + " " + catalog.shelfOf(winners[0]).label.toLowerCase() + "s.",
       winners.filter((f) => p.seen.has(f.id)).length,
       winnerGoal,
       String(winnerGoal),
     );
   const mentions = films.filter((f) => f.s === "H" && catalog.shelves.H);
   if (mentions.length)
-    add("mentions", "Beyond the ballot", "Watch every honorable mention.", mentions.filter((f) => p.seen.has(f.id)).length, mentions.length, "HM");
+    add("mentions", t("Beyond the ballot"), t("Watch every honorable mention."), mentions.filter((f) => p.seen.has(f.id)).length, mentions.length, "HM");
   for (const [key, title] of Object.entries(catalog.series)) {
     const parts = films.filter((f) => f.tri === key);
-    if (parts.length) add("series-" + key, title, "Watch every part of the series.", parts.filter((f) => p.seen.has(f.id)).length, parts.length, "SERIE");
+    if (parts.length) add("series-" + key, title, t("Watch every part of the series."), parts.filter((f) => p.seen.has(f.id)).length, parts.length, "SERIE");
   }
   return cards;
 }

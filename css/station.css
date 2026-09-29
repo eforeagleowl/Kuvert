@@ -49,7 +49,7 @@
     --flap-face: #14243a;
     --flap-ink: #f3ebd9;
     --flap-hl: #e3c36e;
-    --flap-font: "Geist", ui-sans-serif, system-ui, sans-serif;
+    --flap-font: "Geist", "Noto Sans Symbols 2", ui-sans-serif, system-ui, sans-serif;
     --flap-weight: 600;
     --flap-scale: 0.64;
     --st-brass: #e3c36e;
@@ -175,6 +175,49 @@
     margin-top: calc(-1 * var(--s-3));
     color: var(--muted);
     font-size: var(--fs-3);
+  }
+
+  /* ---------------------------------------------------------------- departures or arrivals
+     Two enamel direction signs: the lit one is the board that's showing. */
+  .st-switch {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+    margin-bottom: calc(-1 * var(--s-2));
+  }
+  .st-switch button {
+    flex: 1 1 0;
+    justify-content: center;
+    min-width: 0;
+    max-width: 240px;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px var(--s-2);
+    min-height: 44px;
+    padding: 6px var(--s-4);
+    border: 1px solid #1c2b3f;
+    border-radius: 5px;
+    background: #07101b;
+    color: var(--st-muted);
+    font: 400 var(--fs-2) / 1.2 var(--font-ui);
+    transition:
+      background-color var(--t-1),
+      color var(--t-1),
+      border-color var(--t-1);
+  }
+  .st-switch b {
+    color: #f3ebd9;
+    font: 600 var(--fs-4) / 1.2 var(--font-ui);
+  }
+  .st-switch button:hover {
+    border-color: #2c4666;
+  }
+  .st-switch button[aria-pressed="true"] {
+    border-color: var(--st-sign);
+    background: var(--st-sign);
+    box-shadow: inset 0 0 0 2px var(--st-sign), inset 0 0 0 3px #f3ebd9b0;
+    color: #f3ebd9c0;
   }
 
   /* ---------------------------------------------------------------- the board */

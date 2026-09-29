@@ -6,7 +6,7 @@
 // purpose: no libraries, and nothing but the app and its posters is ever cached.
 
 // <stamp> written by tools/stamp.mjs (npm run stamp); do not edit by hand.
-const VERSION = "08f3a0685571";
+const VERSION = "df321796fd7e";
 const FILES = [
   "./",
   "./manifest.webmanifest",
@@ -15,6 +15,7 @@ const FILES = [
   "./css/fonts.css",
   "./css/pages.css",
   "./css/seagal.css",
+  "./css/station.css",
   "./css/tokens.css",
   "./css/tonight.css",
   "./js/boot.js",
@@ -37,6 +38,9 @@ const FILES = [
   "./js/state/merge.js",
   "./js/state/stats.js",
   "./js/state/store.js",
+  "./js/station/audio.js",
+  "./js/station/flaps.js",
+  "./js/station/timetable.js",
   "./js/storage/files.js",
   "./js/storage/safekeeping.js",
   "./js/storage/sync.js",
@@ -54,6 +58,7 @@ const FILES = [
   "./js/views/rails.js",
   "./js/views/settings.js",
   "./js/views/stage.js",
+  "./js/views/station.js",
   "./js/views/stats.js",
   "./assets/crowns.svg",
   "./assets/fonts/cormorant-500-700-italic-latin-ext.woff2",

@@ -1,7 +1,7 @@
 /* Kuvert's design tokens. One named palette (nine colours) sets everything; every other shade is mixed
    from it, so an imported list's palette (js/boot.js) or SEAGAL (seagal.css) repaints the whole app.
-   Layers, lowest first: tokens, base, components, tonight, pages, skin. */
-@layer tokens, base, components, tonight, pages, skin;
+   Layers, lowest first: tokens, base, components, tonight, pages, station, skin. */
+@layer tokens, base, components, tonight, pages, station, skin;
 
 @property --p { syntax: "<percentage>"; inherits: true; initial-value: 0%; }
 @property --lit { syntax: "<number>"; inherits: true; initial-value: 0; }

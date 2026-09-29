@@ -104,6 +104,14 @@ test("on phones, no page is wider than the screen", async () => {
     await page.waitForFunction(() => !window.kuvert.app.stage.busy && window.kuvert.app.stage.open);
     await page.waitForTimeout(400);
     await check("Tonight's ticket");
+    if (!mode) {
+      await page.evaluate(() => window.kuvert.app.router.show("station"));
+      await page.waitForFunction(() => window.kuvert.app.station.fontsReady && !window.kuvert.app.station.busy);
+      await check("The station");
+      await page.click("#stDraw");
+      await page.waitForFunction(() => !window.kuvert.app.station.busy && !document.getElementById("stTicket").hidden);
+      await check("The station's ticket");
+    }
     for (const name of ["library", "stats", "settings"]) {
       await page.evaluate((n) => window.kuvert.app.router.show(n), name);
       if (name === "library") await page.evaluate(() => (document.getElementById("watchedArchive").open = true));

@@ -1,0 +1,740 @@
+/* The station (js/views/station.js): a blue station sign, a split-flap departure board with an LED
+   ticker, the draw button and a ticket printer. The canvases read the --flap-* and --st-* colours
+   below, so those stay plain hex rather than color-mix(). */
+@layer station {
+  /* ---------------------------------------------------------------- the way there, from Tonight */
+  .to-station {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    min-height: 44px;
+    margin-top: var(--s-2);
+    padding: 0 var(--s-4) 0 var(--s-3);
+    border: 1px solid var(--line);
+    border-radius: var(--r-pill);
+    color: var(--muted);
+    font-size: var(--fs-2);
+    font-weight: 500;
+    text-decoration: none;
+    transition:
+      border-color var(--t-1),
+      background-color var(--t-1),
+      color var(--t-1);
+  }
+  .to-station span {
+    color: var(--brass);
+    font: italic 600 var(--fs-4) / 1 var(--font-display);
+  }
+  .to-station .icon {
+    width: 18px;
+    height: 18px;
+    color: var(--brass);
+  }
+  .to-station:hover {
+    border-color: var(--brass-lo);
+    background: var(--brass-wash);
+    color: var(--text);
+  }
+  .to-station:hover .icon {
+    animation: st-chug 0.5s var(--ease) 2;
+  }
+  @keyframes st-chug {
+    50% {
+      transform: translateY(-2px);
+    }
+  }
+
+  /* ---------------------------------------------------------------- the page */
+  .page-station {
+    --flap-face: #14243a;
+    --flap-ink: #f3ebd9;
+    --flap-hl: #e3c36e;
+    --flap-font: "Geist", ui-sans-serif, system-ui, sans-serif;
+    --flap-weight: 600;
+    --flap-scale: 0.64;
+    --st-brass: #e3c36e;
+    --st-muted: #a8b4c3;
+    --st-lamp: #1a2636;
+    --st-sign: #1f5a93;
+    --ticket-a: #f7f0e1;
+    --ticket-b: #eee3cb;
+    display: grid;
+    gap: var(--s-5);
+    padding-top: var(--s-3);
+  }
+  .page-station[hidden] {
+    display: none;
+  }
+  /* An imported list's own brass lights the board too (its palettes are plain hex). */
+  :root[data-palette] .page-station {
+    --flap-hl: var(--brass);
+    --st-brass: var(--brass);
+  }
+
+  /* The station sign: blue enamel, a cream rule inside the edge, and four rivets. */
+  .st-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-3) var(--s-5);
+  }
+  .st-sign {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-3);
+    min-width: 0;
+    max-width: 100%;
+    padding: 10px 26px 10px 12px;
+    border-radius: 5px;
+    background:
+      radial-gradient(circle 2.5px at 9px 9px, #d9dde3 60%, #0000 70%),
+      radial-gradient(circle 2.5px at calc(100% - 9px) 9px, #d9dde3 60%, #0000 70%),
+      radial-gradient(circle 2.5px at 9px calc(100% - 9px), #d9dde3 60%, #0000 70%),
+      radial-gradient(circle 2.5px at calc(100% - 9px) calc(100% - 9px), #d9dde3 60%, #0000 70%),
+      linear-gradient(180deg, #ffffff14, #0000 45%),
+      var(--st-sign);
+    box-shadow:
+      inset 0 0 0 4px var(--st-sign),
+      inset 0 0 0 6px #f3ebd9d0,
+      0 14px 28px -16px #000;
+  }
+  .st-horse {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 52px;
+    height: 46px;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .st-horse-art {
+    display: block;
+    width: 44px;
+  }
+  .st-horse svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    transform-origin: 50% 95%;
+    filter: drop-shadow(0 0 1.5px #f3ebd9) drop-shadow(0 0 1px #f3ebd9);
+  }
+  .st-horse.hop svg {
+    animation: st-hop 0.45s ease-out;
+  }
+  @keyframes st-hop {
+    35% {
+      transform: translateY(-7px) rotate(-6deg);
+    }
+    70% {
+      transform: translateY(0) rotate(3deg);
+    }
+  }
+  .st-name {
+    min-width: 0;
+    color: #f7f3ea;
+    font: 600 clamp(22px, 5vw, 28px) / 1 var(--font-ui);
+    letter-spacing: 0.005em;
+    overflow-wrap: anywhere;
+  }
+  .st-name small {
+    display: block;
+    margin-top: 6px;
+    color: #f3ebd9c0;
+    font: 500 12px / 1 var(--font-ui);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .st-leave {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px var(--s-2);
+    min-height: 44px;
+    color: var(--muted);
+    font-size: var(--fs-2);
+    text-decoration: none;
+  }
+  .st-leave span {
+    color: var(--brass);
+    font: italic 600 var(--fs-4) / 1 var(--font-display);
+  }
+  .st-leave .icon {
+    width: 18px;
+    height: 18px;
+    color: var(--brass);
+  }
+  .st-leave:hover {
+    color: var(--text);
+  }
+  .st-tagline {
+    margin-top: calc(-1 * var(--s-3));
+    color: var(--muted);
+    font-size: var(--fs-3);
+  }
+
+  /* ---------------------------------------------------------------- the board */
+  .st-board {
+    --pad: clamp(10px, 2.2vw, 24px);
+    overflow: hidden;
+    padding: 14px var(--pad) 0;
+    border: 1px solid #1c2b3f;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #07101b, #040a12);
+    box-shadow:
+      0 44px 80px -40px #000,
+      inset 0 1px 0 #ffffff12;
+  }
+  .st-board-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--s-3);
+    padding: 2px 2px 12px;
+    border-bottom: 1px solid #ffffff12;
+  }
+  .st-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+    outline-offset: 6px;
+  }
+  .st-title b {
+    color: #f3ebd9;
+    font: 600 clamp(24px, 4.2vw, 36px) / 1 var(--font-ui);
+    letter-spacing: -0.01em;
+  }
+  .st-title span {
+    color: var(--st-muted);
+    font: 400 clamp(15px, 2.3vw, 19px) / 1 var(--font-ui);
+  }
+  .st-clockwrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--st-muted);
+    font: 500 12px / 1 var(--font-ui);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .st-clockwrap canvas,
+  #stFlaps {
+    display: block;
+  }
+  #stFlaps {
+    margin: 0 auto;
+  }
+  .st-flapwrap {
+    overflow: hidden;
+    padding-block: 12px 16px;
+  }
+  /* The LED ticker: brass dots behind a fine grille, running at a steady pace (see setTicker). */
+  .st-ticker {
+    position: relative;
+    height: 36px;
+    margin-inline: calc(-1 * var(--pad));
+    overflow: hidden;
+    border-top: 1px solid #ffffff10;
+    background: #000;
+  }
+  .st-ticker-run {
+    display: flex;
+    width: max-content;
+    animation: st-tick var(--dur, 40s) linear infinite;
+  }
+  .st-ticker-run span {
+    color: var(--st-brass);
+    font: 500 15px / 36px var(--font-mono);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    white-space: pre;
+    text-shadow: 0 0 7px #e3c36e88;
+  }
+  .st-ticker::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.6;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, #000 1px, transparent 1px) 0 0 / 3px 3px,
+      linear-gradient(#000 1px, transparent 1px) 0 0 / 3px 3px;
+  }
+  @keyframes st-tick {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* ---------------------------------------------------------------- the controls */
+  .st-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 18px;
+  }
+  .st-draw {
+    display: grid;
+    justify-items: start;
+    gap: 3px;
+    min-height: 62px;
+    padding: 9px 28px 10px;
+    border: 1px solid color-mix(in oklab, var(--brass) 70%, white);
+    border-radius: var(--r-1);
+    background: linear-gradient(180deg, var(--brass-hi), var(--brass) 60%);
+    box-shadow:
+      0 12px 30px -14px color-mix(in oklab, var(--brass) 70%, transparent),
+      inset 0 1px 0 rgb(255 255 255 / 0.5);
+    color: var(--ink);
+    font: 600 21px / 1.1 var(--font-ui);
+    text-align: left;
+    transition:
+      filter var(--t-1),
+      transform var(--t-1) var(--ease);
+  }
+  .st-draw small {
+    color: color-mix(in oklab, var(--ink) 80%, transparent);
+    font: 500 13px / 1 var(--font-ui);
+  }
+  .st-draw:hover {
+    filter: brightness(1.05);
+  }
+  .st-draw:active {
+    transform: translateY(1px);
+  }
+  .st-draw[aria-disabled="true"] {
+    cursor: progress;
+    opacity: 0.72;
+  }
+  .st-count {
+    flex: 1;
+    min-width: 12ch;
+    color: var(--muted);
+    font-size: var(--fs-3);
+  }
+  .st-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+  }
+  .st-tog {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    min-height: 44px;
+    padding: 0 var(--s-3);
+    border: 1px solid var(--line);
+    border-radius: var(--r-1);
+    background: transparent;
+    color: var(--text);
+    font: 500 var(--fs-3) / 1 var(--font-ui);
+  }
+  .st-tog .icon {
+    width: 18px;
+    height: 18px;
+  }
+  .st-tog[aria-pressed="true"] .icon {
+    color: var(--brass);
+  }
+  /* Off: dimmed and struck through. */
+  .st-tog[aria-pressed="false"] {
+    color: var(--faint);
+    border-style: dashed;
+  }
+  .st-tog[aria-pressed="false"] .icon {
+    background: linear-gradient(135deg, #0000 45%, currentColor 45% 55%, #0000 55%);
+  }
+
+  /* ---------------------------------------------------------------- the ticket printer */
+  .st-dispense {
+    display: grid;
+    justify-items: center;
+  }
+  .st-slot {
+    position: relative;
+    z-index: 2;
+    width: min(700px, 100%);
+    height: 12px;
+    border-radius: 12px;
+    background: #01040a;
+    box-shadow:
+      inset 0 3px 5px #000,
+      0 1px 0 #ffffff17;
+  }
+  .st-tray {
+    width: min(660px, calc(100% - 16px));
+    margin-top: -6px;
+    padding: 6px 10px 30px;
+    overflow: hidden;
+  }
+  .st-tray-empty {
+    margin-top: 14px;
+    color: var(--faint);
+    font-size: var(--fs-3);
+    text-align: center;
+  }
+  .st-ticket {
+    --stub: 150px;
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--stub);
+    border-radius: 6px;
+    background: linear-gradient(180deg, var(--ticket-a), var(--ticket-b));
+    box-shadow:
+      0 26px 50px -26px #000,
+      0 2px 0 #0000002e;
+    color: var(--ink);
+    outline: none;
+  }
+  .st-ticket[hidden] {
+    display: none;
+  }
+  /* Notches where the stub tears off. */
+  @media (min-width: 560px) {
+    .st-ticket {
+      -webkit-mask-image: radial-gradient(circle 11px at calc(100% - var(--stub)) 0, #0000 98%, #000), radial-gradient(circle 11px at calc(100% - var(--stub)) 100%, #0000 98%, #000);
+      -webkit-mask-composite: source-in;
+      mask-image: radial-gradient(circle 11px at calc(100% - var(--stub)) 0, #0000 98%, #000), radial-gradient(circle 11px at calc(100% - var(--stub)) 100%, #0000 98%, #000);
+      mask-composite: intersect;
+    }
+  }
+  .st-ticket.printing {
+    animation: st-print 1.15s cubic-bezier(0.35, 0.1, 0.35, 1) both;
+  }
+  @keyframes st-print {
+    from {
+      transform: translateY(-102%);
+    }
+  }
+  .st-main {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+    padding: 20px 24px;
+  }
+  .st-thead {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 10px;
+    color: var(--ink-2);
+    font: 500 12px / 1.2 var(--font-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .st-thead span:last-child {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+  }
+  .st-chip {
+    justify-self: start;
+    margin-top: 6px;
+    padding: 3px 9px 2px;
+    border: 1.5px solid var(--velvet);
+    border-radius: 3px;
+    color: var(--velvet);
+    font: 600 11.5px / 1.3 var(--font-ui);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .st-ttitle {
+    padding-right: 92px;
+    color: var(--ink);
+    font: 600 clamp(34px, 6.2vw, 52px) / 0.98 var(--font-display);
+    letter-spacing: -0.005em;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+  .st-sub {
+    color: var(--ink-2);
+    font-size: var(--fs-3);
+  }
+  .st-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+    gap: 10px 18px;
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid #17263a2e;
+  }
+  .st-fields div {
+    display: grid;
+    align-content: start;
+    gap: 3px;
+    min-width: 0;
+  }
+  .st-fields dt {
+    color: var(--ink-2);
+    font: 500 11px / 1.2 var(--font-ui);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .st-fields dd {
+    margin: 0;
+    font: 500 18px / 1.2 var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .st-when {
+    display: block;
+    margin-top: 3px;
+    color: var(--velvet);
+    font: 500 12px / 1.3 var(--font-ui);
+  }
+  .st-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    margin-top: 10px;
+  }
+  .st-take {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 8px;
+    min-height: 44px;
+    padding: 6px 16px;
+    border: 0;
+    border-radius: var(--r-1);
+    background: var(--navy);
+    color: var(--paper);
+    font: 600 var(--fs-2) / 1.1 var(--font-ui);
+    text-align: left;
+  }
+  .st-take span {
+    font: italic 600 18px / 1 var(--font-display);
+  }
+  .st-take:hover {
+    background: color-mix(in oklab, var(--navy) 85%, var(--blue));
+  }
+  .st-take:focus-visible {
+    outline-color: var(--navy);
+  }
+  .st-actions p {
+    color: var(--ink-2);
+    font-size: var(--fs-2);
+  }
+  .st-stub {
+    display: grid;
+    align-content: space-between;
+    justify-items: center;
+    gap: 10px;
+    padding: 20px 14px;
+    border-left: 2px dashed #17263a45;
+    text-align: center;
+  }
+  .st-from {
+    color: var(--ink-2);
+    font: 600 12px / 1.2 var(--font-ui);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .st-time {
+    font: 500 34px / 1 var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+  /* The track as a little platform sign. */
+  .st-track {
+    display: grid;
+    justify-items: center;
+    min-width: 54px;
+    padding: 5px 8px 6px;
+    border-radius: 4px;
+    background: var(--st-sign);
+    box-shadow: inset 0 0 0 2px var(--st-sign), inset 0 0 0 3px #f3ebd9b0;
+    color: #f7f3ea;
+  }
+  .st-track small {
+    font: 600 10px / 1.2 var(--font-ui);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .st-track b {
+    font: 600 24px / 1 var(--font-ui);
+    font-variant-numeric: tabular-nums;
+  }
+  .st-date {
+    color: var(--ink-2);
+    font: 500 12px / 1.2 var(--font-mono);
+  }
+  /* The rubber stamp, inked in velvet. Each lands at its own slight angle (--stamp-turn). */
+  .st-stamp {
+    position: absolute;
+    top: 44px;
+    right: calc(var(--stub) + 14px);
+    width: 104px;
+    height: 104px;
+    color: var(--velvet);
+    opacity: 0;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+    transform: rotate(var(--stamp-turn, -14deg)) scale(1.7);
+  }
+  .st-stamp svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .st-stamp-ring {
+    font: 500 9.5px var(--font-mono);
+    letter-spacing: 1.5px;
+  }
+  .st-ticket.stamped .st-stamp {
+    animation: st-stamp 0.2s 0.02s ease-in both;
+  }
+  .st-ticket.inked .st-stamp {
+    opacity: 0.82;
+    transform: rotate(var(--stamp-turn, -14deg));
+  }
+  @keyframes st-stamp {
+    to {
+      opacity: 0.82;
+      transform: rotate(var(--stamp-turn, -14deg)) scale(1);
+    }
+  }
+
+  /* ---------------------------------------------------------------- narrower screens */
+  @media (max-width: 640px) {
+    .st-controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .st-draw {
+      justify-items: center;
+      text-align: center;
+    }
+    .st-count {
+      text-align: center;
+    }
+    .st-toggles {
+      justify-content: center;
+    }
+  }
+  @media (max-width: 559px) {
+    .st-ticket {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .st-stub {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-top: 2px dashed #17263a45;
+      border-left: 0;
+    }
+    .st-time {
+      font-size: 26px;
+    }
+    .st-main {
+      padding: 18px 18px 16px;
+    }
+    .st-stamp {
+      top: 48px;
+      right: 12px;
+      width: 78px;
+      height: 78px;
+    }
+    .st-ttitle {
+      padding-right: 62px;
+    }
+    .st-tray {
+      width: 100%;
+      padding-inline: 0;
+    }
+  }
+  @media (max-width: 380px) {
+    .st-sign {
+      padding-right: 16px;
+    }
+    .st-horse {
+      width: 42px;
+    }
+    .st-horse-art {
+      width: 36px;
+    }
+  }
+
+  /* ---------------------------------------------------------------- going and coming back
+     The board rises into view; heading back, it sinks away and the envelope comes down to meet you. */
+  html:active-view-transition-type(station) {
+    &::view-transition-old(page) {
+      animation: st-away-up 0.24s var(--ease-in) both;
+    }
+    &::view-transition-new(page) {
+      animation: st-rise 0.46s var(--ease) both;
+    }
+  }
+  html:active-view-transition-type(envelope) {
+    &::view-transition-old(page) {
+      animation: st-sink 0.24s var(--ease-in) both;
+    }
+    &::view-transition-new(page) {
+      animation: st-down 0.46s var(--ease) both;
+    }
+  }
+  @keyframes st-away-up {
+    to {
+      opacity: 0;
+      transform: translateY(-28px);
+    }
+  }
+  @keyframes st-rise {
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+  }
+  @keyframes st-sink {
+    to {
+      opacity: 0;
+      transform: translateY(32px);
+    }
+  }
+  @keyframes st-down {
+    from {
+      opacity: 0;
+      transform: translateY(-32px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .st-ticker {
+      height: auto;
+    }
+    .st-ticker-run {
+      width: auto;
+      padding: 6px var(--pad);
+      animation: none;
+    }
+    .st-ticker-run span {
+      line-height: 1.6;
+      white-space: normal;
+    }
+    .st-ticker-run span + span {
+      display: none;
+    }
+    .st-ticket.printing,
+    .st-ticket:is(.stamped, .inked) .st-stamp,
+    .st-horse.hop svg,
+    .to-station:hover .icon {
+      animation: none;
+    }
+    .st-ticket:is(.stamped, .inked) .st-stamp {
+      opacity: 0.82;
+      transform: rotate(var(--stamp-turn, -14deg));
+    }
+  }
+
+  /* SEAGAL has no station. */
+  html[data-mode="seagal"] :is(.to-station, .page-station) {
+    display: none;
+  }
+}

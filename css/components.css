@@ -176,6 +176,7 @@
     font-size: var(--fs-1);
   }
   select {
+    max-width: 100%; /* a long option never makes the page wider than the screen */
     padding-right: var(--s-6);
     appearance: none;
     background-image:

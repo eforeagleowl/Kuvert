@@ -160,6 +160,23 @@
       padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
     }
   }
+  /* The narrowest phones (and Display Zoom): just the count beside the name. Screen readers still hear it all. */
+  @media (max-width: 380px) {
+    .appbar .tally .cheer {
+      display: none;
+    }
+  }
+  @media (max-width: 350px) {
+    .appbar .tally-word {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+  }
 
   /* ---------------------------------------------------------------- pages */
   main {
@@ -319,6 +336,7 @@
   }
   .films {
     display: grid;
+    grid-template-columns: minmax(0, 1fr); /* rows never push the page wider than the screen */
     margin: 0;
     padding: 0;
     list-style: none;
@@ -441,6 +459,42 @@
   .seen-list > li.no-thumb {
     grid-template-columns: 36px minmax(0, 1fr) auto auto auto;
   }
+  /* Phones: the title gets its own line; year, watch date and note go underneath it. */
+  @media (max-width: 480px) {
+    .seen-list > li:not(.empty),
+    .seen-list > li.no-thumb {
+      grid-template-columns: 36px auto auto auto minmax(0, 1fr);
+      row-gap: 0;
+      column-gap: var(--s-2);
+    }
+    .seen-list > li > .tick,
+    .seen-list > li > .thumb {
+      grid-row: 1 / span 2;
+    }
+    .seen-list > li > .tick {
+      grid-column: 1;
+    }
+    .seen-list > li > .thumb {
+      grid-column: 2;
+    }
+    .seen-list > li > .film-title {
+      grid-area: 1 / 3 / 2 / -1;
+    }
+    .seen-list > li > .yr {
+      grid-area: 2 / 3;
+    }
+    .seen-list > li > .when {
+      grid-area: 2 / 4;
+      white-space: nowrap;
+    }
+    .seen-list > li > .btn {
+      grid-area: 2 / 5;
+      justify-self: end;
+      padding-inline: var(--s-1);
+      white-space: normal;
+      text-align: right;
+    }
+  }
   .archive-list > li:not(.empty) {
     grid-template-columns: minmax(0, 1fr) auto auto;
   }
@@ -474,6 +528,7 @@
   }
   .archive-body {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--s-4);
     padding-top: var(--s-3);
   }
@@ -639,6 +694,8 @@
   .fact {
     display: grid;
     gap: 4px;
+    min-width: 0;
+    overflow-wrap: anywhere; /* a long word in a wide face (SEAGAL) wraps instead of pushing the page */
     padding: var(--s-4);
     border: 1px solid var(--line-soft);
     border-radius: var(--r-2);
@@ -1078,6 +1135,7 @@
   /* ---------------------------------------------------------------- settings */
   .settings {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--s-5);
   }
   @media (min-width: 900px) {
@@ -1111,10 +1169,12 @@
   }
   .settings-main {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--s-7);
   }
   .group {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--s-3);
     outline: none;
   }

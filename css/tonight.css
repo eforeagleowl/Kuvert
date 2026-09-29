@@ -1,6 +1,7 @@
 @layer tonight {
   .page-tonight {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     justify-items: center;
     gap: var(--s-4);
   }
@@ -25,6 +26,12 @@
     background-clip: text;
     color: transparent;
     filter: drop-shadow(0 6px 18px rgb(0 0 0 / 0.45));
+  }
+  /* The narrowest phones: the name shrinks with the screen so it and the horse still fit side by side. */
+  @media (max-width: 350px) {
+    .marquee-title {
+      font-size: 14vw;
+    }
   }
   .marquee-sub {
     grid-column: 1 / -1;
@@ -192,6 +199,19 @@
       transform: scaleY(0.97) translateY(1px);
     }
   }
+  /* The horse sits by the right edge on a phone: there, what it says and its z's lean inwards. */
+  .hast {
+    --say-x: -50%;
+    --zzz-right: -14px;
+    --zzz-x: 14px;
+  }
+  @media (max-width: 420px) {
+    .hast {
+      --say-x: -78%;
+      --zzz-right: -4px;
+      --zzz-x: 4px;
+    }
+  }
   .horse-say {
     position: absolute;
     left: 50%;
@@ -203,13 +223,13 @@
     font: italic 500 1.15rem / 1 var(--font-display);
     white-space: nowrap;
     box-shadow: var(--shadow-2);
-    transform: translateX(-50%);
+    transform: translateX(var(--say-x));
     pointer-events: none;
   }
   .horse-say::after {
     content: "";
     position: absolute;
-    left: 50%;
+    left: calc(-1 * var(--say-x)); /* the tail stays over the horse */
     top: 100%;
     border: 6px solid transparent;
     border-top-color: var(--paper);
@@ -224,19 +244,19 @@
   @keyframes say-in {
     from {
       opacity: 0;
-      transform: translate(-50%, 8px) scale(0.8);
+      transform: translate(var(--say-x), 8px) scale(0.8);
     }
   }
   @keyframes say-out {
     to {
       opacity: 0;
-      transform: translate(-50%, -6px);
+      transform: translate(var(--say-x), -6px);
     }
   }
   .horse-zzz {
     position: absolute;
     top: -6px;
-    right: -14px;
+    right: var(--zzz-right);
     display: none;
     color: var(--muted);
     font: italic 600 1rem var(--font-display);
@@ -267,7 +287,7 @@
     }
     100% {
       opacity: 0;
-      transform: translate(14px, -30px);
+      transform: translate(var(--zzz-x), -30px);
     }
   }
   .gallop {
@@ -617,6 +637,10 @@
     transition:
       --flap 0.42s var(--ease),
       opacity 0.18s linear 0.2s;
+  }
+  /* Out of sight once open, and flat: edge-on in perspective, its box would reach past the screen's edges. */
+  .stage[data-state="open"]:not(.flap-open) .env-flap {
+    transform: rotateX(var(--flap));
   }
   .stage.cracked .seal,
   .stage.flap-open .seal,

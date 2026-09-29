@@ -29,6 +29,13 @@
     background-color: var(--deep);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+  /* The page never slides sideways on a phone, whatever ends up a pixel too wide: the content and the app
+     bar clip at the screen's edge. Only strips meant to be swiped sideways scroll that way. (clip, not
+     hidden: nothing becomes a scroll box, so the sticky bars keep working.) */
+  main,
+  .appbar {
+    overflow-x: clip;
+  }
   /* Film grain, barely there. */
   body::before {
     content: "";

@@ -29,13 +29,13 @@ can:
 - copy a short progress code, or
 - turn on sync through a private GitHub Gist.
 
-Posters come from [TMDB](https://www.themoviedb.org/) and show for everyone. For runtimes, cast and
-where to stream a film, connect your own free TMDB key in Settings.
+Posters, runtimes, cast and where to stream a film come from [TMDB](https://www.themoviedb.org/).
+To see them, connect your own free TMDB key in Settings.
 
-The built-in list's posters are refreshed every month by the "Refresh posters" workflow
-(`.github/workflows/posters.yml`), which needs a repository secret named `TMDB_TOKEN` holding a TMDB
-API read access token. TMDB's terms allow keeping its data for six months, so Kuvert stops using posters
-older than that.
+The built-in list can also carry posters of its own, so visitors see them without a key. They're off
+until a repository secret named `TMDB_TOKEN` holds a TMDB API read access token. From then on, the
+"Refresh posters" workflow (`.github/workflows/posters.yml`) fetches them every month. TMDB's terms
+allow keeping its data for six months, so Kuvert stops using posters older than that.
 
 ## Running it yourself
 

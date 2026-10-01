@@ -9,10 +9,10 @@ nothing is dropped.
 - Built-in list: 250 films (98 winners, 137 nominees, 15 honorable mentions), permanent ids like
   `1972-the-godfather`, ceremony number `c` for winners and nominees, series `tri`/`ord`
   (The Godfather, The Lord of the Rings, Dune).
-- Catalogue name `kuvert-2026-09-expanded-v7`; older names v6…v3, `kuvert-2026-09-hm-v2`, `kuvert-2026-09-v1`
-  are accepted on restore.
-- Retired films (`2013-the-wolf-of-wall-street`, `2011-hugo`, `2015-the-martian`, `2018-bohemian-rhapsody`,
-  `2012-silver-linings-playbook`, `1943-for-whom-the-bell-tolls`) are quietly dropped from older saves.
+- Catalogue name `kuvert-2026-10-v9`; older names `kuvert-2026-09-expanded-v8`…v3, `kuvert-2026-09-hm-v2`,
+  `kuvert-2026-09-v1` are accepted on restore.
+- Retired films (`2011-hugo`, `2015-the-martian`, `2018-bohemian-rhapsody`, `2012-silver-linings-playbook`,
+  `1943-for-whom-the-bell-tolls`, `2017-darkest-hour`) are quietly dropped from older saves.
 - Award shelves W / N / H with chip, label and plural; lists without shelves hide chips, filters and shelf stats.
 - Custom lists: import CSV or JSON (title, year, shelf, series, part; Letterboxd list exports with preamble),
   up to 2,000 films, name, subtitle and palette. Each list keeps its own progress under `kuvert:list:<id>`.

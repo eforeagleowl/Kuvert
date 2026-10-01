@@ -75,7 +75,7 @@ test("a save from before the last 25 films were added opens in both apps with no
   // One of the new films, watched in the new app, is read back by Classic with everything else.
   await page.evaluate(() => window.kuvert.app.store.markSeen("1988-die-hard", true));
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("kuvert:v4")));
-  assert.equal(saved.catalogue, "kuvert-2026-09-expanded-v8");
+  assert.equal(saved.catalogue, "kuvert-2026-10-v9");
   await go(classic, "/classic/");
   const back = await classicProgress(classic);
   assert.deepEqual(back.seen, [...expect.seen, "1988-die-hard"].sort());

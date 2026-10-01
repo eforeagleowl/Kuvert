@@ -5,8 +5,9 @@
 export const KUVERT = {
   "name": "Kuvert",
   "subtitle": "Best Picture winners, nominees and honorable mentions, drawn at random",
-  "catalogue": "kuvert-2026-09-expanded-v8",
+  "catalogue": "kuvert-2026-10-v9",
   "olderCatalogues": [
+    "kuvert-2026-09-expanded-v8",
     "kuvert-2026-09-expanded-v7",
     "kuvert-2026-09-expanded-v6",
     "kuvert-2026-09-expanded-v5",
@@ -21,7 +22,8 @@ export const KUVERT = {
     "2015-the-martian",
     "2018-bohemian-rhapsody",
     "2012-silver-linings-playbook",
-    "1943-for-whom-the-bell-tolls"
+    "1943-for-whom-the-bell-tolls",
+    "2017-darkest-hour"
   ],
   "series": {
     "gf": "The Godfather",
@@ -208,7 +210,6 @@ export const FILMS = [
   {"t":"The Shape of Water","y":2017,"s":"W","id":"2017-the-shape-of-water","c":90},
   {"t":"Dunkirk","y":2017,"s":"N","id":"2017-dunkirk","c":90},
   {"t":"Get Out","y":2017,"s":"N","id":"2017-get-out","c":90},
-  {"t":"Darkest Hour","y":2017,"s":"N","id":"2017-darkest-hour","c":90},
   {"t":"Green Book","y":2018,"s":"W","id":"2018-green-book","c":91},
   {"t":"Parasite","y":2019,"s":"W","id":"2019-parasite","c":92},
   {"t":"Ford v Ferrari","y":2019,"s":"N","id":"2019-ford-v-ferrari","c":92},
@@ -325,6 +326,7 @@ export const FILMS = [
   {"t":"Frost/Nixon","y":2008,"s":"N","id":"2008-frost-nixon","c":81},
   {"t":"The Dark Knight","y":2008,"s":"H","id":"2008-the-dark-knight"},
   {"t":"The Wolf of Wall Street","y":2013,"s":"N","id":"2013-the-wolf-of-wall-street","c":86},
+  {"t":"The Hateful Eight","y":2015,"s":"H","id":"2015-the-hateful-eight"},
 ];
 
 // Named palettes. The dala horse silhouette stays the same in every one.

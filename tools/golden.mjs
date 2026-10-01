@@ -187,6 +187,20 @@ const out = { generatedFrom: "index.html (the original app)", builtin: {}, decod
     }],
     ["backup v6 on the hm-v2 catalogue", { kind: "file", value: { ...full, v: 6, catalogue: "kuvert-2026-09-hm-v2" } }],
     ["backup on the catalogue before the last 25 films were added", { kind: "file", value: { ...full, catalogue: "kuvert-2026-09-expanded-v7" } }],
+    // Taken off the list in v9: an older backup that has it loses only that film.
+    ["backup on the catalogue before Darkest Hour was taken off, with it watched", {
+      kind: "file",
+      value: {
+        ...full,
+        catalogue: "kuvert-2026-09-expanded-v8",
+        seen: [...full.seen, "2017-darkest-hour"],
+        dates: { ...full.dates, "2017-darkest-hour": "2026-09-28" },
+        reviews: { ...full.reviews, "2017-darkest-hour": { note: "Oldman!", rating: 4 } },
+        rankings: [...full.rankings, "2017-darkest-hour"],
+        runtimes: { ...full.runtimes, "2017-darkest-hour": 125 },
+      },
+    }],
+    ["backup on the catalogue before Darkest Hour was taken off, with it drawn", { kind: "file", value: { ...full, catalogue: "kuvert-2026-09-expanded-v8", current: "2017-darkest-hour" } }],
     ["backup v4 with a film that was retired and is back", {
       kind: "file",
       value: {

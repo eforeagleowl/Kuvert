@@ -28,11 +28,16 @@ import { GroupNight } from "./views/group.js";
 import { Station } from "./views/station.js";
 import { Share } from "./share/images.js";
 import { enterSeagal, installSeagal, makeStandDown } from "./fun/seagal.js";
+import { GALA, GALA_LIST_ID, enterGala, leaveGala, installGala, carryWatched } from "./fun/gala.js";
 import { PALETTES } from "./data/catalogue.js";
 import { t, translatePage } from "./i18n/index.js";
 import { POSTERS, POSTERS_AT } from "./data/posters.js";
 
-const PAGES = ["tonight", "station", "library", "stats", "settings"];
+import { Journeys, seedBasics, localized } from "./views/journeys.js";
+import { Club } from "./views/club.js";
+import { CURATED_COLLECTIONS } from "./data/curated.js";
+const arrivalHash = location.hash;
+const PAGES = ["tonight", "station", "journeys", "club", "library", "stats", "settings"];
 
 function safeStorage() {
   try {
@@ -55,6 +60,7 @@ const list = resolveList(storage || { getItem: () => null });
 const catalog = makeCatalog(list, { posters: freshPosters(POSTERS, POSTERS_AT) });
 const store = new Store({ list, catalog, storage });
 const loadError = store.load();
+seedBasics(store);
 
 /** Everything the views share. */
 const app = {
@@ -152,7 +158,7 @@ app.router = {
     const dir = name === "station" ? "station" : from === "station" && name === "tonight" ? "envelope" : from && PAGES.indexOf(name) < PAGES.indexOf(from) ? "back" : "forward";
     page = name;
     if (push && from) history.pushState({ page: name }, "", "#" + name);
-    const tab = name === "station" ? "tonight" : name;
+    const tab = name === "station" ? "tonight" : name === "club" ? "journeys" : name;
     const swap = () => {
       for (const p of PAGES) $("page-" + p).hidden = p !== name;
       document.documentElement.dataset.page = name;
@@ -167,9 +173,10 @@ app.router = {
     const shown = (from ? transition(swap, [dir]) : Promise.resolve(swap())).then(() => {
       if (name === "stats") app.stats.enter();
       if (name === "library") app.library.syncPosters();
+      if (name === "club") app.club?.render();
     });
     if (focus && from) {
-      const heading = { station: "stationHeading", library: "libraryHeading", stats: "statsHeading", settings: "settingsHeading" }[name];
+      const heading = { station: "stationHeading", library: "libraryHeading", stats: "statsHeading", settings: "settingsHeading", journeys: "journeysHeading", club: "clubHeading" }[name];
       requestAnimationFrame(() => (heading ? $(heading) : $("drawBtn"))?.focus({ preventScroll: true }));
     }
     return shown;
@@ -196,8 +203,16 @@ app.settings = new Settings(app);
 app.rails = new Rails(app);
 app.group = new GroupNight(app);
 app.station = new Station(app);
+app.journeys = new Journeys(app);
+app.club = new Club(app);
 if (seagal) installSeagal(app);
 $("braveLink").addEventListener("click", () => storage && enterSeagal(storage));
+// Galan, the full Best Picture ballot: an extra mode beside the regular list (js/fun/gala.js).
+const gala = !seagal && list.id === GALA_LIST_ID;
+$("galaLink").hidden = seagal;
+$("galaLink").addEventListener("click", () => storage && enterGala(storage));
+for (const id of ["galaLeave", "galaLeaveFooter"]) $(id).addEventListener("click", () => storage && leaveGala(storage));
+if (gala) installGala(app);
 const standDown = makeStandDown(app);
 $("standDown").addEventListener("click", standDown);
 $("standDownFooter").addEventListener("click", standDown);
@@ -222,11 +237,14 @@ function render() {
   );
   $("progressFill").style.setProperty("--p", (total ? (n / total) * 100 : 0) + "%");
   app.stage.render();
+  app.journeys.context(app.stage.shown);
   app.evening.render();
   app.horse.render();
   app.rails.render();
   app.group.render();
   if (page === "station") app.station.render();
+  if (page === "journeys") app.journeys.render();
+  if (page === "club" && !app.club.client.room) app.club.render();
   if (page === "library") app.library.render();
   if (page === "stats") app.stats.render();
   if (page === "settings") app.settings.render();
@@ -234,7 +252,13 @@ function render() {
 }
 app.render = render;
 
+let shownConflict = null;
 store.addEventListener("change", (e) => {
+  if (e.detail.kind.startsWith("cross-tab")) app.stage.syncPick();
+  if (e.detail.conflict && e.detail.conflict !== shownConflict) {
+    shownConflict = e.detail.conflict;
+    app.toast.show(t(shownConflict.source === "undo" ? "Newer choices from another tab were kept while undoing." : shownConflict.source === "unreadable-storage" ? "Another tab's save could not be read. Saving is paused until you restore it." : "Choices changed in another tab. The latest changes were merged; review your ticket and ratings."));
+  }
   if (e.detail.saved && !store.writeLocked) {
     if (app.files.handle) app.files.queueWrite();
     app.sync.schedule(() => app.settings.syncNow({ quiet: true }));
@@ -270,9 +294,11 @@ $("unreadableFresh").addEventListener("click", async () => {
 // The list's own name, counts and colours.
 for (const el of document.querySelectorAll("[data-count]")) el.textContent = String(catalog.films.length);
 if (!seagal) {
-  for (const el of document.querySelectorAll("[data-name]")) el.textContent = list.name;
-  for (const el of document.querySelectorAll("[data-subtitle]")) el.textContent = list.custom ? list.subtitle : t(list.subtitle);
-  document.title = list.name + (list.custom ? "" : t(" — Best Picture watchthrough"));
+  const editorial = list.id === GALA_LIST_ID ? GALA : CURATED_COLLECTIONS.find(p => p.id === list.id);
+  const displayName = editorial ? localized(editorial.title || editorial.name) : list.name;
+  for (const el of document.querySelectorAll("[data-name]")) el.textContent = displayName;
+  for (const el of document.querySelectorAll("[data-subtitle]")) el.textContent = editorial?.subtitle ? localized(editorial.subtitle) : list.custom ? list.subtitle : t(list.subtitle);
+  document.title = displayName + (list.custom ? "" : t(" — Best Picture watchthrough"));
   const palette = PALETTES[list.palette];
   if (list.custom && palette) document.querySelector('meta[name="theme-color"]')?.setAttribute("content", palette.house);
 }
@@ -323,7 +349,13 @@ app.stage.syncPick();
 render();
 if (loadError && !store.writeLocked) app.toast.show(loadError);
 app.safekeeping.check().then(() => app.renderSoon());
+carryWatched(app); // Galan and the regular list share their films (js/fun/gala.js)
 app.dialogs.resumePendingRestore();
+if (arrivalHash.startsWith("#invite=")) app.journeys.receive(arrivalHash.slice(8));
+if (arrivalHash.startsWith("#club=")) app.club.receive(location.href.replace(location.hash, arrivalHash));
+const invitedFilm = sessionStorage.getItem("kuvert:invitedFilm");
+if (invitedFilm) { sessionStorage.removeItem("kuvert:invitedFilm"); app.stage.openFilm(invitedFilm); }
+app.club.check();
 if (app.sync.on) app.settings.syncNow({ quiet: true });
 // Offline support and home-screen install when served from the web. Trusted Types allows one script
 // URL on this page, through the one policy the CSP names: the worker's own file.
@@ -349,4 +381,4 @@ if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
   } catch {}
 }
 // For tests and the curious: the app, read-only.
-Object.defineProperty(window, "kuvert", { value: Object.freeze({ app, version: "4.0", count: () => plural(store.p.seen.size, "film") }) });
+Object.defineProperty(window, "kuvert", { value: Object.freeze({ app, version: "5.0", count: () => plural(store.p.seen.size, "film") }) });

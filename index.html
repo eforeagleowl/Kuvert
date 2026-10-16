@@ -37,6 +37,7 @@
 <link rel="stylesheet" href="css/pages.css">
 <link rel="stylesheet" href="css/station.css">
 <link rel="stylesheet" href="css/seagal.css">
+<link rel="stylesheet" href="css/journeys.css">
 <script type="module" src="js/main.js"></script>
 </head>
 <body>
@@ -100,6 +101,7 @@
     <p class="tally" id="tally" aria-live="off"></p>
     <nav class="tabs" aria-label="App views">
       <a href="#tonight" data-route="tonight"><svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg><span data-sg="Mission">Tonight</span></a>
+      <a href="#journeys" data-route="journeys" class="journeys-nav"><svg class="icon" aria-hidden="true"><use href="#i-list"/></svg><span>Envelopes</span></a>
       <a href="#library" data-route="library"><svg class="icon" aria-hidden="true"><use href="#i-film"/></svg><span data-sg="Dossier">Library</span></a>
       <a href="#stats" data-route="stats"><svg class="icon" aria-hidden="true"><use href="#i-chart"/></svg><span data-sg="Debrief">Stats</span></a>
       <a href="#settings" data-route="settings" class="tab-settings"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg><span data-sg="Loadout">Settings</span></a>
@@ -125,15 +127,16 @@
     <section class="welcome card" id="welcome" aria-labelledby="welcomeTitle" hidden>
       <p class="kicker" lang="sv" data-sg="Briefing">Välkommen</p>
       <h2 id="welcomeTitle" data-sg="Pull a file from the folder">Pull a film from the envelope</h2>
-      <p>Kuvert draws your next film at random from a list. Watch it, mark it seen, give it stars, and keep going until the envelope is empty. Everything stays in this browser.</p>
+      <p>Open an envelope. Watch a film. Keep the ticket. Your collection grows with every film night.</p>
       <div class="row">
         <button class="btn btn-primary" id="welcomeStart" type="button">Start with this list</button>
         <button class="btn" id="welcomeImport" type="button">Bring my own list</button>
-        <button class="btn" id="welcomeTmdb" type="button">Add posters &amp; streaming</button>
+        <button class="btn" id="welcomeTmdb" type="button" hidden>Add posters &amp; streaming</button>
       </div>
-      <p class="fine">The Best Picture list is ready to go: winners, nominees and honorable mentions. Used Kuvert on another device? <button class="link" id="welcomeSync" type="button">Connect sync or load a backup</button></p>
+      <p class="fine">The collection is ready. Used Kuvert on another device? <button class="link" id="welcomeSync" type="button">Connect sync or load a backup</button></p>
     </section>
 
+    <div class="journeys-shortcut"><button class="link" id="openJourneys" type="button">Explore curated envelopes</button></div>
     <div class="stage" id="stage" data-state="closed">
       <div class="nixie" id="nixie">
         <span class="nixie-label" lang="sv" aria-hidden="true" data-sg="Year">Årtal</span>
@@ -168,7 +171,7 @@
             <p class="kicker" lang="sv" data-sg="Seagal · Final report">Kuvert · Slutbiljett</p>
             <h2 id="finaleTitle" lang="sv" data-sg="All targets neutralized.">Hela samlingen.</h2>
             <p class="finale-sub" data-sg="The whole list. Nobody got away.">The whole collection. Every last film.</p>
-            <div class="finale-seal" id="finaleSeal"><strong data-count>250</strong><span lang="sv" data-sg="Confirmed">Filmer sedda</span></div>
+            <div class="finale-seal" id="finaleSeal"><strong data-count>275</strong><span lang="sv" data-sg="Confirmed">Filmer sedda</span></div>
             <p class="finale-message" data-sg="One folder. No survivors. Thank you for your service.">One envelope. Countless worlds. Thank you for watching all the way to the end.</p>
             <dl class="finale-dates">
               <div><dt>First recorded watch</dt><dd id="finaleFirst">—</dd></div>
@@ -242,6 +245,7 @@
             <button class="btn btn-ink" id="markBtn" type="button">Mark as watched</button>
             <button class="btn btn-paper" id="againBtn" type="button" aria-describedby="pickActionsHelp"><svg class="icon" aria-hidden="true"><use href="#i-shuffle"/></svg>Draw again</button>
             <button class="btn btn-paper" id="skipBtn" type="button" aria-describedby="pickActionsHelp">Set aside</button>
+            <button class="btn btn-paper" id="sendInvite" type="button" hidden>Send invitation</button>
             <button class="btn btn-paper" id="shareBtn" type="button" title="Share this ticket as an image"><svg class="icon" aria-hidden="true"><use href="#i-share"/></svg>Share</button>
             <a class="t-link" id="lbxBtn" target="_blank" rel="noopener" hidden>Letterboxd<svg class="icon" aria-hidden="true"><use href="#i-external"/></svg></a>
           </div>
@@ -252,6 +256,7 @@
             <p class="t-tagline" id="pickTag" hidden></p>
             <p class="t-line" id="pickCredits" hidden></p>
             <p class="t-line" id="pickMoney" hidden></p>
+            <section class="film-context" id="filmContext" hidden></section>
             <p class="fine" id="moodSource"></p>
             <div class="row">
               <button class="btn btn-paper btn-sm" id="editMoods" type="button">Edit mood tags</button>
@@ -393,6 +398,16 @@
     <p class="keys" aria-hidden="true"><span><kbd>Enter</kbd> draw</span><span><kbd>Esc</kbd> back to the envelope</span></p>
   </section>
 
+  <section class="page page-journeys" id="page-journeys" aria-labelledby="journeysHeading" hidden>
+    <header class="page-head"><p class="kicker" lang="sv">Kuvertsamlingen</p><h2 class="page-title" id="journeysHeading" tabindex="-1">A shelf of possibilities</h2><p class="page-lede">Small collections. A little context. A film night worth keeping.</p></header>
+    <div class="curated-grid" id="curatedGrid"></div>
+    <section class="club-teaser card" id="clubTeaser" hidden><div><p class="kicker" lang="sv">Filmklubb</p><h3>Make it a shared ritual</h3><p>Find a film together. Keep ratings sealed until everyone is ready.</p></div><button class="btn btn-primary" id="openClub" type="button">Open film club</button></section>
+  </section>
+  <section class="page page-club" id="page-club" aria-labelledby="clubHeading" hidden>
+    <header class="page-head"><p class="kicker" lang="sv">Filmklubb</p><h2 class="page-title" id="clubHeading" tabindex="-1">Our film night</h2><p class="page-lede">A private invitation. One film. Everyone’s stars, revealed together.</p></header>
+    <p class="status" id="clubStatus" role="status" aria-live="polite"></p><div id="clubBody"></div>
+  </section>
+
   <!-- ============================================================ LIBRARY -->
   <section class="page page-library" id="page-library" aria-labelledby="libraryHeading" hidden>
     <header class="page-head">
@@ -450,6 +465,7 @@
       <p class="kicker" lang="sv">Filmåret</p>
       <h2 class="page-title" id="statsHeading" tabindex="-1" data-sg="Debrief">Your watchthrough</h2>
     </header>
+    <div class="passport-action"><button class="btn" id="openPassport" type="button">Open cinema passport</button><p class="fine">A printable journal of your films, stars and favourite discoveries.</p></div>
     <div class="stats-lead">
       <p class="headline" id="statsHeadline"></p>
       <figure class="led" id="led">
@@ -522,7 +538,7 @@
     <header class="page-head">
       <p class="kicker" lang="sv">Inställningar</p>
       <h2 class="page-title" id="settingsHeading" tabindex="-1" data-sg="Loadout">Settings</h2>
-      <p class="page-lede" data-sg="Intel stays on this device unless you authorize sync.">Everything stays in this browser unless you turn on sync.</p>
+      <p class="page-lede" data-sg="Intel stays on this device unless you authorize sync.">Personal progress is local by default. Sync and film clubs share the data you choose.</p>
     </header>
     <div class="settings">
       <nav class="settings-nav" aria-label="Settings sections">
@@ -559,6 +575,7 @@
             <p class="fine" id="fhint"></p>
             <p class="fine" id="storageStatus"></p>
           </div>
+          <div class="card setting"><div class="setting-head"><p class="setting-title">Your whole library</p></div><p class="fine">Back up every list, its progress and your preferences. Credentials and club access are excluded.</p><div class="row"><button class="btn btn-primary" id="saveLibrary" type="button">Back up everything</button><button class="btn" id="loadLibrary" type="button">Restore full library</button><input type="file" id="libraryBackupInput" accept=".json,application/json" hidden></div></div>
           <details class="card setting advanced">
             <summary><svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg>Recovery &amp; reset</summary>
             <label class="field" for="code"><span>Progress code</span></label>
@@ -661,7 +678,7 @@
         <section class="group about" id="aboutSection" aria-labelledby="sgAbout" tabindex="-1">
           <h3 id="sgAbout" data-sg="About this operation">About Kuvert</h3>
           <div class="card setting">
-            <p>Kuvert keeps a film list in an envelope and draws one at random, so tonight’s pick is a surprise. The built-in list has every Best Picture winner and nominee, plus honorable mentions.</p>
+            <p>Kuvert keeps a film list in an envelope and draws one at random, so tonight’s pick is a surprise. The built-in list has every Best Picture winner and selected nominees, plus honorable mentions.</p>
             <p>Your progress stays in this browser. Posters load from TMDB’s image server; Kuvert only asks TMDB for film details when you connect it, and only talks to GitHub when you turn on sync.</p>
             <dl class="about-meta">
               <dt>Version</dt><dd id="aboutVersion"></dd>
@@ -673,7 +690,7 @@
               <p>This website uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB. Streaming availability data by <a href="https://www.justwatch.com/" target="_blank" rel="noopener">JustWatch</a>.</p>
             </div>
             <p class="fine">Oscar® and Academy Award® are trademarks of the Academy of Motion Picture Arts and Sciences. Kuvert is a fan project and isn't affiliated with the Academy.</p>
-            <p class="secret-door"><button class="link" id="braveLink" type="button">for the brave.</button><button class="link" id="standDown" type="button" hidden>Stand down.</button></p>
+            <p class="secret-door"><button class="link" id="braveLink" type="button">for the brave.</button><button class="link" id="standDown" type="button" hidden>Stand down.</button><button class="link" id="galaLink" type="button">for the completists.</button><button class="link" id="galaLeave" type="button" hidden>Leave the gala.</button></p>
           </div>
         </section>
       </div>
@@ -686,11 +703,14 @@
     <button class="link" id="aboutLink" type="button" data-sg="About this operation">About Kuvert</button>
     <span class="sg-only" aria-hidden="true">·</span>
     <button class="link sg-only" id="standDownFooter" type="button">Stand down</button>
+    <span class="gala-only" aria-hidden="true">·</span>
+    <button class="link gala-only" id="galaLeaveFooter" type="button">Leave the gala</button>
   </footer>
 </main>
 
 <nav class="tabbar" aria-label="App views">
   <a href="#tonight" data-route="tonight"><svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg><span data-sg="Mission">Tonight</span></a>
+  <a href="#journeys" data-route="journeys" class="journeys-nav"><svg class="icon" aria-hidden="true"><use href="#i-list"/></svg><span>Envelopes</span></a>
   <a href="#library" data-route="library"><svg class="icon" aria-hidden="true"><use href="#i-film"/></svg><span data-sg="Dossier">Library</span></a>
   <a href="#stats" data-route="stats"><svg class="icon" aria-hidden="true"><use href="#i-chart"/></svg><span data-sg="Debrief">Stats</span></a>
   <a href="#settings" data-route="settings"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg><span data-sg="Loadout">Settings</span></a>
@@ -852,5 +872,7 @@
   </div>
 </dialog>
 <noscript><p class="noscript">Kuvert needs JavaScript to draw a film.</p></noscript>
+<dialog id="journeyDialog" class="journey-dialog" aria-labelledby="journeyTitle"><header class="dialog-head"><h2 id="journeyTitle"></h2><button class="btn btn-sm" id="journeyClose" type="button" aria-label="Close">×</button></header><div id="journeyContent" class="journey-content"></div></dialog>
+<dialog id="passportDialog" class="passport-dialog" aria-labelledby="passportHeading"><header class="dialog-head"><h2 id="passportHeading">Cinema passport</h2><button class="btn btn-sm" id="passportClose" type="button" aria-label="Close">×</button></header><div id="passportControls"></div><p id="passportCount" class="fine"></p><div id="passportPrint"></div></dialog>
 </body>
 </html>

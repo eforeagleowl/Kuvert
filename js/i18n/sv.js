@@ -1,7 +1,9 @@
 // Kuvert in Swedish, keyed by the English it replaces (see index.js). An empty string removes the English
 // half of a bilingual label, which already has its Swedish half beside it. tests/unit/i18n.test.mjs checks
 // that every string in the page and the code is here; `node tools/i18n-keys.mjs` lists any that are missing.
+import { JOURNEYS_SV } from "./journeys.js";
 export const SV = {
+  ...JOURNEYS_SV,
   // The page's own text (index.html).
   "Skip to content": "Hoppa till innehållet",
   "Kuvert, back to Tonight": "Kuvert, tillbaka till Ikväll",
@@ -227,6 +229,11 @@ export const SV = {
   "This website uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB. Streaming availability data by": "Den här webbplatsen använder TMDB och TMDB:s API:er men är inte godkänd, certifierad eller på annat sätt stödd av TMDB. Uppgifter om streaming från",
   "Oscar® and Academy Award® are trademarks of the Academy of Motion Picture Arts and Sciences. Kuvert is a fan project and isn't affiliated with the Academy.": "Oscar® och Academy Award® är varumärken som tillhör Academy of Motion Picture Arts and Sciences. Kuvert är ett fanprojekt och har ingen koppling till Akademien.",
   "for the brave.": "för de modiga.",
+  "for the completists.": "för de grundliga.",
+  "Leave the gala.": "Lämna galan.",
+  "Leave the gala": "Lämna galan",
+  "{films} came along from {list}.": "{films} följde med från {list}.",
+  "Gala gold": "Galaguld",
   "Stand down.": "Stand down.",
   "Stand down": "Stand down",
   "Undo": "Ångra",

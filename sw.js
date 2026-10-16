@@ -6,7 +6,7 @@
 // purpose: no libraries, and nothing but the app and its posters is ever cached.
 
 // <stamp> written by tools/stamp.mjs (npm run stamp); do not edit by hand.
-const VERSION = "9a07da2840d7";
+const VERSION = "2c6ab88630fe";
 const FILES = [
   "./",
   "./manifest.webmanifest",
@@ -14,25 +14,35 @@ const FILES = [
   "./css/base.css",
   "./css/components.css",
   "./css/fonts.css",
+  "./css/journeys.css",
   "./css/pages.css",
   "./css/seagal.css",
   "./css/station.css",
   "./css/tokens.css",
   "./css/tonight.css",
   "./js/boot.js",
+  "./js/club/client.js",
   "./js/compat/codes.js",
   "./js/compat/keys.js",
   "./js/compat/legacy-code.js",
   "./js/compat/legacy-ids.js",
   "./js/compat/serialize.js",
   "./js/compat/validate.js",
+  "./js/data/basics.js",
   "./js/data/catalogue.js",
+  "./js/data/ceremonies.js",
+  "./js/data/curated.js",
   "./js/data/lists.js",
   "./js/data/posters.js",
+  "./js/fun/gala.js",
   "./js/fun/seagal.js",
   "./js/i18n/index.js",
+  "./js/i18n/journeys.js",
   "./js/i18n/sv.js",
   "./js/import/importers.js",
+  "./js/journeys/invitations.js",
+  "./js/journeys/passport.js",
+  "./js/journeys/qr.js",
   "./js/main.js",
   "./js/share/images.js",
   "./js/state/catalog.js",
@@ -46,6 +56,7 @@ const FILES = [
   "./js/station/flaps.js",
   "./js/station/timetable.js",
   "./js/storage/files.js",
+  "./js/storage/library-backup.js",
   "./js/storage/safekeeping.js",
   "./js/storage/sync.js",
   "./js/tmdb/client.js",
@@ -55,8 +66,12 @@ const FILES = [
   "./js/ui/sounds.js",
   "./js/ui/stars.js",
   "./js/ui/toast.js",
+  "./js/vendor/QRCODE-LICENSE.txt",
+  "./js/vendor/qrcode.js",
+  "./js/views/club.js",
   "./js/views/evening.js",
   "./js/views/group.js",
+  "./js/views/journeys.js",
   "./js/views/library.js",
   "./js/views/nixie.js",
   "./js/views/rails.js",
@@ -120,6 +135,7 @@ self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
+  if (url.pathname.startsWith(BASE + "api/") || url.pathname.startsWith("/api/")) return;
 
   if (url.origin === location.origin) {
     if (ELSEWHERE.some((p) => url.pathname.startsWith(p))) return;

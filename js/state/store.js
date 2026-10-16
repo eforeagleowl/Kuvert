@@ -36,6 +36,16 @@ export class Store extends EventTarget {
     this.dirty = false;
     this.revision = 0;
     this.tmdbToken = null;
+    this.storedText = null;
+    this.persistedProgress = null;
+    this.persistedSettings = structuredClone(this.settings);
+    this.ownedStamps = new Set();
+    this.foreignRevisions = {};
+    this.foreignClock = 0;
+    this.pendingSnapshots = new Set();
+    this.undoStates = new WeakMap();
+    this.lastConflict = null;
+    this.storageListener = null;
   }
 
   // ---------------------------------------------------------------- reading and writing
@@ -87,6 +97,10 @@ export class Store extends EventTarget {
           if (this.catalog.ids.has(id) && Number.isSafeInteger(m) && m > 0) this.p.matches[id] = m;
         if (!raw) this.persist();
       }
+      this.storedText = s.getItem(this.list.storageKey);
+      this.persistedProgress = this.data();
+      this.persistedSettings = structuredClone(this.settings);
+      this.listenToStorage();
       this.tmdbToken = s.getItem(KEYS.tmdb) || null;
       return null;
     } catch {
@@ -108,10 +122,78 @@ export class Store extends EventTarget {
       return t("Saved progress could not be read. You can restore a backup in Settings.");
     }
   }
+
+  // Browser storage has no compare-and-swap. Read immediately before each write and reconcile
+  // storage events as well: this handles stale tabs and converges a racing write after its event.
+  listenToStorage() {
+    if (this.storageListener || typeof globalThis.addEventListener !== "function") return;
+    this.storageListener = (event) => {
+      if (event.key !== this.list.storageKey || (event.storageArea && event.storageArea !== this.storage)) return;
+      const changed = this.reconcileStorage();
+      if (!changed) {
+        if (this.writeLocked && this.lastConflict?.source === "unreadable-storage") this.emit("storage-error");
+        return;
+      }
+      // Put retained local records back if a simultaneous write left them out of the stored copy.
+      // Stamps are unchanged, so the other tab converges without creating another personal edit.
+      this.persist();
+      this.emit(this.lastConflict ? "cross-tab-conflict" : "cross-tab", true);
+    };
+    globalThis.addEventListener("storage", this.storageListener);
+  }
+  dispose() {
+    if (this.storageListener) globalThis.removeEventListener?.("storage", this.storageListener);
+    this.storageListener = null;
+  }
+  reconcileStorage() {
+    if (!this.storageOK || this.writeLocked || !this.storage) return false;
+    let raw;
+    try { raw = this.storage.getItem(this.list.storageKey); } catch { return false; }
+    if (!raw || raw === this.storedText) return false;
+    try {
+      const obj = JSON.parse(raw), d = validateProgress(obj, this.catalog.ctx);
+      const other = this.fromValidated(d, emptyProgress());
+      const base = this.persistedProgress ? this.fromValidated(validateProgress(this.persistedProgress, this.catalog.ctx), emptyProgress()) : emptyProgress();
+      const conflicts = [...this.catalog.ids].filter((id) => filmKey(this.p, id) !== filmKey(base, id) && filmKey(other, id) !== filmKey(base, id) && filmKey(this.p, id) !== filmKey(other, id));
+      for (const key of ["$current", "$ranking"]) {
+        const value = (p) => key === "$current" ? JSON.stringify([p.current, p.drawnOn]) : JSON.stringify(p.rankings);
+        if (value(this.p) !== value(base) && value(other) !== value(base) && value(this.p) !== value(other)) conflicts.push(key);
+      }
+      if (conflicts.length) this.lastConflict = { source: "cross-tab", ids: conflicts, at: this.now().toISOString() };
+      const before = this.signature();
+      const prior = this.p;
+      this.p = bySync(this.p, other);
+      for (const id of this.catalog.ids) if (filmKey(prior, id) !== filmKey(this.p, id)) this.foreignRevisions[id] = ++this.foreignClock;
+      if (JSON.stringify([prior.current, prior.drawnOn]) !== JSON.stringify([this.p.current, this.p.drawnOn])) this.foreignRevisions.$current = ++this.foreignClock;
+      if (JSON.stringify(prior.rankings) !== JSON.stringify(this.p.rankings)) this.foreignRevisions.$ranking = ++this.foreignClock;
+      const currentSettings = this.settings, currentCaches = this.caches;
+      this.loadSettings(obj.settings || {}, obj);
+      const remoteSettings = this.settings, remoteCaches = this.caches;
+      this.settings = Object.fromEntries(Object.keys(currentSettings).map((key) => [key,
+        JSON.stringify(currentSettings[key]) !== JSON.stringify(this.persistedSettings[key]) ? currentSettings[key] : remoteSettings[key],
+      ]));
+      this.caches = {
+        availability: { ...remoteCaches.availability, ...currentCaches.availability },
+        providerDirectories: { ...remoteCaches.providerDirectories, ...currentCaches.providerDirectories },
+      };
+      this.storedText = raw;
+      this.persistedProgress = stateData(other, this.ctx);
+      this.persistedSettings = structuredClone(remoteSettings);
+      return before !== this.signature() || JSON.stringify(currentSettings) !== JSON.stringify(this.settings);
+    } catch {
+      // A newly unreadable save is protected just like one encountered during initial load.
+      this.writeLocked = true;
+      this.unreadable = { key: this.list.storageKey, text: raw };
+      this.lastConflict = { source: "unreadable-storage", ids: [], at: this.now().toISOString() };
+      try { if (!this.storage.getItem(KEYS.unreadable(this.list.storageKey))) this.storage.setItem(KEYS.unreadable(this.list.storageKey), raw); } catch {}
+      return false;
+    }
+  }
   /** Leaves an unreadable save behind (it stays under its spare key) and saves from now on. */
   startFresh() {
     this.writeLocked = false;
     this.unreadable = null;
+    try { this.storedText = this.storage?.getItem(this.list.storageKey) || null; } catch {}
     this.save("restore");
   }
 
@@ -184,11 +266,17 @@ export class Store extends EventTarget {
 
   persist() {
     if (!this.storageOK || this.writeLocked) return false;
+    this.reconcileStorage();
+    if (this.writeLocked) return false;
     try {
+      const body = JSON.stringify(browserSave(this.p, this.ctx, { settings: this.settings, lastBackup: this.lastBackup, ...this.caches }));
       this.storage.setItem(
         this.list.storageKey,
-        JSON.stringify(browserSave(this.p, this.ctx, { settings: this.settings, lastBackup: this.lastBackup, ...this.caches })),
+        body,
       );
+      this.storedText = body;
+      this.persistedProgress = this.data();
+      this.persistedSettings = structuredClone(this.settings);
       return true;
     } catch {
       this.storageOK = false;
@@ -200,6 +288,16 @@ export class Store extends EventTarget {
   save(kind = "progress") {
     this.revision++;
     this.p.saved = this.now().toISOString();
+    for (const snapshot of this.pendingSnapshots) {
+      const meta = this.undoStates.get(snapshot);
+      const before = snapshotProgress(snapshot);
+      meta.touched = [...this.catalog.ids].filter((id) => filmKey(this.p, id) !== filmKey(before, id));
+      meta.current = JSON.stringify([this.p.current, this.p.drawnOn]) !== JSON.stringify([snapshot.current, snapshot.drawnOn]);
+      meta.ranking = JSON.stringify(this.p.rankings) !== JSON.stringify(snapshot.rankings);
+      meta.afterStamps = { ...this.p.stamps };
+      meta.afterForeign = { ...this.foreignRevisions };
+    }
+    this.pendingSnapshots.clear();
     this.dirty = !this.persist();
     this.emit(kind, true);
   }
@@ -210,18 +308,29 @@ export class Store extends EventTarget {
   }
   // `saved`: progress changed (a new revision), so backups and sync should follow.
   emit(kind, saved = false) {
-    this.dispatchEvent(new CustomEvent("change", { detail: { kind, saved } }));
+    this.dispatchEvent(new CustomEvent("change", { detail: { kind, saved, conflict: this.lastConflict } }));
   }
 
   touch(...keys) {
-    const at = this.now().toISOString();
-    for (const k of keys) if (k) this.p.stamps[k] = at;
+    // Monotonic even with a fixed/backwards clock, or another tab's save arriving before this edit.
+    // Reading stamps does not replace the in-flight edit; persist() performs the full reconciliation.
+    let newest = Math.max(0, ...Object.values(this.p.stamps).map((s) => Date.parse(s) || 0));
+    try {
+      const other = JSON.parse(this.storage?.getItem(this.list.storageKey) || "null");
+      if (other?.stamps) for (const stamp of Object.values(other.stamps)) newest = Math.max(newest, Date.parse(stamp) || 0);
+    } catch {}
+    const at = new Date(Math.max(this.now().getTime(), newest + 1)).toISOString();
+    for (const k of keys) if (k) {
+      this.p.stamps[k] = at;
+      this.ownedStamps.add(k + "\0" + at);
+    }
   }
 
   // ---------------------------------------------------------------- undo
   snapshot() {
+    this.reconcileStorage();
     const p = this.p;
-    return {
+    const snapshot = {
       seen: [...p.seen],
       dates: { ...p.dates },
       current: p.current,
@@ -238,29 +347,54 @@ export class Store extends EventTarget {
       drawnOn: p.drawnOn,
       stamps: { ...p.stamps },
     };
+    this.undoStates.set(snapshot, { touched: [], current: false, ranking: false, afterStamps: {}, afterForeign: { ...this.foreignRevisions } });
+    this.pendingSnapshots.add(snapshot);
+    return snapshot;
   }
   undo(s) {
+    this.reconcileStorage();
     const p = this.p;
-    // Everything the snapshot touched is changing again now, so sync should prefer this.
-    const changed = new Set([...p.seen, ...s.seen].filter((id) => p.seen.has(id) !== s.seen.includes(id)));
-    p.seen = new Set(s.seen);
-    p.dates = { ...s.dates };
-    p.current = s.current && this.catalog.byId.has(s.current) ? s.current : null;
-    p.drawnOn = p.current ? s.drawnOn ?? defaultWatchDate(this.now()) : null;
-    p.skipped = new Set(s.skipped);
-    p.reviews = structuredClone(s.reviews);
-    p.recent = [...s.recent];
-    p.moods = structuredClone(s.moods);
-    p.runtimes = { ...s.runtimes, ...p.runtimes };
-    p.rankings = [...s.rankings];
-    p.verdicts = { ...s.verdicts };
-    p.lbx = structuredClone(s.lbx);
-    p.shelf = new Set(s.shelf);
-    p.snubs = { ...s.snubs };
-    p.stamps = { ...s.stamps };
+    const before = snapshotProgress(s);
+    const meta = this.undoStates.get(s) || {
+      touched: [...this.catalog.ids].filter((id) => filmKey(p, id) !== filmKey(before, id)),
+      current: true, ranking: true, afterStamps: s.stamps || {}, afterForeign: {},
+    };
+    const conflicts = [], changed = [];
+    const newerElsewhere = (key) => (this.foreignRevisions[key] || 0) > (meta.afterForeign?.[key] || 0) ||
+      (p.stamps[key] && p.stamps[key] !== meta.afterStamps[key] && !this.ownedStamps.has(key + "\0" + p.stamps[key]));
+    for (const id of meta.touched) {
+      if (newerElsewhere(id)) { conflicts.push(id); continue; }
+      copyPersonalFilm(p, before, id);
+      changed.push(id);
+    }
+    if (meta.current && !newerElsewhere("$current")) {
+      p.current = s.current && this.catalog.byId.has(s.current) ? s.current : null;
+      p.drawnOn = p.current ? s.drawnOn ?? defaultWatchDate(this.now()) : null;
+      p.recent = [...s.recent];
+      changed.push("$current");
+    } else if (meta.current) conflicts.push("$current");
+    if (meta.ranking && !newerElsewhere("$ranking")) { p.rankings = [...s.rankings]; changed.push("$ranking"); }
+    else if (meta.ranking) conflicts.push("$ranking");
     for (const id of p.seen) p.skipped.delete(id);
-    this.touch(...changed, "$current", "$ranking");
+    if (p.current && p.seen.has(p.current)) { p.current = null; p.drawnOn = null; }
+    this.touch(...changed);
+    if (conflicts.length) this.lastConflict = { source: "undo", ids: conflicts, at: this.now().toISOString() };
     this.save("undo");
+    return { conflicts, changed };
+  }
+  /** A sync may merge more than once while retrying. Extend its original Undo to all remote edits. */
+  extendUndo(snapshot, additions = []) {
+    const meta = this.undoStates.get(snapshot);
+    if (!meta) return;
+    const before = snapshotProgress(snapshot), originallyTouched = new Set(meta.touched);
+    for (const addition of additions) for (const id of this.undoStates.get(addition)?.touched || []) originallyTouched.add(id);
+    meta.touched = [...this.catalog.ids].filter((id) => filmKey(this.p, id) !== filmKey(before, id) &&
+      (originallyTouched.has(id) || !this.ownedStamps.has(id + "\0" + this.p.stamps[id])));
+    const remoteChoice = (key, alreadyTouched) => alreadyTouched || !this.ownedStamps.has(key + "\0" + this.p.stamps[key]);
+    meta.current = remoteChoice("$current", meta.current || additions.some((s) => this.undoStates.get(s)?.current)) && JSON.stringify([this.p.current, this.p.drawnOn]) !== JSON.stringify([snapshot.current, snapshot.drawnOn]);
+    meta.ranking = remoteChoice("$ranking", meta.ranking || additions.some((s) => this.undoStates.get(s)?.ranking)) && JSON.stringify(this.p.rankings) !== JSON.stringify(snapshot.rankings);
+    meta.afterStamps = { ...this.p.stamps };
+    meta.afterForeign = { ...this.foreignRevisions };
   }
 
   // ---------------------------------------------------------------- the draw
@@ -278,6 +412,7 @@ export class Store extends EventTarget {
   }
   /** Draws a film. Returns { film } or { reason: "none" | "only" }. */
   draw(random = Math.random) {
+    this.reconcileStorage();
     const unit = pickUnit(this.units(), this.p.current, random);
     if (!unit) return { reason: "none" };
     if (unit.film.id === this.p.current) return { reason: "only" };
@@ -291,6 +426,7 @@ export class Store extends EventTarget {
   }
   // Opening a film from a list puts it on tonight's ticket (unless it's watched: that shows its stub).
   pick(id) {
+    this.reconcileStorage();
     if (!this.catalog.byId.has(id) || this.p.seen.has(id)) return;
     this.p.current = id;
     this.p.drawnOn = defaultWatchDate(this.now());
@@ -299,6 +435,7 @@ export class Store extends EventTarget {
     this.save("draw");
   }
   putBack() {
+    this.reconcileStorage();
     if (!this.p.current) return null;
     const undo = this.snapshot();
     this.p.current = null;
@@ -308,6 +445,7 @@ export class Store extends EventTarget {
     return undo;
   }
   keepTicket() {
+    this.reconcileStorage();
     if (!this.p.current) return;
     this.p.drawnOn = defaultWatchDate(this.now());
     this.touch("$current");
@@ -315,6 +453,7 @@ export class Store extends EventTarget {
   }
   /** Sets tonight's film aside. Only one at a time. */
   skipCurrent() {
+    this.reconcileStorage();
     const id = this.p.current;
     if (!id || this.p.seen.has(id) || this.p.skipped.has(id)) return { reason: "none" };
     if (this.p.skipped.size) return { reason: "busy" };
@@ -329,6 +468,7 @@ export class Store extends EventTarget {
   // ---------------------------------------------------------------- watching
   /** Marks a film watched or not. A series stays on the ticket: its next part becomes tonight's film. */
   markSeen(id, on) {
+    this.reconcileStorage();
     const f = this.catalog.byId.get(id);
     if (!f) return null;
     const undo = this.snapshot(),
@@ -355,6 +495,7 @@ export class Store extends EventTarget {
     return { undo, film: f, next, earned, wasCurrent };
   }
   setDate(id, iso) {
+    this.reconcileStorage();
     if (!this.p.seen.has(id) || (iso !== null && !validDate(iso))) return null;
     const undo = this.snapshot();
     if (iso === null) delete this.p.dates[id];
@@ -364,6 +505,7 @@ export class Store extends EventTarget {
     return undo;
   }
   rate(id, rating) {
+    this.reconcileStorage();
     const note = this.p.reviews[id]?.note || "",
       was = ratingOf(this.p, id);
     if (rating || note) this.p.reviews[id] = { note, rating: rating || null };
@@ -398,6 +540,7 @@ export class Store extends EventTarget {
     return undo;
   }
   setSnub(id, value) {
+    this.reconcileStorage();
     if (value) this.p.snubs[id] = value;
     else delete this.p.snubs[id];
     this.touch(id);
@@ -450,6 +593,7 @@ export class Store extends EventTarget {
     return undo;
   }
   moveRank(id, delta) {
+    this.reconcileStorage();
     const list = this.p.rankings.filter((x) => this.p.seen.has(x));
     const i = list.indexOf(id),
       j = i + delta;
@@ -495,6 +639,7 @@ export class Store extends EventTarget {
     const undo = this.snapshot();
     this.writeLocked = false; // what you restored replaces the save we couldn't read
     this.unreadable = null;
+    try { this.storedText = this.storage?.getItem(this.list.storageKey) || null; } catch {}
     const other = this.fromValidated(d, this.p);
     const before = this.p;
     this.p = mode === "merge" ? keepLocal(before, other) : replace(before, other);
@@ -513,6 +658,31 @@ export class Store extends EventTarget {
     return undo;
   }
   /** Letterboxd import: the options ticked in the preview. */
+  /**
+   * Films another list has watched (its validated save) that this list shares and has no record of. A film
+   * un-marked or set aside here has a stamp, so it stays as it is. Returns how many came over.
+   */
+  carryWatched(other) {
+    this.reconcileStorage();
+    if (this.writeLocked) return 0;
+    const p = this.p,
+      came = [];
+    for (const id of other.seen) {
+      if (!this.catalog.byId.has(id) || p.seen.has(id) || p.skipped.has(id) || p.stamps[id]) continue;
+      p.seen.add(id);
+      if (other.dates[id]) p.dates[id] = other.dates[id];
+      if (other.reviews?.[id] && !p.reviews[id]) p.reviews[id] = structuredClone(other.reviews[id]);
+      if (p.current === id) {
+        p.current = null;
+        p.drawnOn = null;
+      }
+      came.push(id);
+    }
+    if (!came.length) return 0;
+    this.touch(...came);
+    this.save("progress");
+    return came.length;
+  }
   applyLetterboxd(changes) {
     const undo = this.snapshot();
     let n = 0;
@@ -610,4 +780,15 @@ export class Store extends EventTarget {
 // Everything personal about one film, as text, to tell whether a restore changed it.
 function filmKey(p, id) {
   return JSON.stringify([p.seen.has(id), p.dates[id], p.skipped.has(id), p.reviews[id], p.verdicts[id], p.snubs[id], p.shelf.has(id), p.moods[id], p.lbx[id]]);
+}
+
+function snapshotProgress(snapshot) {
+  return { ...snapshot, seen: new Set(snapshot.seen), skipped: new Set(snapshot.skipped), shelf: new Set(snapshot.shelf) };
+}
+function copyPersonalFilm(target, from, id) {
+  for (const set of ["seen", "skipped", "shelf"]) from[set].has(id) ? target[set].add(id) : target[set].delete(id);
+  for (const field of ["dates", "reviews", "verdicts", "snubs", "moods", "lbx"]) {
+    if (Object.hasOwn(from[field], id)) target[field][id] = structuredClone(from[field][id]);
+    else delete target[field][id];
+  }
 }

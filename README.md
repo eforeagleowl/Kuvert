@@ -1,7 +1,7 @@
 # Kuvert
 
 **Open the envelope and find tonight's film.** Kuvert is a random film picker for working through every
-Best Picture winner and nominee, plus a few honorable mentions: 275 films, drawn one at a time.
+Best Picture winner and selected nominees, plus a few honorable mentions: 275 films, drawn one at a time.
 
 **Use it at https://eforeagleowl.github.io/Kuvert/**. There is nothing to install, though you can add it
 to your home screen, and it works offline after your first visit.
@@ -20,6 +20,16 @@ to your home screen, and it works offline after your first visit.
   milestones. The dala horse gets painted as you go.
 - **Group night.** Add your friends' codes, and the draw only picks films none of you has seen.
 - **Your own lists.** Import any film list, or bring your history in from Letterboxd.
+- **Envelopes.** Small curated collections (seven nights of noir, a Swedish winter, first steps into
+  silent cinema), each with its own progress, context cards and a printable keepsake when it's done.
+- **Sealed invitations.** Send a friend tonight's film as a link or QR code; they break the seal to see it.
+- **Cinema passport.** A printable journal of the films you've watched, for all time or one year.
+- **Film club.** Friends agree on a film together and reveal their stars at the same moment. It needs
+  the small Kuvert service in `server/` running somewhere ([hosting options](docs/HOSTING.md));
+  on a static site like GitHub Pages, the club stays out of sight.
+- **Galan.** For the completists: every film ever nominated for Best Picture, all 98 ceremonies, 621
+  films and no honorable mentions. Switch it on from "for the completists." in About. The regular list
+  of 275 stays as it is, and films watched in one count in the other.
 - **På svenska.** Switch the whole app to Swedish under Settings → Language.
 
 ## Your progress
@@ -31,8 +41,7 @@ can:
 - copy a short progress code, or
 - turn on sync through a private GitHub Gist.
 
-Posters, runtimes, cast and where to stream a film come from [TMDB](https://www.themoviedb.org/).
-To see them, connect your own free TMDB key in Settings.
+Offline film facts now include source-linked runtimes and suggested moods for every core film. Posters, cast and current streaming offers come from [TMDB](https://www.themoviedb.org/). Connect a personal TMDB key in Settings, or let the optional Kuvert service supply them using its operator token. Sources and edition notes are documented in [EDITORIAL.md](docs/EDITORIAL.md).
 
 The built-in list can also carry posters of its own, so visitors see them without a key. They're off
 until a repository secret named `TMDB_TOKEN` holds a TMDB API read access token. From then on, the
@@ -45,7 +54,8 @@ The site is plain HTML, CSS and JavaScript modules with no build step. The check
 
 ```sh
 npm ci
-npm run serve    # http://127.0.0.1:8123/
+npm run serve    # static-only, http://127.0.0.1:8123/
+# or: npm run serve:club   # same site plus private club API
 npm run check    # service worker stamp, unit tests and browser tests
 ```
 
@@ -57,6 +67,8 @@ How it's built: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Every feature:
 - Kuvert's code is released under the [MIT License](LICENSE).
 - Type: Cormorant Garamond, Geist, Geist Mono and Michroma, under the SIL Open Font License
   ([assets/fonts/OFL.txt](assets/fonts/OFL.txt)).
+- QR codes: qrcode-generator 2.0.4 by Kazuhiko Arase, MIT ([license](js/vendor/QRCODE-LICENSE.txt)).
+- Offline structured film facts: Wikidata (CC0), plus linked presentation sources.
 - Icons: [Lucide](https://lucide.dev/), ISC License.
 - This website uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.
   Streaming availability data by [JustWatch](https://www.justwatch.com/).

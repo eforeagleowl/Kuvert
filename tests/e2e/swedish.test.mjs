@@ -30,7 +30,7 @@ test("in Swedish: every page, the ticket and both boards, and back to English fr
   const page = await openPage(context, "/");
   assert.equal(await page.getAttribute("html", "lang"), "sv");
   assert.equal(await page.getAttribute("html", "data-translated"), "");
-  assert.deepEqual(await page.$$eval(".tabs a", (as) => as.map((a) => a.textContent.trim())), ["Ikväll", "Bibliotek", "Statistik", "Inställningar"]);
+  assert.deepEqual(await page.$$eval(".tabs a", (as) => as.map((a) => a.textContent.trim())), ["Ikväll", "Kuvert", "Bibliotek", "Statistik", "Inställningar"]);
   assert.equal((await page.textContent("#drawBtn")).trim(), "Öppna kuvertet");
   assert.deepEqual(await leftovers(page), [], "Tonight");
 

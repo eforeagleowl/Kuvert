@@ -297,7 +297,7 @@ export class Evening {
     };
     $("welcomeStart").addEventListener("click", () => {
       dismiss();
-      $("drawBtn").focus();
+      this.app.stage.drawOrFinale();
     });
     $("welcomeImport").addEventListener("click", () => {
       dismiss();

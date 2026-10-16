@@ -76,14 +76,17 @@ export class Details {
   constructor({ store }) {
     this.store = store;
     this.cache = new Map();
+    this.proxy = false;
+    this.proxyClient = null;
   }
   get token() {
     return this.store.tmdbToken;
   }
   get connected() {
-    return !!tmdbAuth(this.token);
+    return !!tmdbAuth(this.token) || this.proxy;
   }
   call(path, params, signal) {
+    if (!tmdbAuth(this.token) && this.proxy && this.proxyClient) return this.proxyClient.movie(path, params, signal);
     return tmdb(this.token, path, params, signal);
   }
   /**

@@ -1269,8 +1269,12 @@
   .tmdb-logo {
     flex: none;
   }
+  /* SEAGAL's door and Galan's (js/fun/gala.js), side by side; whichever is hidden takes no room. */
   .secret-door {
-    text-align: right;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--s-1) var(--s-4);
   }
   /* A real italic (Geist has none, so the browser would slant it): the display face's. */
   .secret-door .link {

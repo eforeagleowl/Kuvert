@@ -7,3 +7,7 @@ exclude:
   - package.json
   - package-lock.json
   - README.md
+  - server
+  - Dockerfile
+  - .dockerignore
+  - pnpm-lock.yaml

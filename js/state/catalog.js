@@ -86,8 +86,10 @@ export function makeCatalog(list, { posters = {} } = {}) {
   }
 
   // Oscar night: what each film was up against, from the `c` (ceremony) field.
-  const ceremonyName = t(list.custom ? "ceremony" : "Academy Awards");
-  const fieldSize = (c) => (list.custom ? null : BEST_PICTURE_FIELD[c - 1] || null);
+  // The built-in list and Galan (every Best Picture ballot, js/fun/gala.js) are the Academy's own fields.
+  const academy = !list.custom || list.id === "gala";
+  const ceremonyName = t(academy ? "Academy Awards" : "ceremony");
+  const fieldSize = (c) => (academy ? BEST_PICTURE_FIELD[c - 1] || null : null);
   const ceremonyFilms = (c) => films.filter((f) => f.c === c && (f.s === "W" || f.s === "N"));
   const ceremonyWinner = (c) => ceremonyFilms(c).find(isWinner) || null;
   // "Lost to Rocky at the 49th Academy Awards." / "Beat Taxi Driver, All the President's Men and 2 more at …"

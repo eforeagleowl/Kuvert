@@ -175,6 +175,15 @@ test("TMDB: connecting and loading every film sends what Kuvert Classic sends, a
     total = FILMS.length;
   assert.ok(found > total * 0.8 && found < total, "most films matched, the ambiguous ones wait for a choice (" + found + " of " + total + ")");
   sameRequests("TMDB requests", classic.requests, next.requests);
+  // Kuvert also starts from its own offline facts (js/data/basics.js): a film TMDB couldn't match without a
+  // choice can still have a runtime and mood suggestions. Everything TMDB supplied is the same.
+  const { BASIC_METADATA } = await import("../../js/data/basics.js");
+  for (const field of ["runtimes", "moodSuggestions"])
+    for (const [id, value] of Object.entries(next.details[field] || {}))
+      if (!Object.hasOwn(classic.details[field] || {}, id)) {
+        assert.deepEqual(value, field === "runtimes" ? BASIC_METADATA[id]?.runtime : BASIC_METADATA[id]?.moods, field + " for " + id + " come from the offline facts");
+        delete next.details[field][id];
+      }
   assert.deepEqual(next.details, classic.details);
   assert.equal(next.token, TMDB_TOKEN);
   assert.equal(classic.token, TMDB_TOKEN);
@@ -202,11 +211,28 @@ test("GitHub sync: connecting and syncing sends what Kuvert Classic sends", asyn
   }
   const { classic, new: next } = results;
   assert.ok(classic.log.length >= 3, "connect found no gist, made one and synced");
-  assert.deepEqual(
-    next.log.map((e) => e.request),
-    classic.log.map((e) => e.request),
-    "the same requests in the same order",
-  );
-  assert.deepEqual(next.log, classic.log, "the same credentials, headers and bodies");
+  // Every write is the same, in the same order, with the same credentials, headers and bodies.
+  const writes = (log) => log.filter((e) => !e.request.startsWith("GET "));
+  // The progress file also carries Kuvert's offline facts (js/data/basics.js) for films Classic had no
+  // runtime or mood suggestions for: those, and only those, are extra.
+  const { BASIC_METADATA } = await import("../../js/data/basics.js");
+  const offline = { runtimes: (id) => BASIC_METADATA[id]?.runtime, moodSuggestions: (id) => BASIC_METADATA[id]?.moods };
+  writes(next.log).forEach((e, i) => {
+    for (const [name, file] of Object.entries(e.body?.files || {})) {
+      const theirs = writes(classic.log)[i]?.body?.files?.[name];
+      if (!file || typeof file !== "object" || !theirs) continue;
+      for (const field of Object.keys(offline))
+        for (const id of Object.keys(file[field] || {}))
+          if (!Object.hasOwn(theirs[field] || {}, id)) {
+            assert.deepEqual(file[field][id], offline[field](id), field + " for " + id + " come from the offline facts");
+            delete file[field][id];
+          }
+    }
+  });
+  assert.deepEqual(writes(next.log), writes(classic.log), "the same writes");
+  // Kuvert also reads the gist again just before it writes and just after (to catch another device's
+  // change), so it makes more reads than Classic: the same ones, the same way.
+  const reads = (log) => new Map(log.filter((e) => e.request.startsWith("GET ")).map((e) => [e.request, e]));
+  assert.deepEqual([...reads(next.log)].sort(), [...reads(classic.log)].sort(), "the same reads, with the same credentials and headers");
   assert.deepEqual(next.cfg, classic.cfg);
 });

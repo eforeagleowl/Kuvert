@@ -21,8 +21,8 @@ const regionName = (code) => {
   }
 };
 
-export const APP_VERSION = "4.0";
-export const BUILT = "27 Sep 2026";
+export const APP_VERSION = "5.0";
+export const BUILT = "2026-10-16";
 
 export class Settings {
   constructor(app) {
@@ -250,7 +250,7 @@ export class Settings {
       },
       "change",
     );
-    $("aboutVersion").textContent = APP_VERSION + t(" · built ") + BUILT;
+    $("aboutVersion").textContent = APP_VERSION + t(" · built ") + new Date(BUILT + "T12:00:00").toLocaleDateString(LOCALE, { day: "numeric", month: "short", year: "numeric" });
     on("aboutLink", () => this.open("aboutSection"));
     this.renderLists();
     this.renderTmdb();
@@ -350,7 +350,8 @@ export class Settings {
               ? t("Sync is on. Last synced {when}", { when: new Date(last.at).toLocaleString(LOCALE) }) + t(last.signature !== store.signature() ? " · changes waiting to upload." : ".")
               : t("Sync is on.")
             : t("Keep your devices in step through a secret GitHub Gist. It's unlisted: only someone with its exact link can open it."));
-    $("syncState").classList.toggle("warn", !!sync.error);
+    if (sync.warning && !busyText) $("syncState").textContent += " " + t(sync.warning);
+    $("syncState").classList.toggle("warn", !!sync.error || !!sync.warning);
   }
 
   // ------------------------------------------------ TMDB
@@ -360,6 +361,8 @@ export class Settings {
     $("tmdbHelp").hidden = on;
     $("tmdbConnected").hidden = !on;
     $("tmdbState").textContent = t(on ? "Connected. Streaming availability comes from JustWatch via TMDB." : "Optional. Adds the poster, runtime and where to stream each film.");
+    if (this.app.details.proxy && !this.app.store.tmdbToken) $("tmdbState").textContent = t("Movie data is provided by this Kuvert service. No personal API key is needed.");
+    $("tmdbClear").hidden = !this.app.store.tmdbToken;
   }
   async connectTmdb() {
     const { store, details, stage } = this.app;

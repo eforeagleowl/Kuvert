@@ -22,6 +22,9 @@ export class Sync extends EventTarget {
     this.timer = null;
     this.error = "";
     this.applying = false;
+    this.warning = "";
+    this.conflicts = [];
+    this.activeConnection = null;
   }
   read() {
     try {
@@ -33,6 +36,9 @@ export class Sync extends EventTarget {
   }
   write() {
     try {
+      // A different list/tab can have recorded its sync while this request was in flight.
+      const latest = this.read();
+      if (latest.token === this.cfg.token && latest.gistId === this.cfg.gistId) this.cfg.last = { ...latest.last, ...this.cfg.last };
       this.storage.setItem(KEYS.sync, JSON.stringify(this.cfg));
     } catch {}
   }
@@ -92,18 +98,95 @@ export class Sync extends EventTarget {
     return g.id;
   }
   async readRemote() {
+    this.assertConnection();
     const g = await this.gh("/gists/" + this.cfg.gistId);
+    this.assertConnection();
     const f = g.files?.[this.file];
     if (!f) return null;
     const text = f.truncated ? await (await this.fetch(f.raw_url, { cache: "no-store" })).text() : f.content;
+    this.assertConnection();
     return JSON.parse(text);
   }
   async writeRemote(data) {
+    this.assertConnection();
     await this.gh("/gists/" + this.cfg.gistId, { method: "PATCH", body: { files: { [this.file]: { content: JSON.stringify(data) } } } });
   }
   record(localSig, remoteSig) {
-    this.cfg.last[this.file] = { at: new Date().toISOString(), signature: localSig, remote: remoteSig };
+    this.assertConnection();
+    this.cfg.last[this.file] = { at: new Date().toISOString(), signature: localSig, remote: remoteSig, stamps: { ...this.store.p.stamps } };
     this.write();
+  }
+  assertConnection() {
+    if (!this.activeConnection) return;
+    const current = this.read();
+    if (this.cfg.token !== this.activeConnection.token || this.cfg.gistId !== this.activeConnection.gistId || current.token !== this.activeConnection.token || current.gistId !== this.activeConnection.gistId)
+      throw Error(t("Sync settings changed while this request was running. Run sync again."));
+  }
+
+  noteConflicts(remote, baseline = this.last?.stamps || {}) {
+    const local = this.store.data(), a = local.stamps || {}, b = remote.stamps || {};
+    for (const key of new Set([...Object.keys(a), ...Object.keys(b)])) {
+      if (!a[key] || !b[key] || a[key] === b[key] || a[key] === baseline[key] || b[key] === baseline[key]) continue;
+      const record = (data) => key === "$current" ? JSON.stringify([data.current, data.drawnOn])
+        : key === "$ranking" ? JSON.stringify(data.rankings)
+          : JSON.stringify([(data.seen || []).includes(key), (data.skipped || []).includes(key), (data.shelf || []).includes(key), ...["dates", "reviews", "verdicts", "snubs", "moods", "lbx"].map((field) => data[field]?.[key] ?? null)]);
+      if (record(local) !== record(remote) && !this.conflicts.includes(key)) this.conflicts.push(key);
+    }
+    if (this.conflicts.length) this.warning = t("Some choices changed on both devices. The newest change to each film was kept. Review these choices before continuing.");
+  }
+
+  applyRemote(remote, mode) {
+    const d = validateProgress(remote, this.store.catalog.ctx);
+    this.noteConflicts(remote);
+    this.applying = true;
+    try {
+      const undo = this.store.applyRemote(d, mode);
+      this.assertBrowserSave();
+      return undo;
+    }
+    finally { this.applying = false; }
+  }
+  assertBrowserSave() {
+    if (this.store.writeLocked) throw Error(t("Saved progress could not be read. You can restore a backup in Settings."));
+    if (!this.store.storageOK) throw Error(t("Unsaved changes · Save progress to keep them"));
+  }
+
+  // GitHub explicitly does not support conditional PATCH unless an endpoint documents it; Gists
+  // does not. https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api
+  // A reread/merge and postwrite verification narrows the race, but is not compare-and-swap. A
+  // racing update between the final GET and PATCH can still be overwritten by GitHub. Keep local
+  // records until verified and stop after bounded retries instead of claiming guaranteed safety.
+  async uploadReconciled(onApplied) {
+    const store = this.store;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt) await new Promise((resolve) => setTimeout(resolve, 1000));
+      const latest = await this.readRemote();
+      store.reconcileStorage?.();
+      this.assertBrowserSave();
+      if (latest) {
+        validateProgress(latest, store.catalog.ctx);
+        if (progressSignature(latest) !== store.signature()) onApplied(this.applyRemote(latest, "merge"));
+      }
+      const data = store.data(), sig = progressSignature(data);
+      // No PATCH is necessary when the reread already agrees (e.g. another device merged our copy).
+      if (latest && progressSignature(latest) === sig) {
+        this.record(sig, sig);
+        return;
+      }
+      // Capture after the reread so edits made while syncing are included.
+      const sent = store.data(), sentSig = progressSignature(sent);
+      await this.writeRemote(sent);
+      const confirmed = await this.readRemote();
+      store.reconcileStorage?.();
+      this.assertBrowserSave();
+      if (confirmed) validateProgress(confirmed, store.catalog.ctx);
+      if (confirmed && progressSignature(confirmed) === sentSig && store.signature() === sentSig) {
+        this.record(sentSig, sentSig);
+        return;
+      }
+      if (confirmed && progressSignature(confirmed) !== store.signature()) onApplied(this.applyRemote(confirmed, "merge"));
+    }
+    throw Error(t("Progress kept changing on another device. Your browser copy is safe. Sync again once both devices are idle."));
   }
 
   /**
@@ -114,51 +197,51 @@ export class Sync extends EventTarget {
     if (!this.on || this.busy || !this.store.storageOK || this.store.writeLocked) return null;
     this.busy = true;
     this.error = "";
+    this.warning = "";
+    this.conflicts = [];
+    this.activeConnection = { token: this.cfg.token, gistId: this.cfg.gistId };
     this.changed();
     let result = null;
+    const mergeUndos = [];
     try {
       const store = this.store,
         last = this.last,
-        remote = await this.readRemote(),
-        localSig = store.signature();
+        remote = await this.readRemote();
+      store.reconcileStorage?.();
+      this.assertBrowserSave();
+      const localSig = store.signature();
+      if (remote) validateProgress(remote, store.catalog.ctx);
+      const merged = (undo) => { mergeUndos.push(undo); result ||= { applied: "merge", undo }; };
       if (!remote) {
-        const data = store.data();
-        await this.writeRemote(data);
-        this.record(localSig, progressSignature(data));
+        await this.uploadReconciled(merged);
       } else {
         const remoteSig = progressSignature({ ...remote, seen: remote.seen || [] });
         const localChanged = !last || last.signature !== localSig,
           remoteChanged = !last || last.remote !== remoteSig;
         if (remoteSig === localSig) this.record(localSig, remoteSig);
         else if (!localChanged && remoteChanged) {
-          const d = validateProgress(remote, store.catalog.ctx);
-          this.applying = true;
-          const undo = store.applyRemote(d, "replace");
-          this.applying = false;
+          const undo = this.applyRemote(remote, "replace");
           this.record(store.signature(), remoteSig);
           result = { applied: "replace", undo };
+          mergeUndos.push(undo);
         } else if (localChanged && !remoteChanged) {
-          const data = store.data();
-          await this.writeRemote(data);
-          this.record(localSig, progressSignature(data));
+          await this.uploadReconciled(merged);
         } else {
-          const d = validateProgress(remote, store.catalog.ctx);
-          this.applying = true;
-          const undo = store.applyRemote(d, "merge");
-          this.applying = false;
-          const data = store.data();
-          await this.writeRemote(data);
-          const sig = progressSignature(data);
-          this.record(sig, sig);
-          result = { applied: "merge", undo };
+          const undo = this.applyRemote(remote, "merge");
+          merged(undo);
+          await this.uploadReconciled(merged);
         }
       }
+      if (result?.undo) store.extendUndo?.(result.undo, mergeUndos);
+      if (this.conflicts.length) result = { ...(result || {}), conflicts: [...this.conflicts], warning: this.warning };
     } catch (e) {
       this.applying = false;
       this.error = e.message || t("Sync failed.");
-      if (!quiet) result = { error: this.error };
+      if (result?.undo) this.store.extendUndo?.(result.undo, mergeUndos);
+      result = quiet ? null : { ...(result || {}), error: this.error, conflicts: [...this.conflicts] };
     } finally {
       this.busy = false;
+      this.activeConnection = null;
       this.changed();
     }
     return result;
@@ -182,6 +265,8 @@ export class Sync extends EventTarget {
       this.storage.removeItem(KEYS.sync);
     } catch {}
     this.error = "";
+    this.warning = "";
+    this.conflicts = [];
     this.changed();
   }
 }

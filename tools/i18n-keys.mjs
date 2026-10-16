@@ -92,7 +92,8 @@ export function codeKeys() {
   for (const file of jsFiles(join(ROOT, "js"))) {
     if (file.includes(join("js", "i18n"))) continue;
     const src = readFileSync(file, "utf8");
-    for (const m of src.matchAll(/(?<![\w.$])t\(|\bsg\(/g)) for (const s of firstArgStrings(src, m.index + m[0].length)) if (/[A-Za-z]/.test(s)) keys.add(s);
+    const calls = /views[\/\\](?:journeys|club)\.js$/.test(file) ? /(?<![\w.$])(?:t|btn|button|field)\(|\bsg\(/g : /(?<![\w.$])t\(|\bsg\(/g;
+    for (const m of src.matchAll(calls)) for (const s of firstArgStrings(src, m.index + m[0].length)) if (/[A-Za-z]/.test(s)) keys.add(s);
   }
   return keys;
 }

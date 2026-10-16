@@ -4,9 +4,11 @@ Everything the current app (`/index.html`, version 3.0, built 25 Sep 2026) does,
 The rebuild keeps every line of this list. Items marked **changed** behave better on purpose;
 nothing is dropped.
 
+For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTURE.md). The original feature inventory below remains the compatibility baseline.
+
 ## Lists and catalogue
 
-- Built-in list: 250 films (98 winners, 137 nominees, 15 honorable mentions), permanent ids like
+- Built-in list: 275 films (98 winners, 155 nominees, 22 honorable mentions), permanent ids like
   `1972-the-godfather`, ceremony number `c` for winners and nominees, series `tri`/`ord`
   (The Godfather, The Lord of the Rings, Dune).
 - Catalogue name `kuvert-2026-10-v9`; older names `kuvert-2026-09-expanded-v8`…v3, `kuvert-2026-09-hm-v2`,
@@ -18,7 +20,7 @@ nothing is dropped.
   up to 2,000 films, name, subtitle and palette. Each list keeps its own progress under `kuvert:list:<id>`.
   Switch lists, export the current list as JSON, delete a custom list.
 - Palettes: Kuvert blue, Skog green, Vinter violet, Falu red, Natt black. The dala horse silhouette stays.
-- Ticket numbers follow year order (year, part, title), padded to three digits: `089 / 250`.
+- Ticket numbers follow year order (year, part, title), padded to three digits: `089 / 275`.
 - Best Picture field sizes per ceremony (1st–98th) for the Oscar line.
 
 ## Tonight
@@ -64,7 +66,7 @@ nothing is dropped.
 - Sleepy horse after midnight and "Dags att sova? Time for bed? One more is fine too."
 - Keyboard: Enter draws (or finishes the stub), W marks watched, 1–5 rates the stub, / searches,
   Escape leaves a field or closes the toast.
-- Finale ticket "Hela samlingen." with 250 FILMER SEDDA seal, first and last recorded watch,
+- Finale ticket "Hela samlingen." with 275 FILMER SEDDA seal, first and last recorded watch,
   total running time when every film has a runtime, confetti (tickets, crowns, dots), "See your watchthrough".
 - Welcome card on first visit: Start with this list, Bring my own list, Add posters & streaming,
   Connect sync or load a backup.
@@ -75,7 +77,7 @@ nothing is dropped.
   award shelf filters Won / Nom / HM.
 - Forgiving search: accents, punctuation, roman numerals, initials ("lotr", "lotr2", "et"), run-together
   words, years ("zola 1937").
-- Decade coverage buttons (filter by decade), "98 winners, 137 nominees and 15 honorable mentions still to watch."
+- Decade coverage buttons (filter by decade), "98 winners, 155 nominees and 22 honorable mentions still to watch."
 - "Use these filters for tonight's draw", Back to tonight.
 - Rows: watched toggle, poster thumbnail when TMDB is connected (lazy, two at a time, stops after three
   failures), title opens the film, shelf chip, year.

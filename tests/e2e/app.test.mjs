@@ -57,6 +57,7 @@ test("an evening: draw, mark watched, rate, undo", async () => {
 
   await page.click("#markBtn");
   await page.waitForFunction((id) => window.kuvert.app.store.p.seen.has(id), id);
+  await page.waitForFunction(() => /^1 of \d+ watched/.test(document.getElementById("tally").textContent));
   assert.match(await page.textContent("#tally"), /^1 of \d+ watched/);
   assert.ok(await page.isVisible(".stamp-sedd"));
 

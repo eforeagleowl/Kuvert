@@ -115,15 +115,20 @@ export class Station {
   get size() {
     return this.board.rows.length || 8;
   }
+  // The trains around tonight's: never the saved ticket's film, which is only named once it's printed.
+  others() {
+    const current = this.app.store.p.current;
+    return this.pool().filter((f) => f.id !== current);
+  }
   freshRows() {
-    const films = shuffle(this.pool()),
+    const films = shuffle(this.others()),
       times = T.schedule(this.size);
     return films.slice(0, this.size).map((film, i) => ({ film, time: times[i], hl: false }));
   }
   // Trains join at the bottom, 5 to 25 minutes after the last one.
   topUp() {
     const on = new Set(this.rows.map((r) => r.film.id)),
-      films = shuffle(this.pool().filter((f) => !on.has(f.id)));
+      films = shuffle(this.others().filter((f) => !on.has(f.id)));
     let t = this.rows.length ? this.rows.at(-1).time : T.schedule(1)[0];
     let first = !this.rows.length;
     while (this.rows.length < this.size && films.length) {

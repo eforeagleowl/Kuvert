@@ -96,6 +96,19 @@ function newestStamps(a = {}, b = {}) {
   return out;
 }
 
+// Millisecond clocks can tie across tabs/devices. The same tie must choose the same copy on both
+// sides, otherwise each side keeps its own value forever. A deterministic record comparison breaks
+// the tie; callers can surface a conflict when two equally stamped records differ.
+function filmRecord(p, id) {
+  return JSON.stringify([p.seen.has(id), p.skipped.has(id), p.shelf.has(id), ...FILM_FIELDS.map((field) => p[field][id] ?? null)]);
+}
+function stampedWinner(local, remote, key, record) {
+  const lt = time(local.stamps?.[key]), rt = time(remote.stamps?.[key]);
+  if (lt !== rt) return lt > rt ? local : remote;
+  // Use code-unit ordering so the tie does not depend on the device's language or ICU version.
+  return record(local) >= record(remote) ? local : remote;
+}
+
 function copyFilm(out, from, id) {
   from.seen.has(id) ? out.seen.add(id) : out.seen.delete(id);
   from.skipped.has(id) ? out.skipped.add(id) : out.skipped.delete(id);
@@ -112,16 +125,16 @@ export function bySync(local, remote) {
     rs = remote.stamps || {};
   for (const id of new Set([...Object.keys(ls), ...Object.keys(rs)])) {
     if (id.startsWith("$")) continue;
-    const winner = time(ls[id]) >= time(rs[id]) ? local : remote;
+    const winner = stampedWinner(local, remote, id, (p) => filmRecord(p, id));
     copyFilm(out, winner, id);
   }
   // Tonight's ticket and the ranking are single choices: the newest one wins.
   if (ls.$current || rs.$current) {
-    const w = time(ls.$current) >= time(rs.$current) ? local : remote;
+    const w = stampedWinner(local, remote, "$current", (p) => JSON.stringify([p.current, p.drawnOn]));
     out.current = w.current || null;
     out.drawnOn = out.current ? w.drawnOn : null;
   }
-  if (ls.$ranking || rs.$ranking) out.rankings = [...(time(ls.$ranking) >= time(rs.$ranking) ? local : remote).rankings];
+  if (ls.$ranking || rs.$ranking) out.rankings = [...stampedWinner(local, remote, "$ranking", (p) => JSON.stringify(p.rankings)).rankings];
   out.stamps = newestStamps(ls, rs);
   return finish(out);
 }

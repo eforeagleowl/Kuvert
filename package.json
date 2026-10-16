@@ -6,12 +6,15 @@
   "scripts": {
     "test": "node --test \"tests/unit/*.test.mjs\"",
     "test:e2e": "node --test --test-concurrency=1 \"tests/e2e/*.test.mjs\"",
-    "check": "node tools/stamp.mjs --check && npm test && npm run test:e2e",
+    "check": "node tools/stamp.mjs --check && npm run check:catalogue && npm test && npm run test:e2e",
     "golden": "node tools/golden.mjs",
     "stamp": "node tools/stamp.mjs",
-    "serve": "node tools/serve.mjs"
+    "serve": "node tools/serve.mjs",
+    "serve:club": "node server/server.mjs",
+    "check:catalogue": "node tools/catalogue-check.mjs"
   },
   "devDependencies": {
+    "jsdom": "26.1.0",
     "playwright": "1.56.1"
   },
   "engines": {

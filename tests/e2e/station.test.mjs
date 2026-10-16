@@ -120,6 +120,9 @@ test("a saved ticket is printed first at the station, never drawn over or named 
   });
   await page.click("#toStation");
   await ready(page);
+  // The other trains never include it, however often the board is drawn up.
+  const boards = await page.evaluate((id) => Array.from({ length: 200 }, () => window.kuvert.app.station.freshRows()).filter((rows) => rows.some((r) => r.film.id === id)).length, film.id);
+  assert.equal(boards, 0, "the saved ticket's film is never one of the other trains");
   assert.equal(await page.textContent("#stDrawMain"), "Skriv ut biljetten");
   assert.equal(await page.textContent("#stDrawSub"), "Print your saved ticket");
   const text = await page.evaluate(() => document.getElementById("page-station").innerText + document.getElementById("stTicker").textContent);

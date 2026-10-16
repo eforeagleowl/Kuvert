@@ -105,3 +105,7 @@ The site's own address appears in a few places: the link-preview tags and canoni
 
 After changing any file of the app, run `npm run stamp` so browsers pick up the new version. CI fails
 when the stamp is stale.
+
+## Kuvert 5 additions
+
+`js/data/curated.js`, `ceremonies.js` and `basics.js` supply editorial collections, every Best Picture ballot and sourced offline facts (runtimes and mood suggestions for every film, so the time and mood filters work without TMDB). `js/views/journeys.js`, `js/journeys/` and `js/views/club.js` add the Envelopes page, sealed invitation links, QR codes, the cinema passport and film clubs. `js/fun/gala.js` is Galan, an extra mode like SEAGAL: a list made from all 98 ballots (621 films, no honorable mentions) that shares film ids with the regular list, so watched films carry between the two. `js/storage/library-backup.js` defines a separate validated whole-library format without changing legacy version 7. `server/` is an optional Node service (built-ins only) for private clubs and an operator-configured movie-data proxy. It serves the same files GitHub Pages publishes and needs one persistent writer; it can be left out for static hosting. See [HOSTING.md](HOSTING.md).

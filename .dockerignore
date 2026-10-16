@@ -1,0 +1,11 @@
+node_modules
+.git
+.env
+server/.data
+test-results
+.cache
+tests
+tools
+pnpm-lock.yaml
+docs
+README.md

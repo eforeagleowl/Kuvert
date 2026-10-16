@@ -10,6 +10,7 @@ import { imageUrl, fmtMoney } from "../tmdb/client.js";
 import { starText, ratingWord, allWatched, finaleData, plural } from "../state/stats.js";
 import { fmtDay, dayLong, dateFull, defaultWatchDate } from "../state/dates.js";
 import { t, decimal } from "../i18n/index.js";
+import { metadataFor } from "./journeys.js";
 
 const VERDICTS = [
   ["yes", "Yes"],
@@ -784,6 +785,14 @@ export class Stage {
       $("moreDetails").hidden = true;
       setText("pickFacts", t("Album · {year} · Listen start to finish", { year: f.y }));
       return;
+    }
+    const basic = this.app.journeys && metadataFor(f.id);
+    const well = $("posterWell");
+    well.querySelectorAll(".film-card-title,.film-card-year").forEach(el => el.remove());
+    well.append(h("span", {class:"film-card-title",text:f.t,attrs:{"aria-hidden":"true"}}),h("span",{class:"film-card-year",text:String(f.y),attrs:{"aria-hidden":"true"}}));
+    const runtime = this.store.p.runtimes[f.id];
+    if (runtime || basic?.director) {
+      setText("pickFacts", [runtime ? runtime + " min" : null, basic?.director ? t("dir. {names}", { names: basic.director }) : null].filter(Boolean).join(" · "));
     }
     if (!details.connected) {
       // The list's own poster still shows; the rest needs a TMDB key.

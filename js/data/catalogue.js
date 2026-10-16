@@ -390,6 +390,18 @@ export const PALETTES = {
     "blue": "#4B6A86",
     "paper": "#EFEBE3",
     "ink": "#1C1E22"
+  },
+  "gala": {
+    "label": "Gala gold",
+    "house": "#1A1411",
+    "deep": "#0C0907",
+    "glow": "#3A2B1F",
+    "navy": "#2A2019",
+    "brass": "#EBC86E",
+    "velvet": "#A52A33",
+    "blue": "#7A5530",
+    "paper": "#F6EFDC",
+    "ink": "#1F1813"
   }
 };
 

@@ -386,6 +386,16 @@ test("the envelope moves smoothly: the ticket comes out from under it, never ove
     await settled();
     neverOver(await take(), "draw again");
 
+    // Again, scrolled to the bottom, onto a much shorter ticket: the page gets shorter while the ticket is
+    // tucked away, so the browser moves everything down, the envelope with it.
+    await page.evaluate(() => document.getElementById("ticket").append(Object.assign(document.createElement("div"), { id: "tallTicket", style: "height:200px" })));
+    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForTimeout(150);
+    await take();
+    await page.evaluate(() => window.kuvert.app.stage.swap(1950, () => document.getElementById("tallTicket").remove()));
+    await settled();
+    neverOver(await take(), "drawn again onto a shorter ticket");
+
     // Scrolled down to the ticket's buttons, then closed (as Done does, with no scrolling first).
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
     await page.waitForTimeout(150);

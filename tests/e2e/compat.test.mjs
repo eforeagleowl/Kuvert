@@ -55,7 +55,7 @@ test("the rebuild reads the classic app's save, and the classic app reads it bac
 });
 
 test("a save from before the last 25 films were added opens in both apps with nothing lost", async () => {
-  // Written by Kuvert Classic on the previous catalogue, the day before the films were added.
+  // Written by Kuvert Classic on the previous catalog, the day before the films were added.
   const before = JSON.parse(readFileSync(new URL("../fixtures/save-before-final-25.json", import.meta.url), "utf8"));
   const context = await newContext();
   await context.addInitScript((save) => {

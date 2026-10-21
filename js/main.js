@@ -1,7 +1,7 @@
 // Kuvert. Puts the pieces together: the list, the store, the views, the router and the render loop.
 //
 //   js/compat   the save formats (frozen: shared with the original app)
-//   js/data     the catalogue and lists
+//   js/data     the catalog and lists
 //   js/state    progress and the rules (store, draw, stats, merge)
 //   js/storage  backup files and sync      js/tmdb     film details
 //   js/views    the pages                  js/ui       small building blocks
@@ -33,7 +33,7 @@ import { PALETTES } from "./data/catalogue.js";
 import { t, translatePage } from "./i18n/index.js";
 import { POSTERS, POSTERS_AT } from "./data/posters.js";
 
-import { Journeys, seedBasics, localized } from "./views/journeys.js";
+import { Journeys, seedBasics, localized, upgradeCurated } from "./views/journeys.js";
 import { Club } from "./views/club.js";
 import { CURATED_COLLECTIONS } from "./data/curated.js";
 const arrivalHash = location.hash;
@@ -56,6 +56,7 @@ document.documentElement.dataset.translated = "";
 
 const storage = safeStorage();
 const seagal = document.documentElement.dataset.mode === "seagal";
+if (storage) upgradeCurated(storage); // before the list is read: an envelope may have a newer version
 const list = resolveList(storage || { getItem: () => null });
 const catalog = makeCatalog(list, { posters: freshPosters(POSTERS, POSTERS_AT) });
 const store = new Store({ list, catalog, storage });
@@ -291,7 +292,7 @@ $("unreadableFresh").addEventListener("click", async () => {
   app.toast.show(t("Starting fresh. The unreadable save is still kept aside."));
 });
 
-// The list's own name, counts and colours.
+// The list's own name, counts and colors.
 for (const el of document.querySelectorAll("[data-count]")) el.textContent = String(catalog.films.length);
 if (!seagal) {
   const editorial = list.id === GALA_LIST_ID ? GALA : CURATED_COLLECTIONS.find(p => p.id === list.id);

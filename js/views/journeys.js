@@ -1,5 +1,6 @@
 import { $, h, s, icon, copyText, keepFocus } from "../ui/dom.js";
 import { t, swedish, LOCALE } from "../i18n/index.js";
+import { localFilm, titleParts } from "../i18n/titles.js";
 import { CURATED_COLLECTIONS, CURATED_METADATA } from "../data/curated.js";
 import { BASIC_METADATA } from "../data/basics.js";
 import { buildListDefinition, readCustomLists, writeCustomLists } from "../data/lists.js";
@@ -22,6 +23,31 @@ export function seedBasics(store) {
   }
   // Metadata is not a watched mark and must not cause sync, milestones, or backup reminders.
   if (changed && !store.writeLocked) store.persist();
+}
+
+// An envelope's films can change in a later version (A Swedish Winter's version 2 swapped a film). A copy
+// installed earlier is brought up to date when Kuvert starts, unless its progress mentions a film that's
+// no longer in it: then it stays as it was, so nothing recorded there is lost.
+export function upgradeCurated(storage) {
+  let lists;
+  try { lists = readCustomLists(storage); } catch { return; }
+  let changed = false;
+  for (const pack of CURATED_COLLECTIONS) {
+    const old = lists[pack.id];
+    if (!old || (old.version || 1) >= (pack.version || 1)) continue;
+    const keep = new Set(pack.films.map((f) => f.id));
+    const gone = (old.films || []).map((f) => f.id).filter((id) => !keep.has(id));
+    // The save carries a copy of the list itself; only its progress counts here.
+    let progress = "";
+    try {
+      const { list: _l, definition: _d, catalogue: _c, ...rest } = JSON.parse(storage.getItem(KEYS.list(pack.id)) || "{}");
+      progress = JSON.stringify(rest);
+    } catch { continue; }
+    if (gone.some((id) => progress.includes('"' + id + '"'))) continue;
+    lists[pack.id] = { ...buildListDefinition(pack), version: pack.version || 1 };
+    changed = true;
+  }
+  if (changed) try { writeCustomLists(storage, lists); } catch {}
 }
 
 const button = (text, fn, cls = "btn") => h("button", { type: "button", class: cls, text: t(text), on: { click: fn } });
@@ -60,7 +86,7 @@ export class Journeys {
     if (this.app.store.dirty || !this.app.store.persist()) return this.app.toast.show(t("Progress could not be saved. Download a backup before changing lists."));
     try {
       const lists = readCustomLists(storage);
-      if (!lists[definition.id]) { lists[definition.id] = buildListDefinition(definition); writeCustomLists(storage, lists); }
+      if (!lists[definition.id]) { lists[definition.id] = { ...buildListDefinition(definition), ...(definition.version ? { version: definition.version } : {}) }; writeCustomLists(storage, lists); }
       storage.setItem(KEYS.activeList, definition.id);
       if (pickId) sessionStorage.setItem("kuvert:invitedFilm", pickId);
       location.hash = "tonight";
@@ -88,7 +114,7 @@ export class Journeys {
   }
   preview(pack) {
     this.open(localized(pack.title || pack.name),h("p",{text:localized(pack.curatorNote || pack.introduction || pack.subtitle)}),
-      h("ol",{class:"journey-film-list"},...pack.films.map(f=>h("li",{},h("strong",{text:f.t}),h("span",{text:f.y+" · "+(metadataFor(f.id)?.runtime || "—")+" min"})))),
+      h("ol",{class:"journey-film-list"},...pack.films.map(f=>h("li",{},h("strong",{},...titleParts(localFilm(f))),h("span",{text:f.y+" · "+(metadataFor(f.id)?.runtime || "—")+" min"})))),
       button("Start this envelope",()=>this.start(pack),"btn btn-primary"));
   }
   context(f) {
@@ -114,7 +140,8 @@ export class Journeys {
       h("label",{class:"field"},h("span",{text:t("Personal message (optional)")}),message),
       button("Create invitation",()=>{
         try {
-          const url=invitationURL(location.href,{v:1,film:f,date:date.value,message:message.value});
+          // The original title travels: the friend's Kuvert shows it in their own language.
+          const url=invitationURL(location.href,{v:1,film:{id:f.id,t:f.orig??f.t,y:f.y},date:date.value,message:message.value});
           const field=h("textarea",{readOnly:true,value:url,rows:3,attrs:{"aria-label":t("Invitation link")}});
           output.replaceChildren(qrSVG(url,t("Scan to open the sealed invitation")),field,
             h("div",{class:"row"},button("Copy link",async()=>{if(await copyText(url,field))this.app.toast.show(t("Invitation link copied."));}),
@@ -133,7 +160,7 @@ export class Journeys {
         invitation.message?h("blockquote",{text:invitation.message}):null,
         button("Open the invitation",()=>{
           const f=invitation.film;
-          this.open(t("Your invited film"),h("p",{class:"kicker",text:t("Kuvert · Filmkväll")}),h("h3",{class:"invited-title",text:f.t}),h("p",{text:String(f.y)}),
+          this.open(t("Your invited film"),h("p",{class:"kicker",text:t("Kuvert · Filmkväll")}),h("h3",{class:"invited-title"},...titleParts(localFilm(f))),h("p",{text:String(f.y)}),
             button("Save this film locally",()=>{
               if(this.app.catalog.byId.has(f.id)){this.dialog.close();this.app.router.show("tonight");this.app.stage.openFilm(f.id);}
               else this.start({id:"invitation-"+f.id,name:"Invited film",subtitle:"A film night shared with you",palette:"kuvert",films:[f]},f.id);

@@ -1,5 +1,5 @@
 // Progress codes: "KU7." + base64url(JSON of the save, without posters and mood hints) + "." + checksum.
-// KU4–KU7 codes all read the same way; older base-36 codes need the catalogue chosen first.
+// KU4–KU7 codes all read the same way; older base-36 codes need the catalog chosen first.
 import { validateProgress } from "./validate.js";
 import { decodeLegacy } from "./legacy-code.js";
 
@@ -33,7 +33,7 @@ export function encodeCode(data) {
 export const isModernCode = (code) => typeof code === "string" && /^KU[4-7]\./.test(code.trim());
 
 /**
- * Reads any progress code. Older codes need `legacyIds` (the catalogue the person picked).
+ * Reads any progress code. Older codes need `legacyIds` (the catalog the person picked).
  * @param {import("./validate.js").ListContext} ctx
  */
 export function parseCode(code, ctx, legacyIds = null) {

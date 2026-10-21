@@ -161,7 +161,7 @@ export class Share {
     ctx.fillStyle = r;
     ctx.fillRect(0, 0, W, H);
   }
-  // The horse and the list name, centred as one mark.
+  // The horse and the list name, centered as one mark.
   brand(ctx, W, baseline, horse, c, F) {
     ctx.font = "700 46px " + F.display;
     const label = this.sg(this.app.list.name.toUpperCase(), "SEAGAL"),

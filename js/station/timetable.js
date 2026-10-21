@@ -104,7 +104,7 @@ export function chooseLayout(width) {
     const cw = width / units(groups);
     if (cw >= min) return { groups, cw: Math.floor(Math.min(cw, 27) * 4) / 4, rows: 8 };
   }
-  // Phones: smaller flaps (about 14px) so a title has room to be recognised.
+  // Phones: smaller flaps (about 14px) so a title has room to be recognized.
   const titleN = Math.max(9, Math.min(18, Math.floor(width / 14 - 5 - gap - lamp)));
   const groups = [["time", 5], ["title", titleN]];
   return { groups, cw: Math.floor(Math.min(width / units(groups), 22) * 4) / 4, rows: 8 };
@@ -213,7 +213,7 @@ export function arrivalsTicker(rows, count) {
     stars = last.rating ? " " + flapStars(last.rating) : "";
   return (
     `Ankomster · ${count} ${count === 1 ? "film har" : "filmer har"} anlänt · Senast: ${last.film.t} (${last.film.y})${stars} · ` +
-    both("Tack för att du reste med oss", `Arrivals · ${count} ${count === 1 ? "film" : "films"} arrived · Thank you for travelling with us`)
+    both("Tack för att du reste med oss", `Arrivals · ${count} ${count === 1 ? "film" : "films"} arrived · Thank you for traveling with us`)
   );
 }
 

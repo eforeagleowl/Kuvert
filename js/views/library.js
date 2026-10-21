@@ -6,6 +6,7 @@ import { byYear, decadeOf } from "../state/catalog.js";
 import { fmtWhen } from "../state/dates.js";
 import { plural, ratingLabel, starText, wallFilms, watchedFilms } from "../state/stats.js";
 import { t, listOf, decimal } from "../i18n/index.js";
+import { titleParts } from "../i18n/titles.js";
 
 const ARCHIVES = ["skipped", "recent", "missing", "shelf"];
 
@@ -188,7 +189,7 @@ export class Library {
     );
   }
   title(f, key = "title-") {
-    return h("button", { class: "film-title", type: "button", text: f.t, dataset: { key: key + f.id }, on: { click: () => this.app.stage.openFilm(f.id) } });
+    return h("button", { class: "film-title", type: "button", dataset: { key: key + f.id }, on: { click: () => this.app.stage.openFilm(f.id) } }, ...titleParts(f));
   }
   shelfTag(f) {
     const shelf = this.app.catalog.shelfOf(f);
@@ -351,7 +352,7 @@ export class Library {
         h(
           "li",
           {},
-          h("div", { class: "archive-main" }, h("span", { class: "film-title", text: f.t }), h("span", { class: "archive-meta", text: f.y + t(" · not on your shelf") })),
+          h("div", { class: "archive-main" }, h("span", { class: "film-title" }, ...titleParts(f)), h("span", { class: "archive-meta", text: f.y + t(" · not on your shelf") })),
           h("button", {
             class: "btn btn-sm",
             type: "button",

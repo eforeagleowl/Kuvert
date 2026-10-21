@@ -12,7 +12,7 @@ import { buildListDefinition, readCustomLists, writeCustomLists } from "../data/
 
 export const GALA_LIST_ID = "gala";
 // Bump when the ballots change, so installed copies are rebuilt (ids stay, so progress stays).
-const GALA_VERSION = 1;
+const GALA_VERSION = 2; // 2: "Les Misérables" (2012) spelled right
 export const GALA = {
   name: { en: "Galan", sv: "Galan" },
   subtitle: { en: "Every Best Picture nominee, all 98 ceremonies, drawn at random", sv: "Alla som nominerats till Bästa film, alla 98 galor, dragna på måfå" },

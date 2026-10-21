@@ -10,6 +10,7 @@ import { imageUrl, fmtMoney } from "../tmdb/client.js";
 import { starText, ratingWord, allWatched, finaleData, plural } from "../state/stats.js";
 import { fmtDay, dayLong, dateFull, defaultWatchDate } from "../state/dates.js";
 import { t, decimal } from "../i18n/index.js";
+import { titleParts } from "../i18n/titles.js";
 import { metadataFor } from "./journeys.js";
 
 const VERDICTS = [
@@ -104,11 +105,24 @@ export class Stage {
     });
   }
   // Resolves once a smooth scroll has arrived at `top`, or after a moment whatever happened.
-  arrived(top) {
-    const end = performance.now() + 800;
+  /**
+   * Scrolls the page to `top`, gently, and resolves once it's there. The browser's own smooth scroll has no
+   * end to wait for: on a slow or busy device it could still be moving when the ticket closed and the page
+   * got shorter under it, and the view snapped. This one runs on the clock, so it always arrives on time.
+   */
+  glideTo(top) {
+    const from = scrollY,
+      dist = top - from,
+      duration = Math.min(1200, Math.max(300, Math.abs(dist) * 0.55)),
+      start = performance.now();
     return new Promise((resolve) => {
-      const check = () => (Math.abs(scrollY - top) < 2 || performance.now() > end ? resolve() : requestAnimationFrame(check));
-      check();
+      const step = (now) => {
+        const p = Math.min(1, Math.max(0, (now - start) / duration));
+        window.scrollTo({ top: from + dist * (0.5 - Math.cos(Math.PI * p) / 2), behavior: "instant" });
+        if (p < 1) requestAnimationFrame(step);
+        else resolve();
+      };
+      requestAnimationFrame(step);
     });
   }
   setOpen(open) {
@@ -122,7 +136,7 @@ export class Stage {
   /**
    * Resizes the envelope from the box it had (`before`) to the one it has now, smoothly. Its height
    * animates with a matching bottom margin, so the room it takes in the page never changes and the
-   * ticket under it stays put; it stays centred as its width changes, so it never slides sideways.
+   * ticket under it stays put; it stays centered as its width changes, so it never slides sideways.
    */
   resizeEnvelope(before, { duration, easing }) {
     const env = $("envelope"),
@@ -333,9 +347,9 @@ export class Stage {
       // so the page getting shorter never snaps the scroll position.
       const top = Math.max(0, this.stageEl.getBoundingClientRect().top + scrollY - 88),
         scrolling = scrollY > top + 2;
-      if (scrolling) window.scrollTo({ top, behavior: "smooth" });
+      const glide = scrolling ? this.glideTo(top) : null;
       tucked = this.tuck({ duration: 380, easing: "cubic-bezier(0.55, 0, 0.9, 0.4)" });
-      await Promise.all([tucked.finished.catch(() => {}), scrolling && this.arrived(top)]);
+      await Promise.all([tucked.finished.catch(() => {}), glide]);
       this.busy = false;
     }
     this.clearStamp();
@@ -376,7 +390,7 @@ export class Stage {
     this.shown = f;
     $("ticketNumber").textContent = catalog.ticketNumber(f) + " / " + catalog.films.length;
     $("stubNo").textContent = "Nr " + catalog.ticketNumber(f);
-    $("pickTitle").textContent = f.t;
+    $("pickTitle").replaceChildren(...titleParts(f));
     $("pickMeta").textContent = f.y + (catalog.shelfOf(f) ? " · " + t(catalog.shelfOf(f).label) : "");
     const line = catalog.oscarLine(f);
     setText("oscarLine", this.app.seagal ? line.replace(/^Lost to /, "Outgunned by ").replace(/^Beat /, "Took out ") : line);
@@ -907,7 +921,7 @@ export class Stage {
     this.infoController?.abort();
     $("infoStatus").textContent = t("Finding movie matches…");
     try {
-      const data = await this.app.details.search(f.t);
+      const data = await this.app.details.search(f.orig ?? f.t);
       if (req !== this.infoReq) return;
       this.matchButtons(f, (data.results || []).slice(0, 8), { forget: true });
       $("infoStatus").textContent = t(data.results?.length ? "Choose the correct movie." : "No matching movies found.");

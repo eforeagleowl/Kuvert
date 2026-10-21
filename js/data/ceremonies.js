@@ -5215,7 +5215,7 @@ const BALLOTS = [
         "s": "N"
       },
       {
-        "t": "Les Mis_rables",
+        "t": "Les Misérables",
         "y": 2012,
         "id": "2012-les-mis-rables",
         "c": 85,

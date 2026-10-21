@@ -3151,7 +3151,7 @@ function decodeLegacy(code, legacyIds = LEGACY_IDS) {
   let n = 0n;
   for (const ch of code.trim().toLowerCase()) n = n * 36n + BigInt(parseInt(ch, 36));
   if (n >= 1n << BigInt(legacyIds.length))
-    throw Error("The legacy code is too long for the original catalogue.");
+    throw Error("The legacy code is too long for the original catalog.");
   const bits = n.toString(2).padStart(legacyIds.length, "0");
   return new Set(legacyIds.filter((_, i) => bits[i] === "1"));
 }
@@ -3197,7 +3197,7 @@ function validateProgress(d, { browserLegacy = false, legacyIds = LOCAL_LEGACY_I
     throw Error(
       String(d.catalogue || "").startsWith("custom:") || LIST.custom
         ? "This backup belongs to a different movie list. Switch lists in Settings first."
-        : "This backup uses a different catalogue version.",
+        : "This backup uses a different catalog version.",
     );
   let marks;
   if (Array.isArray(d.seen))

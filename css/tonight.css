@@ -544,7 +544,7 @@
   .case-no {
     display: none;
   }
-  /* The flap closes down over the pocket and carries the seal on its tip. Opening, it lifts towards
+  /* The flap closes down over the pocket and carries the seal on its tip. Opening, it lifts toward
      you and fades as it turns edge-on, so it never folds up over the dial. */
   .env-flap {
     z-index: 4;

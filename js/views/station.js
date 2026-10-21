@@ -9,6 +9,7 @@ import { allWatched, plural } from "../state/stats.js";
 import { hasActiveFilters } from "../state/draw.js";
 import { defaultWatchDate, dayLong } from "../state/dates.js";
 import { t, LOCALE, decimal, swedish } from "../i18n/index.js";
+import { titleParts } from "../i18n/titles.js";
 import { Flaps } from "../station/flaps.js";
 import { StationAudio } from "../station/audio.js";
 import * as T from "../station/timetable.js";
@@ -286,7 +287,7 @@ export class Station {
         { class: "st-main" },
         h("div", { class: "st-thead" }, h("span", { lang: "sv", text: list.name + " · Biobiljett" }), h("span", { text: "Nr " + catalog.ticketNumber(f) + " / " + catalog.films.length })),
         h("p", { class: "st-chip", lang: "sv", text: T.chip(f, catalog) }),
-        h("h3", { class: "st-ttitle", text: f.t }),
+        h("h3", { class: "st-ttitle" }, ...titleParts(f)),
         h("p", { class: "st-sub", text: sub }),
         h(
           "dl",

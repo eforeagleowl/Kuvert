@@ -1,5 +1,5 @@
 /* The station (js/views/station.js): a blue station sign, a split-flap departure board with an LED
-   ticker, the draw button and a ticket printer. The canvases read the --flap-* and --st-* colours
+   ticker, the draw button and a ticket printer. The canvases read the --flap-* and --st-* colors
    below, so those stay plain hex rather than color-mix(). */
 @layer station {
   /* ---------------------------------------------------------------- the way there, from Tonight */

@@ -16,7 +16,7 @@ to your home screen, and it works offline after your first visit.
   your ticket prints and gets stamped. Switch to *Ankomster* (arrivals) to see the films you've watched
   lately, with your stars on the flaps.
 - **Your watchthrough.** Mark films watched, rate them, say whether the winner deserved it, and rank your
-  favourites. The Library holds the whole list and a poster wall; Stats show your pace, streaks and
+  favorites. The Library holds the whole list and a poster wall; Stats show your pace, streaks and
   milestones. The dala horse gets painted as you go.
 - **Group night.** Add your friends' codes, and the draw only picks films none of you has seen.
 - **Your own lists.** Import any film list, or bring your history in from Letterboxd.
@@ -30,7 +30,8 @@ to your home screen, and it works offline after your first visit.
 - **Galan.** For the completists: every film ever nominated for Best Picture, all 98 ceremonies, 621
   films and no honorable mentions. Switch it on from "for the completists." in About. The regular list
   of 275 stays as it is, and films watched in one count in the other.
-- **På svenska.** Switch the whole app to Swedish under Settings → Language.
+- **På svenska.** Switch the whole app to Swedish under Settings → Language. Films get their Swedish
+  titles (*Gudfadern*, *Borta med vinden*), with the original in small type beneath.
 
 ## Your progress
 
@@ -62,7 +63,7 @@ npm run check    # service worker stamp, unit tests and browser tests
 How it's built: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Every feature:
 [docs/FEATURES.md](docs/FEATURES.md).
 
-## Credits and licences
+## Credits and licenses
 
 - Kuvert's code is released under the [MIT License](LICENSE).
 - Type: Cormorant Garamond, Geist, Geist Mono and Michroma, under the SIL Open Font License

@@ -26,6 +26,7 @@ function initials(words) {
 }
 
 import { ordinal, t, listOf } from "../i18n/index.js";
+import { localTitle, localSeries } from "../i18n/titles.js";
 export { ordinal };
 function joinTitles(titles, more) {
   const shown = titles.slice(0, 3),
@@ -48,7 +49,12 @@ export function freshPosters(posters, at, now = new Date()) {
  * @param {{ posters?: Record<string, [number, string]> }} [o] the built-in list's posters (js/data/posters.js)
  */
 export function makeCatalog(list, { posters = {} } = {}) {
-  const films = list.films;
+  // In Swedish mode the catalog's own copies carry the Swedish title, the original in `orig`
+  // (js/i18n/titles.js). The list's films keep theirs: exports and syncs never change language.
+  const films = list.films.map((f) => {
+    const sv = localTitle(f);
+    return sv ? { ...f, t: sv, orig: f.t } : f;
+  });
   const byId = new Map(films.map((f) => [f.id, f]));
   const shelves = list.shelves || {};
   const hasShelves = !!list.shelves;
@@ -60,8 +66,9 @@ export function makeCatalog(list, { posters = {} } = {}) {
   const index = new Map(
     films.map((f) => {
       const words = searchWords(f.t);
-      const extra = [String(f.y)];
-      const keys = [initials(words)];
+      // Either title finds it: "gudfadern" or "godfather".
+      const extra = [String(f.y), ...(f.orig ? searchWords(f.orig) : [])];
+      const keys = [initials(words), ...(f.orig ? [initials(searchWords(f.orig))] : [])];
       if (f.tri) {
         const sw = searchWords(list.series[f.tri] || "");
         extra.push(...sw, String(f.ord));
@@ -121,7 +128,7 @@ export function makeCatalog(list, { posters = {} } = {}) {
     usedShelves,
     shelfOf,
     isWinner,
-    series: list.series || {},
+    series: localSeries(list.series || {}),
     seriesParts: (key) => films.filter((f) => f.tri === key).sort((a, b) => a.ord - b.ord),
     ticketNumber: (f) => String(ticketOrder.get(f.id)).padStart(width, "0"),
     // The list's own TMDB match and poster for a film, if it has them (the built-in list only).

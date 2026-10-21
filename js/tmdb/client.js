@@ -55,7 +55,9 @@ export function normalized(s) {
     .replace(/[^a-z0-9]/g, "");
 }
 export function exactMatch(m, f) {
-  return (normalized(m.title) === normalized(f.t) || normalized(m.original_title) === normalized(f.t)) && Number((m.release_date || "").slice(0, 4)) === f.y;
+  // The list's own title (in Swedish mode the catalog keeps it in `orig`): what TMDB knows the film by.
+  const title = normalized(f.orig ?? f.t);
+  return (normalized(m.title) === title || normalized(m.original_title) === title) && Number((m.release_date || "").slice(0, 4)) === f.y;
 }
 
 export function suggestMoods(genres = []) {
@@ -110,11 +112,11 @@ export class Details {
     const known = store.p.matches[f.id] || store.catalog.tmdbId?.(f.id) || null;
     let id = known;
     if (!id) {
-      let s = await this.call("/search/movie", { query: f.t, primary_release_year: f.y, include_adult: false }, signal);
+      let s = await this.call("/search/movie", { query: f.orig ?? f.t, primary_release_year: f.y, include_adult: false }, signal);
       const exact = (s.results || []).filter((x) => exactMatch(x, f));
       if (exact.length === 1) id = exact[0].id;
       else {
-        if (!s.results?.length) s = await this.call("/search/movie", { query: f.t, include_adult: false }, signal);
+        if (!s.results?.length) s = await this.call("/search/movie", { query: f.orig ?? f.t, include_adult: false }, signal);
         return { choices: (s.results || []).slice(0, 6) };
       }
     }

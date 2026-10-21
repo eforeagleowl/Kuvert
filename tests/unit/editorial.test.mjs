@@ -10,7 +10,7 @@ import { CEREMONIES, ceremonyFor } from "../../js/data/ceremonies.js";
 test("editorial release is complete, sourced and internally consistent", () => {
   const result = validateCatalogue();
   assert.deepEqual(result.errors, []);
-  assert.deepEqual(result.summary, { builtInFilms: 275, collections: 3, curatedUniqueFilms: 18, runtimeCoverage: 275, ceremonies: 98, ballotEntries: 621 });
+  assert.deepEqual(result.summary, { builtInFilms: 275, collections: 3, curatedUniqueFilms: 19, runtimeCoverage: 275, ceremonies: 98, ballotEntries: 621 });
   assert.equal(METADATA_PROVENANCE.coreRuntimeCoverage, FILMS.length);
 });
 
@@ -23,7 +23,7 @@ test("three finite journeys install through the normal list format with stable f
     assert.equal(installed.shelves, null);
   }
   const phantom = CURATED_COLLECTIONS.filter(c => c.films.some(f => f.id === "1921-the-phantom-carriage"));
-  assert.equal(phantom.length, 2, "the same film keeps one ID across journeys");
+  assert.equal(phantom.length, 1, "The Phantom Carriage is in the silent envelope only (A Swedish Winter, version 2)");
   assert.equal(BASIC_METADATA["1925-the-gold-rush"].runtime, 88, "the silent pack uses the 1925 presentation, not the 1942 narration");
 });
 

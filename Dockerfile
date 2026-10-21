@@ -6,5 +6,6 @@ ENV NODE_ENV=production KUVERT_HOST=0.0.0.0 PORT=8123 KUVERT_DATA_FILE=/data/roo
 RUN mkdir /data && chown node:node /data
 USER node
 EXPOSE 8123
-VOLUME ["/data"]
+# Attach persistent storage at /data: `docker run -v kuvert-data:/data ...`, or a Railway volume mounted at
+# /data. No VOLUME line, because Railway refuses to build a Dockerfile that has one.
 CMD ["node", "server/server.mjs"]

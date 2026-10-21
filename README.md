@@ -25,8 +25,8 @@ to your home screen, and it works offline after your first visit.
 - **Sealed invitations.** Send a friend tonight's film as a link or QR code; they break the seal to see it.
 - **Cinema passport.** A printable journal of the films you've watched, for all time or one year.
 - **Film club.** Friends agree on a film together and reveal their stars at the same moment. It needs
-  the small Kuvert service in `server/` running somewhere ([hosting options](docs/HOSTING.md));
-  on a static site like GitHub Pages, the club stays out of sight.
+  the small Kuvert service in `server/` running somewhere. It's ready for Railway
+  ([step by step](docs/HOSTING.md#railway-step-by-step)); until it runs, the club stays out of sight on GitHub Pages.
 - **Galan.** For the completists: every film ever nominated for Best Picture, all 98 ceremonies, 621
   films and no honorable mentions. Switch it on from "for the completists." in About. The regular list
   of 275 stays as it is, and films watched in one count in the other.

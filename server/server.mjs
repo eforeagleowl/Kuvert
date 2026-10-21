@@ -113,7 +113,9 @@ export async function serveClub({ port = 0, host = "127.0.0.1", root = ROOT, dat
         if (cors.has(incomingOrigin)) corsHeaders = { "Access-Control-Allow-Origin": incomingOrigin, "Vary": "Origin", "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, Authorization", "Access-Control-Max-Age": "600" };
       }
       if (req.method === "OPTIONS") { res.writeHead(204, { ...SECURITY, ...corsHeaders }); return res.end(); }
-      const address = trustProxy ? String(req.headers["x-forwarded-for"] || req.socket.remoteAddress).split(",")[0].trim().slice(0, 100) : req.socket.remoteAddress;
+      // Behind a trusted proxy, the visitor is the last address in X-Forwarded-For: the one that proxy added.
+      // Anything before it came from the visitor's own request, so a made-up address there can't dodge the limits.
+      const address = trustProxy ? String(req.headers["x-forwarded-for"] || req.socket.remoteAddress).split(",").at(-1).trim().slice(0, 100) || req.socket.remoteAddress : req.socket.remoteAddress;
       // Twelve friends sharing a home connection each poll twelve times a minute.
       limits.use(address, "api", 300, 60 * 1000);
       if (req.method === "GET" && url.pathname === "/api/health") return json(res, 200, { service: "kuvert-club", version: 1, club: true, metadata: metadata.connected, retentionDays }, corsHeaders);

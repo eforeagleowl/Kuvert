@@ -1,6 +1,7 @@
 import { $, h, copyText, keepFocus } from "../ui/dom.js";
 import { t } from "../i18n/index.js";
 import { ClubClient, readClubInvite } from "../club/client.js";
+import { CLUB_SERVICE } from "../club/service.js";
 import { availabilityFresh } from "../state/draw.js";
 import { qrSVG } from "../journeys/qr.js";
 import { download } from "../storage/files.js";
@@ -13,8 +14,8 @@ export class Club {
   constructor(app){
     this.app=app;this.available=false;this.status="";this.pendingInvite=null;this.refreshing=false;
     let saved;try{saved=JSON.parse(app.storage?.getItem(CLUB_KEY)||"null");}catch{}
-    try { this.client=new ClubClient({endpoint:saved?.endpoint || "",credential:saved?.credential || null}); }
-    catch { this.client=new ClubClient();this.status=t("Saved club access could not be read. Join again using the guest invitation."); }
+    try { this.client=new ClubClient({endpoint:saved?.endpoint || CLUB_SERVICE,credential:saved?.credential || null}); }
+    catch { this.client=new ClubClient({endpoint:CLUB_SERVICE});this.status=t("Saved club access could not be read. Join again using the guest invitation."); }
     this.client.addEventListener?.("change",()=>this.render());
     $("openClub").addEventListener("click",()=>app.router.show("club"));
     document.addEventListener("visibilitychange",()=>!document.hidden&&app.router.page==="club"&&this.refresh());

@@ -1,6 +1,6 @@
 # Kuvert film-club service and hosting choices
 
-Prepared 13 October 2026. No hosting account, subscription, deployment, payment, or movie-data credential has been created. Provider prices below are planning figures in USD, before tax, domains, and additional traffic; confirm the selected region and current quote when choosing a provider.
+Prepared 13 October 2026; Railway chosen 21 October 2026. No hosting account, subscription, deployment, payment, or movie-data credential has been created yet: the repo is ready for Railway ([below](#railway-step-by-step)), and the site stays club-free until someone sets it up. Provider prices below are planning figures in USD, before tax, domains, and additional traffic; confirm the selected region and current quote when choosing a provider.
 
 ## What works without a service
 
@@ -31,7 +31,7 @@ node --test tests/unit/club.test.mjs
 | Fly.io | Can serve the app in the same Node machine | The published table lists 256 MB shared CPU at **$2.19/month**, or 512 MB at **$4.39/month**. A 1 GB volume adds **$0.15/month**; egress and region can change the total. | My calculated 512 MB + 1 GB volume baseline is **$4.54/month before traffic**. More operational setup than Railway. [Official pricing](https://fly.io/pricing/) |
 | Render | Static sites are free within included usage | Persistent storage needs a paid service. Disk storage is **$0.25/GB/month**, on top of the chosen compute plan; confirm its live price in the dashboard. | Straightforward single-service alternative. Free web services lose local files on restart and cannot attach disks, so they do not fit the persistent club store. [Storage costs](https://render.com/articles/how-much-does-cloud-application-hosting-cost-for-small-businesses), [free-service limitations](https://render.com/docs/free) |
 
-**Recommendation for approval:** a single Railway service with a persistent volume for a small public pilot, serving Kuvert and the API together. Set a budget appropriate to the provider's controls and observe real usage before promising a fixed monthly cost. This is an implementation choice to review; no provider has been selected or paid.
+**Chosen: Railway**, a single service with a persistent volume. The GitHub Pages site stays the main address and talks to it; the service's own address serves the whole app too. Set a usage limit and observe real usage before promising a fixed monthly cost. Nothing has been paid for yet.
 
 GitHub's Pages policy excludes sites primarily facilitating commercial transactions or commercial SaaS. If Kuvert gains paid features, move the relevant product hosting to a suitable service before adding checkout. [Official Pages usage limits](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits)
 
@@ -44,12 +44,35 @@ GitHub's Pages policy excludes sites primarily facilitating commercial transacti
 | `KUVERT_DATA_FILE` | `server/.data/rooms.json` | Absolute location on a **persistent** volume, e.g. `/data/rooms.json`. |
 | `KUVERT_RETENTION_DAYS` | `180` | Room retention after its last mutation, from 1 to 730 days. Reads and polls do not extend it. |
 | `KUVERT_CORS_ORIGINS` | empty | Exact approved frontend origins separated by commas, e.g. `https://kuvert.example`. No wildcard, path or trailing slash. |
-| `KUVERT_TRUST_PROXY` | unset | Set `1` only behind a trusted proxy that controls/overwrites forwarded headers. Otherwise IP limits use the direct connection. |
+| `KUVERT_TRUST_PROXY` | unset | Set `1` behind the host's proxy. Limits then count the last `X-Forwarded-For` address, the one that proxy added, so a visitor can't dodge them by sending their own. Unset, every visitor arrives from the proxy's address and shares one set of limits. |
 | `TMDB_TOKEN` | unset | Operator's server-side TMDB read token/API key, supplied through the hosting provider's secret manager. |
 
 Use the command `node server/server.mjs` as the service start command. Set `KUVERT_HOST=0.0.0.0` and put `KUVERT_DATA_FILE` inside the persistent mount. Configure the provider health check as `/api/health`. Run **one process and one replica** for this file-backed version. The lock refuses duplicate writers; a durable database transaction adapter is needed before horizontal scaling. The service uses Node built-ins and needs no production packages or frontend build.
 
 Prefer the same-origin setup: HTTPS page and API behind one domain. If keeping a separate static frontend, configure its exact origin in the API's CORS allowlist and add the API's exact HTTPS origin to the frontend `index.html` CSP `connect-src` directive. Other CSP directives should remain intact. Enter that service origin explicitly in Film club. An invite containing an external endpoint must be confirmed in the interface before sending member information. No WebSocket or third-party realtime library is needed; clients poll while the club view is visible.
+
+## Railway, step by step
+
+About ten minutes in the browser, no command line. Railway's `railway.json` (config as code) is being retired for new services, so these are dashboard steps; the Dockerfile carries everything else (start command, port, `/data` for rooms).
+
+1. At [railway.com](https://railway.com), sign in with GitHub and choose a plan (Hobby: $5 a month minimum, which includes $5 of usage).
+2. **New Project → Deploy from GitHub repo → `eforeagleowl/Kuvert`**, giving Railway access to that repo. Railway finds the `Dockerfile`, builds it and starts it right away. Until step 3 its rooms last only until the next restart; it redeploys after each change below.
+3. **Add a volume** to the service (right-click it on the project canvas, or the command palette) with mount path **`/data`**. Keep one replica: Railway can't combine volumes with replicas, and the room store wants exactly one writer. A service with a volume pauses briefly on each redeploy, so two copies never write at once.
+4. **Variables** on the service:
+   - `RAILWAY_RUN_UID` = `0`. Railway mounts volumes for root; without this the service can't write its rooms and says so in the log.
+   - `KUVERT_CORS_ORIGINS` = `https://eforeagleowl.github.io`, so the GitHub Pages site may use the club.
+   - `KUVERT_TRUST_PROXY` = `1`.
+   - `TMDB_TOKEN` (optional) = a TMDB API read access token, so posters, runtimes and streaming services work in the club without each friend connecting TMDB.
+   
+   `PORT` is Railway's own; `KUVERT_HOST` and `KUVERT_DATA_FILE` come from the Dockerfile.
+5. **Settings**: Healthcheck Path `/api/health`; Restart Policy "On Failure" (the default); then **Networking → Generate Domain**. Note the address, such as `https://kuvert-production.up.railway.app`.
+6. **Workspace → Usage**: set a hard usage limit (for example $10), so a surprise can't cost more.
+7. Open `https://<that address>/api/health`. It should say `"club":true`, and `"metadata":true` if you set `TMDB_TOKEN`. The address itself opens Kuvert with the Film club.
+8. Point the site at it: `node tools/club-service.mjs https://<that address>` writes the address to `js/club/service.js`, allows it in `index.html`'s security policy and restamps the service worker. Commit, open a PR, merge. The Film club then appears on the GitHub Pages site; `node tools/club-service.mjs off` takes it away again.
+
+Railway redeploys on every push to `main`, so the service always runs the same code as the site. Rooms live on the volume and survive restarts and crashes. Back up `/data/rooms.json` now and then (Railway's volume backups, where the plan has them, or the Railway CLI).
+
+`tests/e2e/club-service.test.mjs` checks this arrangement (the page on one address, the club service on another), and `tests/unit/club-service.test.mjs` checks the tool.
 
 ## Room and rating behavior
 

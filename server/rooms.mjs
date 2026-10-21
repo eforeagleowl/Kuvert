@@ -128,14 +128,14 @@ export class RoomStore {
   async init() {
     if (!Number.isInteger(this.retentionDays) || this.retentionDays < 1 || this.retentionDays > 730) throw Error("Club retention must be between 1 and 730 days.");
     if (this.dataFile) {
-      await mkdir(dirname(this.dataFile), { recursive: true, mode: 0o700 });
       this.lockFile = this.dataFile + ".lock";
       try {
+        await mkdir(dirname(this.dataFile), { recursive: true, mode: 0o700 });
         this.lock = await open(this.lockFile, "wx", 0o600).catch(async (error) => {
           // A crash or a killed container leaves its lock behind. Without this the service would refuse
           // to start again until someone deleted it by hand: a hosted service would restart forever.
           if (error.code !== "EEXIST" || !(await staleLock(this.lockFile))) throw error;
-          await unlink(this.lockFile).catch(() => {});
+          await unlink(this.lockFile).catch((e) => { if (e.code !== "ENOENT") throw e; });
           return open(this.lockFile, "wx", 0o600);
         });
         HELD.add(this.lockFile);
@@ -143,6 +143,9 @@ export class RoomStore {
       } catch (error) {
         if (error.code === "EEXIST") throw Error("The club store is already locked. Run one service process. If a crashed process left the lock, verify it has stopped before removing the .lock file.");
         await this.releaseLock();
+        // Storage the service's user can't write to, such as a volume mounted for root.
+        if (["EACCES", "EPERM", "EROFS"].includes(error.code))
+          throw Error(`The club service can't write to ${dirname(this.dataFile)}. Give the service's user write access to it; on Railway, set RAILWAY_RUN_UID=0 (docs/HOSTING.md).`, { cause: error });
         throw error;
       }
       try {

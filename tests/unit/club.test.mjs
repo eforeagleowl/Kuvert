@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, writeFile, mkdir, symlink, rm, stat } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile, mkdir, symlink, rm, stat, chmod } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { serveClub } from "../../server/server.mjs";
@@ -215,6 +215,15 @@ test("behind an HTTPS host, the page's own requests are same-origin; other sites
   assert.equal((await fetch(service.url + "/api/health", { headers: { Origin: "https://" + host + ".evil.example" } })).status, 403);
 });
 
+test("behind a trusted proxy, limits follow the address the proxy added, not one the visitor made up", async (t) => {
+  const { service } = await fixture(t, { trustProxy: true });
+  const create = (forwarded) => fetch(service.url + "/api/rooms", { method: "POST", headers: { "Content-Type": "application/json", "X-Forwarded-For": forwarded }, body: "{}" });
+  // Eight club creations an hour from one address, whatever the visitor puts in front of it.
+  for (let i = 0; i < 8; i++) assert.notEqual((await create(`10.0.0.${i}, 203.0.113.7`)).status, 429);
+  assert.equal((await create("10.0.0.99, 203.0.113.7")).status, 429);
+  assert.notEqual((await create("203.0.113.8")).status, 429, "someone else is counted on their own");
+});
+
 test("a lock left by a crashed process or a restarted container doesn't stop the service starting", async () => {
   const dir = await mkdtemp(join(tmpdir(), "kuvert-lock-"));
   try {
@@ -228,6 +237,17 @@ test("a lock left by a crashed process or a restarted container doesn't stop the
       await store.close();
     }
   } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("storage the service can't write to is named as such, with what to do", { skip: process.getuid?.() === 0 && "root can write anywhere" }, async () => {
+  const dir = await mkdtemp(join(tmpdir(), "kuvert-readonly-"));
+  try {
+    await chmod(dir, 0o500);
+    await assert.rejects(new RoomStore({ dataFile: join(dir, "rooms.json") }).init(), /can't write to .*RAILWAY_RUN_UID=0/);
+  } finally {
+    await chmod(dir, 0o700);
     await rm(dir, { recursive: true, force: true });
   }
 });

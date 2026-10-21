@@ -27,12 +27,17 @@ const TYPES = {
 /**
  * `root` defaults to this repo; `setRoot` swaps it while running (a deploy, for upgrade tests).
  * `mounts` serves other folders at addresses of their own: { "/classic/": "/path/to/folder" }.
+ * `files` serves a file's text in place of the one on disk: { "/index.html": "<!doctype html>..." }.
  */
-export function serve(port = 0, { root = ROOT, mounts = {} } = {}) {
+export function serve(port = 0, { root = ROOT, mounts = {}, files = {} } = {}) {
   const server = createServer(async (req, res) => {
     try {
       let path = decodeURIComponent(new URL(req.url, "http://x").pathname);
       if (path.endsWith("/")) path += "index.html";
+      if (Object.hasOwn(files, path)) {
+        res.writeHead(200, { "Content-Type": TYPES[extname(path)] || "application/octet-stream", "Cache-Control": "no-store" });
+        return res.end(files[path]);
+      }
       const mount = Object.keys(mounts).find((m) => path.startsWith(m));
       const base = mount ? mounts[mount] : root;
       const file = normalize(join(base, mount ? path.slice(mount.length) : path));

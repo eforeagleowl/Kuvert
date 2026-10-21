@@ -43,7 +43,7 @@ const plain = (d) => {
   return out;
 };
 
-test("the catalogue matches the original app's", () => {
+test("the catalog matches the original app's", () => {
   assert.deepEqual(FILMS.map((f) => f.id), golden.builtin.films);
 });
 

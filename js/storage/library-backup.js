@@ -81,7 +81,7 @@ function checkedDefinition(raw, id) {
     }
   }
   const clean = buildListDefinition({ ...raw, id });
-  if (typeof raw.catalogue !== "string" || !raw.catalogue.startsWith("custom:" + id + ":") || raw.catalogue.length > 200) throw Error("Invalid library catalogue.");
+  if (typeof raw.catalogue !== "string" || !raw.catalogue.startsWith("custom:" + id + ":") || raw.catalogue.length > 200) throw Error("Invalid library catalog.");
   clean.catalogue = raw.catalogue;
   if (raw.version != null) {
     if (!Number.isSafeInteger(raw.version) || raw.version < 1) throw Error("Invalid library list version.");
@@ -124,7 +124,7 @@ function checkedEntry(raw, { strictSettings = true, browserLegacy = false } = {}
   assertObject(raw, "library entry");
   if (!safeId(raw.id)) throw Error("Invalid library list ID.");
   const definition = raw.id === "builtin" ? null : checkedDefinition(raw.definition, raw.id);
-  if (raw.id === "builtin" && raw.definition != null) throw Error("The built-in catalogue cannot be replaced by a backup.");
+  if (raw.id === "builtin" && raw.definition != null) throw Error("The built-in catalog cannot be replaced by a backup.");
   const list = listFor(definition), catalog = makeCatalog(list), store = new Store({ list, catalog });
   const d = validateProgress(raw.progress, catalog.ctx, { browserLegacy });
   // These detail fields are intentionally lenient for legacy single-list saves. Full-library files

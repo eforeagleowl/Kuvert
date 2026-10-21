@@ -4,6 +4,7 @@ import { $, h, icon, emptyState, keepFocus, copyText, reduceMotion } from "../ui
 import { byYear } from "../state/catalog.js";
 import { dayShort, isoDay, isoToDate, defaultWatchDate } from "../state/dates.js";
 import { t, LOCALE, swedish, decimal, listOf } from "../i18n/index.js";
+import { titleParts } from "../i18n/titles.js";
 import { plural, starText, statsData, paceData, paceText, computeMilestones, rankedFilms, unrankedFilms, watchDayCounts, eveningFacts, watchedFilms, ratingOf } from "../state/stats.js";
 
 // A 5×7 dot font for the LED board.
@@ -222,7 +223,7 @@ export class Stats {
             h("button", { class: "rank-handle", type: "button", dataset: { key: "rankh-" + f.id }, attrs: { "aria-label": t("Drag to reorder {title}. Use the arrow buttons to move it with the keyboard.", { title: f.t }) } }, icon("grip")),
             h("span", { class: "rank-pos", text: String(i + 1) }),
             thumb,
-            h("span", { class: "rank-body" }, h("span", { class: "rank-title", text: f.t }), h("span", { class: "rank-meta", text: (r !== null ? starText(r) + " · " : "") + f.y })),
+            h("span", { class: "rank-body" }, h("span", { class: "rank-title" }, ...titleParts(f)), h("span", { class: "rank-meta", text: (r !== null ? starText(r) + " · " : "") + f.y })),
             h("button", { class: "rank-btn", type: "button", disabled: i === 0, dataset: { key: "rankup-" + f.id }, attrs: { "aria-label": t("Move {title} up", { title: f.t }) }, on: { click: () => this.move(f.id, -1) } }, icon("up")),
             h("button", { class: "rank-btn", type: "button", disabled: i === ranked.length - 1, dataset: { key: "rankdown-" + f.id }, attrs: { "aria-label": t("Move {title} down", { title: f.t }) }, on: { click: () => this.move(f.id, 1) } }, icon("down")),
             h(
@@ -255,7 +256,7 @@ export class Stats {
           "li",
           { class: "rank-row" + (thumb ? "" : " no-thumb") },
           thumb,
-          h("span", { class: "rank-body" }, h("span", { class: "rank-title", text: f.t }), h("span", { class: "rank-meta", text: (r !== null ? starText(r) + " · " : t("No stars yet · ")) + f.y })),
+          h("span", { class: "rank-body" }, h("span", { class: "rank-title" }, ...titleParts(f)), h("span", { class: "rank-meta", text: (r !== null ? starText(r) + " · " : t("No stars yet · ")) + f.y })),
           h(
             "button",
             {
@@ -435,7 +436,7 @@ export class Stats {
     );
     $("watchDaysSummary").textContent = days ? t("{films} on {evenings} in {n} weeks", { films: plural(films, "film"), evenings: plural(days, "evening"), n: weeks }) : t("No dated watches in the last {n} weeks", { n: weeks });
     $("heatTip").textContent = days ? t("Hover or tap a day to see what you watched.") : "";
-    // Evening facts: longest run, favourite night, busiest week.
+    // Evening facts: longest run, favorite night, busiest week.
     const f = eveningFacts(byDay),
       box = $("eveningFacts");
     box.hidden = !f;

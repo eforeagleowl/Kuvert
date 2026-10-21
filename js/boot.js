@@ -1,5 +1,5 @@
 // Runs before the first paint (a classic script, not a module): SEAGAL's skin, Swedish and an imported
-// list's palette go on the root element now, so the page never flashes the wrong colours or language.
+// list's palette go on the root element now, so the page never flashes the wrong colors or language.
 (function () {
   var root = document.documentElement;
   try {

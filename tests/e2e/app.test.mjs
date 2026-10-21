@@ -325,6 +325,7 @@ test("the envelope moves smoothly: the ticket comes out from under it, never ove
           cs = getComputedStyle(t),
           cut = cs.clipPath.startsWith("inset(") ? parseFloat(cs.clipPath.slice(6)) : null;
         window.__frames.push({
+          at: performance.now(),
           hidden: t.hidden,
           tTop: r.top,
           tH: r.height,
@@ -369,7 +370,7 @@ test("the envelope moves smoothly: the ticket comes out from under it, never ove
     const finalH = out.at(-1).tH;
     assert.ok(out[0].tH < finalH * 0.95, "the ticket starts small, inside the envelope " + at);
     for (let i = 1; i < out.length; i++) assert.ok(out[i].tTop >= out[i - 1].tTop - 1, "the ticket only ever comes down, out of the envelope " + at);
-    for (const f of opening) assert.ok(Math.abs(f.eLeft - (W - f.eW) / 2) <= 1.5, "the envelope stays centred " + at);
+    for (const f of opening) assert.ok(Math.abs(f.eLeft - (W - f.eW) / 2) <= 1.5, "the envelope stays centered " + at);
     for (const f of opening) if (f.flapOpacity > 0.05) assert.ok(f.flapTop >= f.eTop - 2, "the flap never folds up over the dial " + at);
     neverOver(opening, "opening");
     // Finished: the ticket's top edge stays tucked under the envelope, which is in front of it.
@@ -403,12 +404,19 @@ test("the envelope moves smoothly: the ticket comes out from under it, never ove
     await page.evaluate(() => window.kuvert.app.stage.close());
     await settled(false);
     const closing = await take();
-    for (let i = 1; i < closing.length; i++) assert.ok(Math.abs(closing[i].sy - closing[i - 1].sy) < 60, "the view glides, it doesn't snap " + at);
+    // A snap moves the view a long way in one frame. A glide never goes faster than about 4px a
+    // millisecond, however few frames a busy machine manages to draw.
+    for (let i = 1; i < closing.length; i++) {
+      const dy = Math.abs(closing[i].sy - closing[i - 1].sy),
+        dt = closing[i].at - closing[i - 1].at;
+      assert.ok(dy < 60 || dy / dt < 4, `the view glides, it doesn't snap (${Math.round(dy)}px in ${Math.round(dt)}ms) ` + at);
+    }
+    assert.ok(Math.abs(closing.at(-1).sy - closing[0].sy) > 100, "the view glided back up to the envelope " + at);
     neverOver(closing, "closing");
     const growing = closing.filter((f) => f.hidden);
     assert.ok(growing.length > 5, "the envelope's return was recorded " + at);
     for (const f of growing) {
-      assert.ok(Math.abs(f.eLeft - (W - f.eW) / 2) <= 1.5, "the envelope stays centred while it grows " + at);
+      assert.ok(Math.abs(f.eLeft - (W - f.eW) / 2) <= 1.5, "the envelope stays centered while it grows " + at);
       assert.equal(f.sy, growing.at(-1).sy, "the view holds still while the envelope grows " + at);
       assert.ok(f.sy + viewport.height <= f.docH + 1, "the page never gets too short for where you are, so the view never jumps " + at);
       if (f.flapOpacity > 0.05) assert.ok(f.flapTop >= f.eTop - 2, "the flap comes down without rising over the dial " + at);

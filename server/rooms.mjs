@@ -308,7 +308,7 @@ export class RoomStore {
   setCatalogue(roomId, secret, input) {
     const films = catalogue(input);
     return this.mutate(roomId, secret, (room) => {
-      if (room.sessions.some((s) => ["proposed", "watching"].includes(s.state))) fail(409, "session_open", "Finish or cancel the current film night before replacing the club catalogue.");
+      if (room.sessions.some((s) => ["proposed", "watching"].includes(s.state))) fail(409, "session_open", "Finish or cancel the current film night before replacing the club catalog.");
       room.catalogue = films;
     }, { host: true });
   }

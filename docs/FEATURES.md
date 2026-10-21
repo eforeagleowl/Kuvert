@@ -6,12 +6,12 @@ nothing is dropped.
 
 For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTURE.md). The original feature inventory below remains the compatibility baseline.
 
-## Lists and catalogue
+## Lists and catalog
 
 - Built-in list: 275 films (98 winners, 155 nominees, 22 honorable mentions), permanent ids like
   `1972-the-godfather`, ceremony number `c` for winners and nominees, series `tri`/`ord`
   (The Godfather, The Lord of the Rings, Dune).
-- Catalogue name `kuvert-2026-10-v9`; older names `kuvert-2026-09-expanded-v8`…v3, `kuvert-2026-09-hm-v2`,
+- Catalog name `kuvert-2026-10-v9`; older names `kuvert-2026-09-expanded-v8`…v3, `kuvert-2026-09-hm-v2`,
   `kuvert-2026-09-v1` are accepted on restore.
 - Retired films (`2011-hugo`, `2015-the-martian`, `2018-bohemian-rhapsody`, `2012-silver-linings-playbook`,
   `1943-for-whom-the-bell-tolls`, `2017-darkest-hour`) are quietly dropped from older saves.
@@ -98,7 +98,7 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
   a selectable fallback), Share as image.
 - Verdicts on watched winners: Yes / Unsure / No, "Should have won", summary line.
 - Watch days: 26-week (17 on phones) Monday-first heat strip with month labels, tap a day with one film to
-  open it; evening facts: longest run, favourite night, busiest week.
+  open it; evening facts: longest run, favorite night, busiest week.
 - Milestones: 1, 25, 50, 100 and the whole list; Across the decades; Winner's circle; Beyond the ballot;
   one per series. Stamps with ERA / HM / SERIE words.
 - By award shelf (bars with average stars) and by decade (table with averages).
@@ -111,7 +111,7 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
   Access API and auto-save to that file, download fallback, Load progress, Reconnect to the remembered
   file), backup status line, Recovery & reset (progress code, Copy code, Restore from a code, Clear all
   progress with confirmation and undo).
-- Restore preview dialog: counts, Merge or Replace, undo; older codes ask which catalogue made them;
+- Restore preview dialog: counts, Merge or Replace, undo; older codes ask which catalog made them;
   a backup for another list offers to switch (and installs the list if it came with one).
 - Movie details: TMDB credential (bearer token or v3 key), Disconnect, load details for every film
   (3 workers, stop, refresh), show films missing a runtime, streaming country (full TMDB region list),
@@ -155,5 +155,5 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
 
 ## Data kept (the compatibility contract)
 
-See `js/compat/` for the exact rules. Storage keys, backup and code formats, catalogue names, retired ids
+See `js/compat/` for the exact rules. Storage keys, backup and code formats, catalog names, retired ids
 and Gist file names are frozen.

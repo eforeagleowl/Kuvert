@@ -53,16 +53,16 @@ Prefer the same-origin setup: HTTPS page and API behind one domain. If keeping a
 
 ## Room and rating behavior
 
-- A club has at most 12 active members, 36 memberships over its lifetime, 1,500 catalogue films, and 500 film nights. Reuse a saved private membership instead of repeatedly creating guest memberships.
+- A club has at most 12 active members, 36 memberships over its lifetime, 1,500 catalog films, and 500 film nights. Reuse a saved private membership instead of repeatedly creating guest memberships.
 - Creation produces independent random guest invitation and host membership secrets. An invitation grants only guest membership. Updates require that member's bearer token; there is no role, member ID, or host flag clients can use to update someone else.
 - Every member contributes available minutes, watched IDs, and optionally streaming services. A time limit excludes unknown runtimes. Requiring streaming excludes unknown availability. Service IDs are compared as strings and should refer to one shared country/availability snapshot. For members in different countries, agree on a common availability source or leave this requirement off.
 - The host proposes an eligible film. The members present at proposal time must agree individually. Joining afterwards makes someone eligible for the next evening; it does not change the existing participant ballot. Constraint changes before unanimous agreement are checked again.
 - Ratings and notes are private until every participating member submits. Other members can see submission status, but cannot see stars or notes. There is no host override or premature-reveal endpoint. The last submission reveals the complete ballot atomically, then ratings lock and the evening enters the shared scrapbook.
 - Leaving explicitly removes that member from the pending evening's required participants, so an abandoned membership does not block everyone. Temporary disconnection does not remove participation. Reconnection restores membership without re-enrolling in an evening explicitly left.
 - Films rated in a revealed evening are added to those members' server-side watched constraints. The club does not change anyone's personal progress on their device.
-- The host can cancel an unfinished evening or close the entire club. Cancelled evenings never reveal other members' private ratings.
+- The host can cancel an unfinished evening or close the entire club. Canceled evenings never reveal other members' private ratings.
 
-Any joined member can read the club catalogue, member names and constraints, and revealed scrapbook. Share the guest invitation only with intended club members. It lives in a URL fragment, so it is not sent in the page request. Saved membership credentials belong to that browser and must be excluded from personal progress exports and invitations. If a membership secret is lost there is no account recovery in this pilot; join again using the invitation. If the host loses their credential, create a new club.
+Any joined member can read the club catalog, member names and constraints, and revealed scrapbook. Share the guest invitation only with intended club members. It lives in a URL fragment, so it is not sent in the page request. Saved membership credentials belong to that browser and must be excluded from personal progress exports and invitations. If a membership secret is lost there is no account recovery in this pilot; join again using the invitation. If the host loses their credential, create a new club.
 
 ## Persistence, retention and backups
 

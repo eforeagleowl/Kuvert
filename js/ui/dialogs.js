@@ -12,6 +12,7 @@ import { buildListDefinition, readCustomLists, writeCustomLists, installListFrom
 import { readBackupFile } from "../storage/files.js";
 import { defaultWatchDate } from "../state/dates.js";
 import { t, plural, LOCALE } from "../i18n/index.js";
+import { titleParts } from "../i18n/titles.js";
 
 export class Dialogs {
   constructor(app) {
@@ -98,7 +99,7 @@ export class Dialogs {
       f = catalog.byId.get(id);
     if (!f) return;
     this.reviewId = id;
-    $("reviewTitle").textContent = f.t;
+    $("reviewTitle").replaceChildren(...titleParts(f));
     // A rating imported from Letterboxd pre-fills the note until you save your own.
     this.setReviewStars(p.reviews[id]?.rating ?? p.lbx[id]?.rating ?? null);
     $("reviewVerdict").hidden = !(catalog.isWinner(f) && p.seen.has(id));

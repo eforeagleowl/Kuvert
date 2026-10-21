@@ -4,10 +4,10 @@ Prepared 13 October 2026. The collection introductions, context cards and questi
 
 ## Coverage
 
-- Main Kuvert catalogue: 275 films; source-linked offline runtime and mood suggestions for all 275.
-- Curated envelopes: 3 finite collections of 7, 6 and 6 films, with 18 unique films. The Phantom Carriage appears in two collections and retains the same film ID.
-- Curated film cards: all 18 have a director, a named presentation duration, a spoiler-safe introduction and two discussion questions in both languages. Discussion questions are intended to appear after a film is watched.
-- Academy ballots: all 98 complete official Best Picture fields, containing 621 nominations including each winner. Together they make Galan, the extra mode switched on from "for the completists." in About. The main 275-film catalogue remains a selection of nominees and honorable mentions.
+- Main Kuvert catalog: 275 films; source-linked offline runtime and mood suggestions for all 275.
+- Curated envelopes: 3 finite collections of 7, 6 and 6 films, 19 different films in all.
+- Curated film cards: all 19 have a director, a named presentation duration, a spoiler-safe introduction and two discussion questions in both languages. Discussion questions are intended to appear after a film is watched.
+- Academy ballots: all 98 complete official Best Picture fields, containing 621 nominations including each winner. Together they make Galan, the extra mode switched on from "for the completists." in About. The main 275-film catalog remains a selection of nominees and honorable mentions.
 - Posters: no artwork was invented or copied into these new files. Existing licensed artwork/provider plumbing remains separate.
 
 ## Source and edition policy
@@ -160,7 +160,7 @@ Hollywoods berättarmaskineri möter en skör kärleksrelation. Nicholas Ray lå
 
 **After watching — English**
 
-- What distinguishes understanding someone from excusing their behaviour?
+- What distinguishes understanding someone from excusing their behavior?
 - How did the film change your reading of its early romantic scenes?
 
 **Efter filmen — svenska**
@@ -224,39 +224,15 @@ ID: `curated-swedish-winter` · 6 films · palette: `vinter` · seal: VINTER · 
 
 Outside, the long night. Inside, another world.
 
-A small Swedish cinema season for long evenings: ghost stories, doubt, memory, family warmth and an unexpected friendship in the snow. This is a winter viewing ritual, rather than six stories set in winter. Start anywhere, make room for a fika, and let the films speak to one another.
+A small Swedish cinema season for long evenings: doubt, memory, family warmth, a city at a standstill and an unexpected friendship in the snow. This is a winter viewing ritual, rather than six stories set in winter. Start anywhere, make room for a fika, and let the films speak to one another.
 
 **Svenska**
 
 Utanför väntar den långa natten. Inne finns en annan värld.
 
-En liten svensk filmsäsong för långa kvällar: spökhistorier, tvivel, minnen, familjevärme och en oväntad vänskap i snön. Det är en vinterritual, inte sex berättelser som alla utspelar sig på vintern. Börja var du vill, ta en fika och låt filmerna tala med varandra.
+En liten svensk filmsäsong för långa kvällar: tvivel, minnen, familjevärme, en stad som stått still och en oväntad vänskap i snön. Det är en vinterritual, inte sex berättelser som alla utspelar sig på vintern. Börja var du vill, ta en fika och låt filmerna tala med varandra.
 
 **Completion keepsake:** The Winter Lantern · six lights in the long night / Vinterlyktan · sex ljus i den långa natten
-
-#### The Phantom Carriage (1921)
-
-Victor Sjöström · 106 min · Dark, Reflective
-
-[Presentation source](https://www.criterion.com/films/27630-the-phantom-carriage) · Criterion's 106-minute restoration; silent-film runtimes vary with projection speed and edition.
-
-**Before watching — English**
-
-A New Year's Eve legend opens the door to memory and responsibility. Sjöström adapts Selma Lagerlöf using layered images and stories nested inside stories. Let the ghosts draw your eye, but keep watching the living: this Swedish silent film finds its force in human behaviour.
-
-**Före filmen — svenska**
-
-En nyårssägen öppnar dörren till minnen och ansvar. Sjöström tolkar Selma Lagerlöf med överlagrade bilder och berättelser inuti berättelser. Låt spökena fånga blicken men fortsätt följa de levande: den svenska stumfilmen hämtar sin kraft ur människors handlingar.
-
-**After watching — English**
-
-- How did the film's shifts in time change your judgement of its characters?
-- What did the ghostly images express that an ordinary flashback could not?
-
-**Efter filmen — svenska**
-
-- Hur förändrade filmens tidsskiften din bedömning av personerna?
-- Vad uttryckte spökbilderna som en vanlig tillbakablick inte kunde?
 
 #### The Seventh Seal (1957)
 
@@ -266,7 +242,7 @@ Ingmar Bergman · 96 min · Reflective, Dark
 
 **Before watching — English**
 
-A knight's questions share the road with performers, ordinary worries and flashes of humour. Bergman's medieval world gives abstract doubts physical shapes. Alongside the famous imagery, watch for small acts of care and the contrast between searching for answers and living through a day.
+A knight's questions share the road with performers, ordinary worries and flashes of humor. Bergman's medieval world gives abstract doubts physical shapes. Alongside the famous imagery, watch for small acts of care and the contrast between searching for answers and living through a day.
 
 **Före filmen — svenska**
 
@@ -338,7 +314,7 @@ Ingmar Bergman · 188 min · Reflective, Epic
 
 **Before watching — English**
 
-A theatre family seen partly through children's eyes. Bergman fills rooms with colour, ritual and imagination, then asks what a home makes possible. This envelope uses the theatrical version; the much longer television version offers a different pace and more space to linger.
+A theater family seen partly through children's eyes. Bergman fills rooms with color, ritual and imagination, then asks what a home makes possible. This envelope uses the theatrical version; the much longer television version offers a different pace and more space to linger.
 
 **Före filmen — svenska**
 
@@ -354,6 +330,30 @@ En teaterfamilj sedd delvis genom barnens ögon. Bergman fyller rummen med färg
 - Hur uttrycker filmens olika hem olika slags makt?
 - När kändes fantasin som tröst, motstånd eller ett hot?
 
+#### Songs from the Second Floor (2000)
+
+Roy Andersson · 98 min · Funny, Reflective
+
+[Presentation source](https://www.wikidata.org/wiki/Q2301516)
+
+**Before watching — English**
+
+A city stuck in traffic and bad news, seen in a series of still, carefully built tableaux. Roy Andersson composes each scene as one deadpan picture in which absurdity, grief and comedy share the frame. Look past the foreground: the background often holds the joke, or the sorrow.
+
+**Före filmen — svenska**
+
+En stad som fastnat i bilköer och dåliga nyheter, sedd i en rad stilla, noga uppbyggda tablåer. Roy Andersson komponerar varje scen som en enda lakonisk bild där det absurda, sorgen och komiken delar bildrutan. Titta förbi förgrunden: bakgrunden bär ofta skämtet, eller sorgen.
+
+**After watching — English**
+
+- Which scene made you laugh and wince in the same moment?
+- How did the long, still shots change where you looked in the frame?
+
+**Efter filmen — svenska**
+
+- Vilken scen fick dig att skratta och rycka till i samma ögonblick?
+- Hur förändrade de långa, stilla tagningarna var i bilden du tittade?
+
 #### Let the Right One In (2008)
 
 Tomas Alfredson · 114 min · Dark, Tense
@@ -362,7 +362,7 @@ Tomas Alfredson · 114 min · Dark, Tense
 
 **Before watching — English**
 
-Snow muffles a Stockholm suburb where a lonely child meets a mysterious neighbour. Alfredson places a supernatural story beside the ordinary cruelties of growing up. Look at the distances between people, the windows and the quiet stretches that make a sudden sound matter.
+Snow muffles a Stockholm suburb where a lonely child meets a mysterious neighbor. Alfredson places a supernatural story beside the ordinary cruelties of growing up. Look at the distances between people, the windows and the quiet stretches that make a sudden sound matter.
 
 **Före filmen — svenska**
 
@@ -400,7 +400,7 @@ Börja med ett skratt och följ sedan bilden till mer främmande platser. Sex ti
 
 Buster Keaton · 49 min · Funny, Adventurous
 
-[Presentation source](https://kinolorber.com/film/sherlock-jr) · Kino Lorber's current 49-minute restored presentation; other editions run shorter.
+[Presentation source](https://kinolorber.com/film/sherlock-jr) · Restored editions run roughly 45 to 49 minutes, depending on the version.
 
 **Before watching — English**
 
@@ -448,7 +448,7 @@ Harold Lloyds storstadsdrömmare upptäcker att framstå som framgångsrik och a
 
 Charlie Chaplin · 88 min · Funny, Romantic
 
-[Presentation source](https://www.festival-cannes.com/en/f/the-gold-rush/) · 88-minute restored 1925 silent version shown at Cannes Classics 2025; not the 72-minute narrated 1942 reissue.
+[Presentation source](https://www.festival-cannes.com/en/f/the-gold-rush/) · The restored 1925 silent version, about 88 minutes; not the 72-minute narrated 1942 reissue.
 
 **Before watching — English**
 
@@ -476,7 +476,7 @@ Victor Sjöström · 106 min · Dark, Reflective
 
 **Before watching — English**
 
-A New Year's Eve legend opens the door to memory and responsibility. Sjöström adapts Selma Lagerlöf using layered images and stories nested inside stories. Let the ghosts draw your eye, but keep watching the living: this Swedish silent film finds its force in human behaviour.
+A New Year's Eve legend opens the door to memory and responsibility. Sjöström adapts Selma Lagerlöf using layered images and stories nested inside stories. Let the ghosts draw your eye, but keep watching the living: this Swedish silent film finds its force in human behavior.
 
 **Före filmen — svenska**
 
@@ -484,7 +484,7 @@ En nyårssägen öppnar dörren till minnen och ansvar. Sjöström tolkar Selma 
 
 **After watching — English**
 
-- How did the film's shifts in time change your judgement of its characters?
+- How did the film's shifts in time change your judgment of its characters?
 - What did the ghostly images express that an ordinary flashback could not?
 
 **Efter filmen — svenska**

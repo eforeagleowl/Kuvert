@@ -1,11 +1,11 @@
 // A split-flap display on a canvas: every character is painted once onto a strip (the atlas), and each
 // flap turns through the characters in order until it reaches its own, top half falling over the bottom.
-// Colours and fonts come from CSS custom properties on the station page (--flap-*, --st-*), so a list's
+// Colors and fonts come from CSS custom properties on the station page (--flap-*, --st-*), so a list's
 // palette repaints the board too.
 import { CHARS, CHAR_INDEX } from "./timetable.js";
 
 const COUNT = CHARS.length;
-// The lamp's glow fades out from its own colour. The board's colours are plain hex (see css/station.css).
+// The lamp's glow fades out from its own color. The board's colors are plain hex (see css/station.css).
 const withAlpha = (color, a) => {
   const m = /^#([0-9a-f]{6})$/i.exec(color);
   if (!m) return a > 0.2 ? color : "rgba(0,0,0,0)";
@@ -164,7 +164,7 @@ export class Flaps {
           c.anim = false;
           c.dirty = true;
         } else if (c.cur !== t || c.sty !== style) {
-          // A ripple from left to right, each flap a little out of step with its neighbours.
+          // A ripple from left to right, each flap a little out of step with its neighbors.
           c.wait = delay + col * 11 + Math.random() * 70;
           c.dur = 30 + Math.random() * 24;
           this.busy = true;
@@ -242,7 +242,7 @@ export class Flaps {
     ctx.drawImage(A, nxt * fw, c.tsty * fh, fw, hh, c.x, c.y, fw, hh);
     ctx.drawImage(A, c.cur * fw, c.sty * fh + hh, fw, hh, c.x, c.y + hh, fw, hh);
     if (p < 0.5) {
-      // The top flap falls towards you, foreshortening and darkening.
+      // The top flap falls toward you, foreshortening and darkening.
       const k = Math.cos(p * Math.PI),
         h = Math.max(1, hh * k);
       ctx.fillStyle = `rgba(0,0,0,${k * 0.4})`;

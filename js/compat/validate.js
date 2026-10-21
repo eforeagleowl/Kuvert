@@ -212,7 +212,7 @@ export function validateProgress(d, ctx, { browserLegacy = false, legacyIds = LO
     throw Error(
       String(d.catalogue || "").startsWith("custom:") || ctx.custom
         ? "This backup belongs to a different movie list. Switch lists in Settings first."
-        : "This backup uses a different catalogue version.",
+        : "This backup uses a different catalog version.",
     );
   let marks;
   if (Array.isArray(d.seen))
@@ -256,7 +256,7 @@ export function validateProgress(d, ctx, { browserLegacy = false, legacyIds = LO
   };
 }
 
-// The first app's backups hold only a bit-packed code: those need the catalogue chosen before reading.
+// The first app's backups hold only a bit-packed code: those need the catalog chosen before reading.
 export function isCodeOnlyLegacyBackup(obj) {
   return obj?.app === "envelope" && [1, 2, 3].includes(obj.v) && !Array.isArray(obj.seen) && typeof obj.code === "string";
 }

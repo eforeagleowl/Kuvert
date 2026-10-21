@@ -30,7 +30,7 @@ export class Club {
   }
   catalogue(){
     const {store,catalog}=this.app,region=store.settings.country;
-    return catalog.films.filter(f=>f.kind!=="album").map(f=>({id:f.id,title:f.t,year:f.y,runtime:store.p.runtimes[f.id]||null,
+    return catalog.films.filter(f=>f.kind!=="album").map(f=>({id:f.id,title:f.orig??f.t,year:f.y,runtime:store.p.runtimes[f.id]||null,
       services:[...(store.caches.availability[region]?.[f.id]?.ids||[]).map(String),...(store.p.shelf.has(f.id)?["disc"]:[])],
       servicesKnown:availabilityFresh(store.caches,f.id,region)||store.p.shelf.has(f.id)}));
   }

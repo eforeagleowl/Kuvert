@@ -10479,7 +10479,7 @@
     "value": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
    },
    "result": {
-    "error": "The legacy code is too long for the original catalogue."
+    "error": "The legacy code is too long for the original catalog."
    }
   },
   {
@@ -11957,7 +11957,7 @@
     }
    },
    "result": {
-    "error": "This backup uses a different catalogue version."
+    "error": "This backup uses a different catalog version."
    }
   },
   {

@@ -91,8 +91,10 @@ export async function unzip(file) {
 // Title/year matching against the list. Handles long Letterboxd titles like
 // "Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb".
 export function letterboxdMatcher(films) {
+  // Letterboxd knows films by their original titles: in Swedish mode the catalog keeps those in `orig`.
+  const title = (f) => f.orig ?? f.t;
   const byKey = new Map();
-  for (const f of films) byKey.set(normalized(f.t) + "|" + f.y, f);
+  for (const f of films) byKey.set(normalized(title(f)) + "|" + f.y, f);
   return (name, year) => {
     const k = normalized(name),
       y = Number(year);
@@ -102,7 +104,7 @@ export function letterboxdMatcher(films) {
     // Same film listed a year apart (festival vs. release year).
     for (const dy of [-1, 1]) if ((f = byKey.get(k + "|" + (y + dy)))) return f;
     // One title is the start of the other ("Dr. Strangelove" / "Dr. Strangelove or: …").
-    const cands = films.filter((x) => Math.abs(x.y - y) <= 1 && normalized(x.t).length >= 6 && (k.startsWith(normalized(x.t)) || normalized(x.t).startsWith(k)));
+    const cands = films.filter((x) => Math.abs(x.y - y) <= 1 && normalized(title(x)).length >= 6 && (k.startsWith(normalized(title(x))) || normalized(title(x)).startsWith(k)));
     return cands.length === 1 ? cands[0] : null;
   };
 }

@@ -23,15 +23,16 @@ export const CURATED_COLLECTIONS = [
     editorial: { status: "draft-for-review", theme: "A broad introduction to noir, including its gothic and satirical edges." },
   },
   {
-    id: "curated-swedish-winter", version: 1, name: "A Swedish Winter", subtitle: "Six films for the long evenings", palette: "vinter", series: {}, shelves: null,
+    // Version 2: Songs from the Second Floor in place of The Phantom Carriage (js/views/journeys.js upgradeCurated).
+    id: "curated-swedish-winter", version: 2, name: "A Swedish Winter", subtitle: "Six films for the long evenings", palette: "vinter", series: {}, shelves: null,
     title: { en: "A Swedish Winter", sv: "En svensk vinter" },
     tagline: { en: "Outside, the long night. Inside, another world.", sv: "Utanför väntar den långa natten. Inne finns en annan värld." },
     introduction: {
-      en: "A small Swedish cinema season for long evenings: ghost stories, doubt, memory, family warmth and an unexpected friendship in the snow. This is a winter viewing ritual, rather than six stories set in winter. Start anywhere, make room for a fika, and let the films speak to one another.",
-      sv: "En liten svensk filmsäsong för långa kvällar: spökhistorier, tvivel, minnen, familjevärme och en oväntad vänskap i snön. Det är en vinterritual, inte sex berättelser som alla utspelar sig på vintern. Börja var du vill, ta en fika och låt filmerna tala med varandra.",
+      en: "A small Swedish cinema season for long evenings: doubt, memory, family warmth, a city at a standstill and an unexpected friendship in the snow. This is a winter viewing ritual, rather than six stories set in winter. Start anywhere, make room for a fika, and let the films speak to one another.",
+      sv: "En liten svensk filmsäsong för långa kvällar: tvivel, minnen, familjevärme, en stad som stått still och en oväntad vänskap i snön. Det är en vinterritual, inte sex berättelser som alla utspelar sig på vintern. Börja var du vill, ta en fika och låt filmerna tala med varandra.",
     },
     motif: "snow", seal: "VINTER · 6", completion: { en: "The Winter Lantern · six lights in the long night", sv: "Vinterlyktan · sex ljus i den långa natten" },
-    films: [film("The Phantom Carriage", 1921), film("The Seventh Seal", 1957), film("Wild Strawberries", 1957), film("Winter Light", 1963), film("Fanny and Alexander", 1982), film("Let the Right One In", 2008)],
+    films: [film("The Seventh Seal", 1957), film("Wild Strawberries", 1957), film("Winter Light", 1963), film("Fanny and Alexander", 1982), film("Songs from the Second Floor", 2000), film("Let the Right One In", 2008)],
     editorial: { status: "draft-for-review", theme: "An introductory season, not a representative survey of every Swedish filmmaker." },
   },
   {
@@ -81,7 +82,7 @@ export const CURATED_METADATA = {
     en: "Hollywood's storytelling machinery meets a fragile romance. Nicholas Ray keeps the mystery close to the emotions of two people learning what it means to trust. Pay attention to changes in tone: a charming conversation can acquire weight without the setting changing at all.",
     sv: "Hollywoods berättarmaskineri möter en skör kärleksrelation. Nicholas Ray låter mysteriet ligga nära känslorna hos två människor som försöker lita på varandra. Lägg märke till tonförskjutningarna: ett charmigt samtal kan bli tungt utan att platsen förändras.",
   }, {
-    en: ["What distinguishes understanding someone from excusing their behaviour?", "How did the film change your reading of its early romantic scenes?"],
+    en: ["What distinguishes understanding someone from excusing their behavior?", "How did the film change your reading of its early romantic scenes?"],
     sv: ["Vad skiljer förståelse för en person från att ursäkta beteendet?", "Hur förändrade filmen din syn på de tidiga romantiska scenerna?"],
   }),
   "1955-the-night-of-the-hunter": note(93, "Charles Laughton", ["Dark", "Tense"], [source("The Criterion Collection", "https://www.criterion.com/films/27525-the-night-of-the-hunter")], {
@@ -99,14 +100,14 @@ export const CURATED_METADATA = {
     sv: ["Vilket samtal visade tydligast skillnaden mellan inflytande och auktoritet?", "Vad gjorde filmens stad lockande, kvävande eller både och?"],
   }),
   "1921-the-phantom-carriage": note(106, "Victor Sjöström", ["Dark", "Reflective"], [source("The Criterion Collection", "https://www.criterion.com/films/27630-the-phantom-carriage")], {
-    en: "A New Year's Eve legend opens the door to memory and responsibility. Sjöström adapts Selma Lagerlöf using layered images and stories nested inside stories. Let the ghosts draw your eye, but keep watching the living: this Swedish silent film finds its force in human behaviour.",
+    en: "A New Year's Eve legend opens the door to memory and responsibility. Sjöström adapts Selma Lagerlöf using layered images and stories nested inside stories. Let the ghosts draw your eye, but keep watching the living: this Swedish silent film finds its force in human behavior.",
     sv: "En nyårssägen öppnar dörren till minnen och ansvar. Sjöström tolkar Selma Lagerlöf med överlagrade bilder och berättelser inuti berättelser. Låt spökena fånga blicken men fortsätt följa de levande: den svenska stumfilmen hämtar sin kraft ur människors handlingar.",
   }, {
-    en: ["How did the film's shifts in time change your judgement of its characters?", "What did the ghostly images express that an ordinary flashback could not?"],
+    en: ["How did the film's shifts in time change your judgment of its characters?", "What did the ghostly images express that an ordinary flashback could not?"],
     sv: ["Hur förändrade filmens tidsskiften din bedömning av personerna?", "Vad uttryckte spökbilderna som en vanlig tillbakablick inte kunde?"],
   }, { en: "Criterion's 106-minute restoration; silent-film runtimes vary with projection speed and edition.", sv: "Criterion-restaureringen är 106 minuter; stumfilmers speltid varierar med visningshastighet och utgåva." }),
   "1957-the-seventh-seal": note(96, "Ingmar Bergman", ["Reflective", "Dark"], [source("Film at Lincoln Center", "https://www.filmlinc.org/films/the-seventh-seal/")], {
-    en: "A knight's questions share the road with performers, ordinary worries and flashes of humour. Bergman's medieval world gives abstract doubts physical shapes. Alongside the famous imagery, watch for small acts of care and the contrast between searching for answers and living through a day.",
+    en: "A knight's questions share the road with performers, ordinary worries and flashes of humor. Bergman's medieval world gives abstract doubts physical shapes. Alongside the famous imagery, watch for small acts of care and the contrast between searching for answers and living through a day.",
     sv: "En riddares frågor delar vägen med skådespelare, vardagsbekymmer och glimtar av humor. Bergmans medeltida värld ger tvivlet fysisk form. Se bortom de berömda bilderna efter små omsorgshandlingar och skillnaden mellan att söka svar och att leva en dag.",
   }, {
     en: ["Which ordinary moment best counterbalanced the film's larger questions?", "How do its comic and solemn passages affect one another?"],
@@ -127,14 +128,21 @@ export const CURATED_METADATA = {
     sv: ["Vem verkar bäst kunna höra en annan människas behov?", "Hur påverkade miljöns ljus och stillhet din upplevelse av dialogen?"],
   }),
   "1982-fanny-and-alexander": note(188, "Ingmar Bergman", ["Reflective", "Epic"], [source("British Film Institute", "https://www.bfi.org.uk/film/12cbf169-c5eb-5b83-9ec0-a43a34937127/fanny-and-alexander")], {
-    en: "A theatre family seen partly through children's eyes. Bergman fills rooms with colour, ritual and imagination, then asks what a home makes possible. This envelope uses the theatrical version; the much longer television version offers a different pace and more space to linger.",
+    en: "A theater family seen partly through children's eyes. Bergman fills rooms with color, ritual and imagination, then asks what a home makes possible. This envelope uses the theatrical version; the much longer television version offers a different pace and more space to linger.",
     sv: "En teaterfamilj sedd delvis genom barnens ögon. Bergman fyller rummen med färg, ritualer och fantasi och undersöker vad ett hem kan ge. Kuvertet utgår från bioversionen; den betydligt längre tv-versionen har ett annat tempo och mer utrymme att dröja kvar.",
   }, {
     en: ["How do the film's different homes express different kinds of power?", "Where did imagination feel like comfort, resistance, or a threat?"],
     sv: ["Hur uttrycker filmens olika hem olika slags makt?", "När kändes fantasin som tröst, motstånd eller ett hot?"],
   }, { en: "188-minute theatrical version. The television version needs a longer evening.", sv: "Bioversionen är 188 minuter. Tv-versionen kräver en längre kväll." }),
+  "2000-songs-from-the-second-floor": note(98, "Roy Andersson", ["Funny", "Reflective"], [source("Wikidata", "https://www.wikidata.org/wiki/Q2301516")], {
+    en: "A city stuck in traffic and bad news, seen in a series of still, carefully built tableaux. Roy Andersson composes each scene as one deadpan picture in which absurdity, grief and comedy share the frame. Look past the foreground: the background often holds the joke, or the sorrow.",
+    sv: "En stad som fastnat i bilköer och dåliga nyheter, sedd i en rad stilla, noga uppbyggda tablåer. Roy Andersson komponerar varje scen som en enda lakonisk bild där det absurda, sorgen och komiken delar bildrutan. Titta förbi förgrunden: bakgrunden bär ofta skämtet, eller sorgen.",
+  }, {
+    en: ["Which scene made you laugh and wince in the same moment?", "How did the long, still shots change where you looked in the frame?"],
+    sv: ["Vilken scen fick dig att skratta och rycka till i samma ögonblick?", "Hur förändrade de långa, stilla tagningarna var i bilden du tittade?"],
+  }),
   "2008-let-the-right-one-in": note(114, "Tomas Alfredson", ["Dark", "Tense"], [source("BFI Southbank programme notes", "https://bfidatadigipres.github.io/in%20dreams%20are%20monsters/2022/12/06/let-the-right-one-in/")], {
-    en: "Snow muffles a Stockholm suburb where a lonely child meets a mysterious neighbour. Alfredson places a supernatural story beside the ordinary cruelties of growing up. Look at the distances between people, the windows and the quiet stretches that make a sudden sound matter.",
+    en: "Snow muffles a Stockholm suburb where a lonely child meets a mysterious neighbor. Alfredson places a supernatural story beside the ordinary cruelties of growing up. Look at the distances between people, the windows and the quiet stretches that make a sudden sound matter.",
     sv: "Snön dämpar en Stockholmsförort där ett ensamt barn möter en gåtfull granne. Alfredson ställer en övernaturlig berättelse bredvid uppväxtens vardagliga grymheter. Se på avstånden mellan människor, fönstren och de tysta partierna som ger ett plötsligt ljud betydelse.",
   }, {
     en: ["How does the film complicate the idea of finding someone who understands you?", "Which quiet image stayed with you after the more dramatic scenes?"],
@@ -146,7 +154,7 @@ export const CURATED_METADATA = {
   }, {
     en: ["Which joke depended most on editing or the camera rather than performance?", "How does the film connect watching movies with imagining a different life?"],
     sv: ["Vilket skämt byggde mest på klippning eller kamera snarare än skådespel?", "Hur kopplar filmen biobesök till drömmen om ett annat liv?"],
-  }, { en: "Kino Lorber's current 49-minute restored presentation; other editions run shorter.", sv: "Kino Lorbers aktuella restaurerade visningsversion är 49 minuter; andra utgåvor är kortare." }),
+  }, { en: "Restored editions run roughly 45 to 49 minutes, depending on the version.", sv: "Restaurerade utgåvor är ungefär 45–49 minuter långa, beroende på version." }),
   "1923-safety-last": note(73, "Fred Newmeyer and Sam Taylor", ["Funny", "Tense"], [source("The Criterion Collection", "https://www.criterion.com/films/28446-safety-last")], {
     en: "Harold Lloyd's city striver finds that looking successful and being successful are different jobs. The famous clock is only one part of a carefully built comedy. Track how small everyday obstacles grow, and how the film makes you laugh while holding your breath.",
     sv: "Harold Lloyds storstadsdrömmare upptäcker att framstå som framgångsrik och att faktiskt lyckas är olika saker. Den berömda klockan är bara en del av en noggrant byggd komedi. Följ hur små vardagshinder växer och hur filmen får dig att skratta med andan i halsen.",
@@ -160,7 +168,7 @@ export const CURATED_METADATA = {
   }, {
     en: ["Which prop moved most effectively between comedy and tenderness?", "How did the film balance the wish to belong with the wish to become wealthy?"],
     sv: ["Vilken rekvisita rörde sig bäst mellan komik och ömhet?", "Hur balanserade filmen önskan om gemenskap mot önskan att bli rik?"],
-  }, { en: "88-minute restored 1925 silent version shown at Cannes Classics 2025; not the 72-minute narrated 1942 reissue.", sv: "Den restaurerade stumfilmsversionen från 1925, visad på Cannes Classics 2025, är 88 minuter; 1942 års version med berättarröst är 72 minuter." }),
+  }, { en: "The restored 1925 silent version, about 88 minutes; not the 72-minute narrated 1942 reissue.", sv: "Den restaurerade stumfilmsversionen från 1925, omkring 88 minuter; inte 1942 års version med berättarröst på 72 minuter." }),
   "1927-sunrise-a-song-of-two-humans": note(94, "F. W. Murnau", ["Romantic", "Reflective"], [source("BFI Southbank programme notes", "https://bfidatadigipres.github.io/sight%20and%20sound%20greatest%20films%20of%20all%20time%202022%3Cbr%3E11%3D/2023/03/05/sunrise/")], {
     en: "Rural and urban spaces become states of mind in Murnau's visual love story. Movement, light and layered images carry feelings beyond what dialogue could easily describe. Although it has no spoken dialogue, its original release belongs to cinema's transition toward synchronized sound.",
     sv: "Landsbygd och stad blir sinnestillstånd i Murnaus visuella kärleksberättelse. Rörelse, ljus och överlagrade bilder bär känslor bortom det som dialog enkelt kan uttrycka. Trots avsaknaden av talad dialog hör originalutgåvan till filmens övergång mot synkroniserat ljud.",

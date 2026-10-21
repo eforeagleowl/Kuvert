@@ -119,7 +119,7 @@ export function watchDayCounts(p, catalog) {
   }
   return byDay;
 }
-// Over every dated watch: longest run of back-to-back evenings, favourite night, busiest week.
+// Over every dated watch: longest run of back-to-back evenings, favorite night, busiest week.
 export function eveningFacts(byDay) {
   const days = [...byDay.keys()].sort();
   if (days.length < 3) return null;

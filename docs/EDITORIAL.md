@@ -5,8 +5,8 @@ Prepared 13 October 2026. The collection introductions, context cards and questi
 ## Coverage
 
 - Main Kuvert catalog: 275 films; source-linked offline runtime and mood suggestions for all 275.
-- Curated envelopes: 3 finite collections of 7, 6 and 6 films, 19 different films in all.
-- Curated film cards: all 19 have a director, a named presentation duration, a spoiler-safe introduction and two discussion questions in both languages. Discussion questions are intended to appear after a film is watched.
+- Curated envelopes: 4 finite collections of 7, 6, 6 and 7 films, 26 different films in all.
+- Curated film cards: all 26 have a director, a named presentation duration, a spoiler-safe introduction and two discussion questions in both languages. Discussion questions are intended to appear after a film is watched.
 - Academy ballots: all 98 complete official Best Picture fields, containing 621 nominations including each winner. Together they make Galan, the extra mode switched on from "for the completists." in About. The main 275-film catalog remains a selection of nominees and honorable mentions.
 - Posters: no artwork was invented or copied into these new files. Existing licensed artwork/provider plumbing remains separate.
 
@@ -14,7 +14,7 @@ Prepared 13 October 2026. The collection introductions, context cards and questi
 
 The initial general film facts come from Wikidata structured statements under [CC0](https://www.wikidata.org/wiki/Wikidata:Licensing). Identity was checked by title and release-year claims. A duration was accepted automatically only when the non-deprecated (or preferred) records agreed on one duration. These 237 core records are source-linked community-maintained facts; they should not be described as independently verified against a primary film print. References from the original statements are retained where present.
 
-The remaining 38 core duration records were resolved through named BFI, film-institution, studio or distributor presentations. The curated films use source-linked presentations from Criterion, BFI, Janus Films, Kino Lorber, Festival de Cannes and Film at Lincoln Center. Differences between theatrical, extended, narrated, restored, regional and differently projected editions are real: durations must not be presented as universal for every copy. Kuvert leaves the source and edition note accessible and allows user/provider details to take precedence.
+The remaining 38 core duration records were resolved through named BFI, film-institution, studio or distributor presentations. The curated films use source-linked presentations from Criterion, BFI, Janus Films, Kino Lorber, Festival de Cannes and Film at Lincoln Center; Songs from the Second Floor and the seven Hitchcock films cite their Wikidata durations. Differences between theatrical, extended, narrated, restored, regional and differently projected editions are real: durations must not be presented as universal for every copy. Kuvert leaves the source and edition note accessible and allows user/provider details to take precedence.
 
 The first runtime snapshot contains 275 of 275 core films. Film facts need no personal API key. Extra films appearing only in historical ballots may need further runtime enrichment.
 
@@ -540,6 +540,192 @@ En rättegång blir ett möte med ett ansikte. Dreyers närbilder och Renée Fal
 - Hur förändrade närbilderna din relation till människorna på duken?
 - Hur påverkade den valda musiken din upplevelse?
 
+### Hitchcock Week / Hitchcockveckan
+
+ID: `curated-hitchcock` · 7 films · palette: `skog` · seal: HITCHCOCK · 7
+
+**English**
+
+Someone is always watching. Tonight, it's you.
+
+Seven films from Hitchcock's Hollywood years, from a brooding English estate in 1940 to a small Californian bay in 1963, including the only one of his films to win Best Picture. Each builds suspense from what we are shown and what we are kept from: a glance, a key, a window across the yard. Watch in any order, notice how often the camera makes you a witness, and keep an eye out for the director himself: he slips into every one.
+
+**Svenska**
+
+Någon iakttar alltid. I kväll är det du.
+
+Sju filmer från Hitchcocks år i Hollywood, från ett dystert engelskt gods 1940 till en liten bukt i Kalifornien 1963, däribland den enda av hans filmer som vann Oscar för bästa film. Var och en bygger spänning av det vi får se och det som hålls undan: en blick, en nyckel, ett fönster på andra sidan gården. Se dem i valfri ordning, lägg märke till hur ofta kameran gör dig till vittne, och håll utkik efter regissören själv: han smyger in i varenda en.
+
+**Completion keepsake:** The MacGuffin · seven nights of suspense / MacGuffin · sju kvällar av spänning
+
+#### Rebecca (1940)
+
+Alfred Hitchcock · 126 min · Romantic, Tense
+
+[Presentation source](https://www.wikidata.org/wiki/Q204212) · Listed at 126 to 130 minutes, depending on the edition.
+
+**Before watching — English**
+
+A young bride arrives at a grand estate where the first wife still seems to fill every room. Hitchcock's first Hollywood film, and the only one of his to win Best Picture, turns romance into a slow tightening of nerves. Watch how the house itself, with its closed doors, portraits and watchful housekeeper, keeps the past in charge.
+
+**Före filmen — svenska**
+
+En ung brud kommer till ett stort gods där den första frun fortfarande tycks fylla varje rum. Hitchcocks första film i Hollywood, och den enda av hans filmer som vann Oscar för bästa film, förvandlar en romans till nerver som sakta dras åt. Se hur huset självt, med sina stängda dörrar, porträtt och vaksamma hushållerska, låter det förflutna bestämma.
+
+**After watching — English**
+
+- Why do you think we never learn the narrator's first name?
+- How does the house change from a place of romance into something threatening?
+
+**Efter filmen — svenska**
+
+- Varför tror du att vi aldrig får veta berättarens förnamn?
+- Hur förvandlas huset från en romantisk plats till något hotfullt?
+
+#### Notorious (1946)
+
+Alfred Hitchcock · 102 min · Romantic, Tense
+
+[Presentation source](https://www.wikidata.org/wiki/Q587419)
+
+**Before watching — English**
+
+A woman with a notorious name is recruited for a dangerous assignment in postwar Rio. Hitchcock builds suspense from small objects passed from hand to hand, and from love that has to be performed as duty. Follow the camera when it glides toward something tiny: in this film, a detail can weigh more than a gunfight.
+
+**Före filmen — svenska**
+
+En kvinna med ett ökänt namn rekryteras för ett farligt uppdrag i efterkrigstidens Rio. Hitchcock bygger spänning av små föremål som går från hand till hand och av en kärlek som måste spelas upp som en plikt. Följ kameran när den glider mot något litet: i den här filmen kan en detalj väga tyngre än en skottlossning.
+
+**After watching — English**
+
+- When did a small object make you more nervous than any threat of violence?
+- How does the film blur the line between love and duty?
+
+**Efter filmen — svenska**
+
+- När gjorde ett litet föremål dig mer nervös än något hot om våld?
+- Hur suddar filmen ut gränsen mellan kärlek och plikt?
+
+#### Rear Window (1954)
+
+Alfred Hitchcock · 112 min · Tense, Funny
+
+[Presentation source](https://www.wikidata.org/wiki/Q34414)
+
+**Before watching — English**
+
+A photographer with a broken leg spends a heat wave watching the apartments across his courtyard. The film stays almost entirely in his room, so we see only what he can see, and soon we want what he wants. Enjoy the wit, then ask yourself when watching became something else.
+
+**Före filmen — svenska**
+
+En fotograf med brutet ben tillbringar en värmebölja med att iaktta lägenheterna på andra sidan gården. Nästan hela filmen stannar i hans rum, så vi ser bara det han ser, och snart vill vi samma sak som han. Njut av kvickheten och fråga dig sedan när tittandet blev något annat.
+
+**After watching — English**
+
+- Which neighbor's story did you follow most closely, and why?
+- Did the film make you feel part of the watching? When?
+
+**Efter filmen — svenska**
+
+- Vilken grannes historia följde du mest uppmärksamt, och varför?
+- Fick filmen dig att känna dig delaktig i tittandet? När?
+
+#### Vertigo (1958)
+
+Alfred Hitchcock · 128 min · Romantic, Dark
+
+[Presentation source](https://www.wikidata.org/wiki/Q202548)
+
+**Before watching — English**
+
+A former detective with a fear of heights is hired to follow a woman through San Francisco. Hitchcock turns the city into a dream of museums, missions and winding streets, scored by Bernard Herrmann's restless, swirling music. Notice the colors, especially green, and how the mood shifts from mystery to obsession.
+
+**Före filmen — svenska**
+
+En före detta kriminalpolis med höjdskräck anlitas för att skugga en kvinna genom San Francisco. Hitchcock gör staden till en dröm av museer, missionsstationer och slingrande gator, till Bernard Herrmanns rastlösa, virvlande musik. Lägg märke till färgerna, särskilt grönt, och hur stämningen glider från mysterium till besatthet.
+
+**After watching — English**
+
+- How did color and music shape your feelings before anything was explained?
+- Where did the film shift from mystery to obsession for you?
+
+**Efter filmen — svenska**
+
+- Hur formade färger och musik dina känslor innan något hade förklarats?
+- Var tyckte du att filmen gled från mysterium till besatthet?
+
+#### North by Northwest (1959)
+
+Alfred Hitchcock · 136 min · Adventurous, Funny
+
+[Presentation source](https://www.wikidata.org/wiki/Q223139)
+
+**Before watching — English**
+
+An advertising man is mistaken for someone else and sent running across America. This is Hitchcock at his most playful: a chase from a Manhattan bar to empty prairie and a famous monument, with Cary Grant keeping both his suit and his jokes. Watch how often danger arrives in broad daylight, in open places where there should be nowhere to hide.
+
+**Före filmen — svenska**
+
+En reklamman förväxlas med någon annan och tvingas fly tvärs över USA. Här är Hitchcock som mest lekfull: en jakt från en bar på Manhattan till öde prärie och ett berömt monument, där Cary Grant behåller både kostymen och skämten. Se hur ofta faran kommer mitt på ljusa dagen, på öppna platser där det borde vara omöjligt att gömma sig.
+
+**After watching — English**
+
+- Which scene was most fun, and which was most frightening? Were they the same one?
+- Why do you think Hitchcock put so much danger in bright, open places?
+
+**Efter filmen — svenska**
+
+- Vilken scen var roligast och vilken var mest skrämmande? Var det samma scen?
+- Varför tror du att Hitchcock lade så mycket fara på ljusa, öppna platser?
+
+#### Psycho (1960)
+
+Alfred Hitchcock · 109 min · Tense, Dark
+
+[Presentation source](https://www.wikidata.org/wiki/Q163038)
+
+**Before watching — English**
+
+A secretary leaves town with money that isn't hers and stops for the night at a quiet roadside motel. Shot quickly and cheaply in black and white, Psycho broke the rules of what audiences expected a film to do. If you somehow don't know what happens, protect that; if you do, watch how carefully Hitchcock steers your sympathy from scene to scene.
+
+**Före filmen — svenska**
+
+En sekreterare lämnar stan med pengar som inte är hennes och stannar för natten på ett stilla motell vid vägen. Psycho spelades in snabbt och billigt i svartvitt och bröt mot reglerna för vad publiken väntade sig av en film. Om du mot förmodan inte vet vad som händer, skydda det; om du vet, se hur noga Hitchcock styr dina sympatier från scen till scen.
+
+**After watching — English**
+
+- Which moment unsettled you most, and why?
+- How do the black-and-white images and Bernard Herrmann's strings shape the fear?
+
+**Efter filmen — svenska**
+
+- Vilket ögonblick oroade dig mest, och varför?
+- Hur formar de svartvita bilderna och Bernard Herrmanns stråkar rädslan?
+
+#### The Birds (1963)
+
+Alfred Hitchcock · 119 min · Tense, Dark
+
+[Presentation source](https://www.wikidata.org/wiki/Q110043)
+
+**Before watching — English**
+
+A playful pursuit brings a San Francisco socialite to a small coastal town, where the birds begin to behave strangely. There is no musical score, only electronic bird sounds and silence, and the film offers no easy explanations. Notice how ordinary places, a schoolyard, a diner, a phone booth, become impossible to trust.
+
+**Före filmen — svenska**
+
+En lekfull jakt för en societetsdam från San Francisco till en liten kuststad, där fåglarna börjar bete sig konstigt. Det finns ingen filmmusik, bara elektroniska fågelljud och tystnad, och filmen erbjuder inga enkla förklaringar. Se hur vardagliga platser, en skolgård, ett kafé, en telefonkiosk, blir omöjliga att lita på.
+
+**After watching — English**
+
+- How did the absence of music change the way you listened?
+- What do you think the birds stand for, if anything?
+
+**Efter filmen — svenska**
+
+- Hur förändrade frånvaron av musik ditt sätt att lyssna?
+- Vad tror du att fåglarna står för, om något?
+
 ## Review decisions
 
-The winter collection is explicitly a viewing season, not six stories all set in winter. Four of its films are by Bergman; a later Swedish collection can give other directors and periods more space. The noir collection deliberately includes a gothic film and a press satire at the edges of noir. The silent collection requests the 1925 Gold Rush rather than the narrated 1942 reissue and acknowledges score and projection-speed differences. These choices are part of the drafts for your review.
+The winter collection is explicitly a viewing season, not six stories all set in winter. Four of its films are by Bergman; a later Swedish collection can give other directors and periods more space. The noir collection deliberately includes a gothic film and a press satire at the edges of noir. The silent collection requests the 1925 Gold Rush rather than the narrated 1942 reissue and acknowledges score and projection-speed differences. Hitchcock Week follows one director across his Hollywood years, chosen for range rather than as a ranking; its cards stay spoiler-safe, Psycho above all, and Rebecca and Rear Window share their cards with the main list. These choices are part of the drafts for your review.

@@ -2,7 +2,7 @@
 // Titles and years define permanent IDs, just as buildListDefinition does.
 const slug = (s) => String(s).normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const film = (t, y) => ({ t, y, id: `${y}-${slug(t)}`, s: "" });
-const source = (label, url) => ({ label, url, checked: "2026-10-13", fields: ["title", "year", "director", "runtime"] });
+const source = (label, url, checked = "2026-10-13") => ({ label, url, checked, fields: ["title", "year", "director", "runtime"] });
 const note = (runtime, director, moods, sources, context, discussion, runtimeNote = null) => ({
   runtime, director, moods, sources, context, discussion, ...(runtimeNote ? { runtimeNote } : {}),
   questions: discussion, source: sources[0].url, editionNotes: runtimeNote,
@@ -11,7 +11,8 @@ const note = (runtime, director, moods, sources, context, discussion, runtimeNot
 
 export const CURATED_COLLECTIONS = [
   {
-    id: "curated-noir", version: 1, name: "Seven Nights of Noir", subtitle: "Seven letters from the city after dark", palette: "natt", series: {}, shelves: null,
+    id: "curated-noir", version: 1, name: "Seven Nights of Noir", palette: "natt", series: {}, shelves: null, badge: "NATT",
+    subtitle: { en: "Seven letters from the city after dark", sv: "Sju brev från staden efter mörkrets inbrott" },
     title: { en: "Seven Nights of Noir", sv: "Sju nätter med film noir" },
     tagline: { en: "Rain on the window. Trouble in the envelope.", sv: "Regn mot rutan. Trubbel i kuvertet." },
     introduction: {
@@ -24,7 +25,8 @@ export const CURATED_COLLECTIONS = [
   },
   {
     // Version 2: Songs from the Second Floor in place of The Phantom Carriage (js/views/journeys.js upgradeCurated).
-    id: "curated-swedish-winter", version: 2, name: "A Swedish Winter", subtitle: "Six films for the long evenings", palette: "vinter", series: {}, shelves: null,
+    id: "curated-swedish-winter", version: 2, name: "A Swedish Winter", palette: "vinter", series: {}, shelves: null, badge: "VINTER",
+    subtitle: { en: "Six films for the long evenings", sv: "Sex filmer för de långa kvällarna" },
     title: { en: "A Swedish Winter", sv: "En svensk vinter" },
     tagline: { en: "Outside, the long night. Inside, another world.", sv: "Utanför väntar den långa natten. Inne finns en annan värld." },
     introduction: {
@@ -36,7 +38,8 @@ export const CURATED_COLLECTIONS = [
     editorial: { status: "draft-for-review", theme: "An introductory season, not a representative survey of every Swedish filmmaker." },
   },
   {
-    id: "curated-silent", version: 1, name: "First Steps into Silent Cinema", subtitle: "Six stories told through faces, movement and light", palette: "falu", series: {}, shelves: null,
+    id: "curated-silent", version: 1, name: "First Steps into Silent Cinema", palette: "falu", series: {}, shelves: null, badge: "STUM",
+    subtitle: { en: "Six stories told through faces, movement and light", sv: "Sex berättelser i ansikten, rörelse och ljus" },
     title: { en: "First Steps into Silent Cinema", sv: "Första stegen in i stumfilmen" },
     tagline: { en: "No spoken dialogue. A great deal to say.", sv: "Ingen talad dialog. Mycket att säga." },
     introduction: {
@@ -46,6 +49,19 @@ export const CURATED_COLLECTIONS = [
     motif: "frames", seal: "STUMFILM · 6", completion: { en: "The First Reel · six discoveries beyond dialogue", sv: "Den första filmrullen · sex upptäckter bortom dialogen" },
     films: [film("Sherlock Jr.", 1924), film("Safety Last!", 1923), film("The Gold Rush", 1925), film("The Phantom Carriage", 1921), film("Sunrise: A Song of Two Humans", 1927), film("The Passion of Joan of Arc", 1928)],
     editorial: { status: "draft-for-review", theme: "An entry point, not a complete history of silent cinema." },
+  },
+  {
+    id: "curated-hitchcock", version: 1, name: "Hitchcock Week", palette: "skog", series: {}, shelves: null, badge: "SPÄNNING",
+    subtitle: { en: "Seven evenings with the master of suspense", sv: "Sju kvällar med spänningens mästare" },
+    title: { en: "Hitchcock Week", sv: "Hitchcockveckan" },
+    tagline: { en: "Someone is always watching. Tonight, it's you.", sv: "Någon iakttar alltid. I kväll är det du." },
+    introduction: {
+      en: "Seven films from Hitchcock's Hollywood years, from a brooding English estate in 1940 to a small Californian bay in 1963, including the only one of his films to win Best Picture. Each builds suspense from what we are shown and what we are kept from: a glance, a key, a window across the yard. Watch in any order, notice how often the camera makes you a witness, and keep an eye out for the director himself: he slips into every one.",
+      sv: "Sju filmer från Hitchcocks år i Hollywood, från ett dystert engelskt gods 1940 till en liten bukt i Kalifornien 1963, däribland den enda av hans filmer som vann Oscar för bästa film. Var och en bygger spänning av det vi får se och det som hålls undan: en blick, en nyckel, ett fönster på andra sidan gården. Se dem i valfri ordning, lägg märke till hur ofta kameran gör dig till vittne, och håll utkik efter regissören själv: han smyger in i varenda en.",
+    },
+    motif: "spiral", seal: "HITCHCOCK · 7", completion: { en: "The MacGuffin · seven nights of suspense", sv: "MacGuffin · sju kvällar av spänning" },
+    films: [film("Rebecca", 1940), film("Notorious", 1946), film("Rear Window", 1954), film("Vertigo", 1958), film("North by Northwest", 1959), film("Psycho", 1960), film("The Birds", 1963)],
+    editorial: { status: "draft-for-review", theme: "One director across his Hollywood years, chosen for range rather than as a ranking of his best." },
   },
 ];
 
@@ -134,7 +150,7 @@ export const CURATED_METADATA = {
     en: ["How do the film's different homes express different kinds of power?", "Where did imagination feel like comfort, resistance, or a threat?"],
     sv: ["Hur uttrycker filmens olika hem olika slags makt?", "När kändes fantasin som tröst, motstånd eller ett hot?"],
   }, { en: "188-minute theatrical version. The television version needs a longer evening.", sv: "Bioversionen är 188 minuter. Tv-versionen kräver en längre kväll." }),
-  "2000-songs-from-the-second-floor": note(98, "Roy Andersson", ["Funny", "Reflective"], [source("Wikidata", "https://www.wikidata.org/wiki/Q2301516")], {
+  "2000-songs-from-the-second-floor": note(98, "Roy Andersson", ["Funny", "Reflective"], [source("Wikidata", "https://www.wikidata.org/wiki/Q2301516", "2026-10-21")], {
     en: "A city stuck in traffic and bad news, seen in a series of still, carefully built tableaux. Roy Andersson composes each scene as one deadpan picture in which absurdity, grief and comedy share the frame. Look past the foreground: the background often holds the joke, or the sorrow.",
     sv: "En stad som fastnat i bilköer och dåliga nyheter, sedd i en rad stilla, noga uppbyggda tablåer. Roy Andersson komponerar varje scen som en enda lakonisk bild där det absurda, sorgen och komiken delar bildrutan. Titta förbi förgrunden: bakgrunden bär ofta skämtet, eller sorgen.",
   }, {
@@ -183,6 +199,55 @@ export const CURATED_METADATA = {
     en: ["How did close-ups change your relationship with the people on screen?", "What effect did the chosen musical accompaniment have on your experience?"],
     sv: ["Hur förändrade närbilderna din relation till människorna på duken?", "Hur påverkade den valda musiken din upplevelse?"],
   }, { en: "Criterion's 81-minute presentation at 24 frames per second; an alternate slower presentation is longer.", sv: "Criterion-utgåvan med 24 bilder per sekund är 81 minuter; en alternativ långsammare visning är längre." }),
+  "1940-rebecca": note(126, "Alfred Hitchcock", ["Romantic", "Tense"], [source("Wikidata", "https://www.wikidata.org/wiki/Q204212", "2026-10-21")], {
+    en: "A young bride arrives at a grand estate where the first wife still seems to fill every room. Hitchcock's first Hollywood film, and the only one of his to win Best Picture, turns romance into a slow tightening of nerves. Watch how the house itself, with its closed doors, portraits and watchful housekeeper, keeps the past in charge.",
+    sv: "En ung brud kommer till ett stort gods där den första frun fortfarande tycks fylla varje rum. Hitchcocks första film i Hollywood, och den enda av hans filmer som vann Oscar för bästa film, förvandlar en romans till nerver som sakta dras åt. Se hur huset självt, med sina stängda dörrar, porträtt och vaksamma hushållerska, låter det förflutna bestämma.",
+  }, {
+    en: ["Why do you think we never learn the narrator's first name?", "How does the house change from a place of romance into something threatening?"],
+    sv: ["Varför tror du att vi aldrig får veta berättarens förnamn?", "Hur förvandlas huset från en romantisk plats till något hotfullt?"],
+  }, { en: "Listed at 126 to 130 minutes, depending on the edition.", sv: "Anges till 126–130 minuter beroende på utgåva." }),
+  "1946-notorious": note(102, "Alfred Hitchcock", ["Romantic", "Tense"], [source("Wikidata", "https://www.wikidata.org/wiki/Q587419", "2026-10-21")], {
+    en: "A woman with a notorious name is recruited for a dangerous assignment in postwar Rio. Hitchcock builds suspense from small objects passed from hand to hand, and from love that has to be performed as duty. Follow the camera when it glides toward something tiny: in this film, a detail can weigh more than a gunfight.",
+    sv: "En kvinna med ett ökänt namn rekryteras för ett farligt uppdrag i efterkrigstidens Rio. Hitchcock bygger spänning av små föremål som går från hand till hand och av en kärlek som måste spelas upp som en plikt. Följ kameran när den glider mot något litet: i den här filmen kan en detalj väga tyngre än en skottlossning.",
+  }, {
+    en: ["When did a small object make you more nervous than any threat of violence?", "How does the film blur the line between love and duty?"],
+    sv: ["När gjorde ett litet föremål dig mer nervös än något hot om våld?", "Hur suddar filmen ut gränsen mellan kärlek och plikt?"],
+  }),
+  "1954-rear-window": note(112, "Alfred Hitchcock", ["Tense", "Funny"], [source("Wikidata", "https://www.wikidata.org/wiki/Q34414", "2026-10-21")], {
+    en: "A photographer with a broken leg spends a heat wave watching the apartments across his courtyard. The film stays almost entirely in his room, so we see only what he can see, and soon we want what he wants. Enjoy the wit, then ask yourself when watching became something else.",
+    sv: "En fotograf med brutet ben tillbringar en värmebölja med att iaktta lägenheterna på andra sidan gården. Nästan hela filmen stannar i hans rum, så vi ser bara det han ser, och snart vill vi samma sak som han. Njut av kvickheten och fråga dig sedan när tittandet blev något annat.",
+  }, {
+    en: ["Which neighbor's story did you follow most closely, and why?", "Did the film make you feel part of the watching? When?"],
+    sv: ["Vilken grannes historia följde du mest uppmärksamt, och varför?", "Fick filmen dig att känna dig delaktig i tittandet? När?"],
+  }),
+  "1958-vertigo": note(128, "Alfred Hitchcock", ["Romantic", "Dark"], [source("Wikidata", "https://www.wikidata.org/wiki/Q202548", "2026-10-21")], {
+    en: "A former detective with a fear of heights is hired to follow a woman through San Francisco. Hitchcock turns the city into a dream of museums, missions and winding streets, scored by Bernard Herrmann's restless, swirling music. Notice the colors, especially green, and how the mood shifts from mystery to obsession.",
+    sv: "En före detta kriminalpolis med höjdskräck anlitas för att skugga en kvinna genom San Francisco. Hitchcock gör staden till en dröm av museer, missionsstationer och slingrande gator, till Bernard Herrmanns rastlösa, virvlande musik. Lägg märke till färgerna, särskilt grönt, och hur stämningen glider från mysterium till besatthet.",
+  }, {
+    en: ["How did color and music shape your feelings before anything was explained?", "Where did the film shift from mystery to obsession for you?"],
+    sv: ["Hur formade färger och musik dina känslor innan något hade förklarats?", "Var tyckte du att filmen gled från mysterium till besatthet?"],
+  }),
+  "1959-north-by-northwest": note(136, "Alfred Hitchcock", ["Adventurous", "Funny"], [source("Wikidata", "https://www.wikidata.org/wiki/Q223139", "2026-10-21")], {
+    en: "An advertising man is mistaken for someone else and sent running across America. This is Hitchcock at his most playful: a chase from a Manhattan bar to empty prairie and a famous monument, with Cary Grant keeping both his suit and his jokes. Watch how often danger arrives in broad daylight, in open places where there should be nowhere to hide.",
+    sv: "En reklamman förväxlas med någon annan och tvingas fly tvärs över USA. Här är Hitchcock som mest lekfull: en jakt från en bar på Manhattan till öde prärie och ett berömt monument, där Cary Grant behåller både kostymen och skämten. Se hur ofta faran kommer mitt på ljusa dagen, på öppna platser där det borde vara omöjligt att gömma sig.",
+  }, {
+    en: ["Which scene was most fun, and which was most frightening? Were they the same one?", "Why do you think Hitchcock put so much danger in bright, open places?"],
+    sv: ["Vilken scen var roligast och vilken var mest skrämmande? Var det samma scen?", "Varför tror du att Hitchcock lade så mycket fara på ljusa, öppna platser?"],
+  }),
+  "1960-psycho": note(109, "Alfred Hitchcock", ["Tense", "Dark"], [source("Wikidata", "https://www.wikidata.org/wiki/Q163038", "2026-10-21")], {
+    en: "A secretary leaves town with money that isn't hers and stops for the night at a quiet roadside motel. Shot quickly and cheaply in black and white, Psycho broke the rules of what audiences expected a film to do. If you somehow don't know what happens, protect that; if you do, watch how carefully Hitchcock steers your sympathy from scene to scene.",
+    sv: "En sekreterare lämnar stan med pengar som inte är hennes och stannar för natten på ett stilla motell vid vägen. Psycho spelades in snabbt och billigt i svartvitt och bröt mot reglerna för vad publiken väntade sig av en film. Om du mot förmodan inte vet vad som händer, skydda det; om du vet, se hur noga Hitchcock styr dina sympatier från scen till scen.",
+  }, {
+    en: ["Which moment unsettled you most, and why?", "How do the black-and-white images and Bernard Herrmann's strings shape the fear?"],
+    sv: ["Vilket ögonblick oroade dig mest, och varför?", "Hur formar de svartvita bilderna och Bernard Herrmanns stråkar rädslan?"],
+  }),
+  "1963-the-birds": note(119, "Alfred Hitchcock", ["Tense", "Dark"], [source("Wikidata", "https://www.wikidata.org/wiki/Q110043", "2026-10-21")], {
+    en: "A playful pursuit brings a San Francisco socialite to a small coastal town, where the birds begin to behave strangely. There is no musical score, only electronic bird sounds and silence, and the film offers no easy explanations. Notice how ordinary places, a schoolyard, a diner, a phone booth, become impossible to trust.",
+    sv: "En lekfull jakt för en societetsdam från San Francisco till en liten kuststad, där fåglarna börjar bete sig konstigt. Det finns ingen filmmusik, bara elektroniska fågelljud och tystnad, och filmen erbjuder inga enkla förklaringar. Se hur vardagliga platser, en skolgård, ett kafé, en telefonkiosk, blir omöjliga att lita på.",
+  }, {
+    en: ["How did the absence of music change the way you listened?", "What do you think the birds stand for, if anything?"],
+    sv: ["Hur förändrade frånvaron av musik ditt sätt att lyssna?", "Vad tror du att fåglarna står för, om något?"],
+  }),
 };
 
 export function curatedCollection(id) { return CURATED_COLLECTIONS.find((collection) => collection.id === id) || null; }

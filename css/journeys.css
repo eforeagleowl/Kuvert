@@ -8,7 +8,7 @@
   .welcome .kicker { display: none; }
   .welcome h2 { font-size: 1.6rem; }
   .welcome > p:not(.fine,.kicker) { font-size: .95rem; }
-  .curated-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 22px; margin: 24px 0 48px; }
+  .curated-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 22px; margin: 24px 0 48px; }
   .collection-card { overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
   .collection-art { height: 210px; position: relative; display: grid; place-items: center; overflow: hidden; background: linear-gradient(135deg,#1a1c28,#070f19); border-bottom: 1px solid var(--brass-lo); }
   .collection-art::before { content: ''; position: absolute; width: 180px; height: 130px; border: 1px solid #e3c36e80; transform: rotate(-9deg); background: linear-gradient(155deg,#f3ebd922,transparent); }
@@ -19,14 +19,16 @@
   [data-theme='vinter'] .collection-art { background: radial-gradient(ellipse at 50% 0,#737f9650,transparent 80%),linear-gradient(130deg,#192b42,#0d1727); }
   [data-theme='vinter'] .collection-art::before { background: repeating-linear-gradient(45deg,#f3ebd90d 0 2px,transparent 2px 20px); }
   [data-theme='falu'] .collection-art { background: linear-gradient(140deg,#4d2525,#151518); }
+  /* Hitchcock Week: Vertigo's green, and the circles of its titles. */
+  [data-theme='skog'] .collection-art { background: repeating-radial-gradient(circle at 50% 46%,#e3c36e17 0 1.5px,transparent 1.5px 17px),radial-gradient(ellipse at 50% 46%,#2f6b4f90,transparent 75%),linear-gradient(140deg,#16352a,#08140f); }
   .collection-copy { padding: 22px; display: flex; flex-direction: column; gap: 14px; }
-  .collection-copy h3 { color: var(--paper); font: 600 2rem/1.05 var(--font-display); }
+  .collection-copy h2 { color: var(--paper); font: 600 2rem/1.05 var(--font-display); }
   .collection-copy > p:not(.kicker,.fine) { font-size: .94rem; color: var(--muted); }
   .collection-copy progress { width: 100%; height: 5px; accent-color: var(--brass); }
   .collection-copy .row { gap: 8px; }
   .collection-copy .btn { font-size: .8rem; padding-inline: 12px; }
   .club-teaser { padding: 28px; margin-bottom: 28px; }
-  .club-teaser h3,.club-room h3,.club-setup h3,.club-draw h3,.club-scrapbook h3 { font: 600 2.3rem var(--font-display); color: var(--paper); margin: 8px 0 16px; }
+  .club-teaser h2,.club-room h2,.club-setup h2,.club-draw h2,.club-scrapbook h2 { font: 600 2.3rem var(--font-display); color: var(--paper); margin: 8px 0 16px; }
   .club-teaser { display: flex; align-items: center; gap: 32px; justify-content: space-between; }
   .club-teaser .btn { flex-shrink: 0; }
   .journey-dialog { width: min(640px,calc(100vw - 28px)); max-height: calc(100dvh - 36px); }
@@ -48,7 +50,8 @@
   .film-context details { font-size: .9rem; }
   .film-context ol { padding-left: 22px; }
   .film-context li { margin: 8px 0; }
-  .film-card-title { position: absolute; inset: auto 12px 26px; font: 600 clamp(1.3rem,3cqi,2rem)/1.05 var(--font-display); color: var(--paper); text-align: center; }
+  /* Fitted to its card by js/views/stage.js fitCard(), which measures each size as it goes: never transitioned. */
+  .film-card-title { position: absolute; inset: auto 12px 26px; font: 600 clamp(1.3rem,3cqi,2rem)/1.05 var(--font-display); color: var(--paper); text-align: center; transition: none; }
   .film-card-year { position: absolute; inset: 16px 0 auto; font: 12px var(--font-mono); color: var(--brass); text-align: center; letter-spacing: .2em; }
   .t-poster:has(img:not([hidden])) :is(.film-card-title,.film-card-year) { display: none; }
   .t-poster:has(.film-card-title) { background: linear-gradient(140deg,var(--navy),var(--deep)); border: 1px solid var(--brass-lo); }
@@ -73,7 +76,7 @@
   .club-members span { font-size: .8rem; color: var(--muted); }
   .club-constraints { padding-block: 20px; max-width: 600px; }
   .club-session { padding: 22px; border: 1px dashed var(--brass-lo); border-radius: 8px; background: var(--brass-wash); display: grid; gap: 16px; }
-  .club-session h4 { font: 600 2rem var(--font-display); color: var(--paper); }
+  .club-session h3 { font: 600 2rem var(--font-display); color: var(--paper); }
   .club-session textarea { width: 100%; }
   .club-ratings li { padding: 12px 0; border-bottom: 1px solid var(--line); }
   .club-ratings p { white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -95,4 +98,6 @@
 
 @layer pages {
 .passport{max-width:900px;margin:0 auto;padding:48px}.passport h1{font-size:56px;line-height:1.1;margin:12px 0}.passport h2{font-size:28px}.passport .kicker{font:12px/1.5 monospace;letter-spacing:.2em;text-transform:uppercase}.passport .passport-cover{border:2px solid #b99b4e;padding:36px;margin-bottom:28px}.passport .passport-cover svg{width:100px;height:90px}.passport .h-wood{fill:#c7a274}.passport .h-grain{fill:none;stroke:#9b7855;stroke-width:.6}.passport .h-coat{fill:#9a3e39}.passport .h-eye{fill:#17263a}.passport .h-harness{fill:none;stroke:#e3c36e}.passport .h-studs{fill:#245b8f}.passport .h-saddle{fill:#245b8f}.passport .h-flowers .petal{fill:#f3ebd9}.passport .h-flowers .heart{fill:#e3c36e}.passport .h-gold{fill:#e3c36e;stroke:#e3c36e}.passport .dala.p0 :is(.h-coat,.h-eye,.h-harness,.h-studs,.h-saddle,.h-flowers,.h-gold){display:none}.passport .dala.p1 :is(.h-harness,.h-studs,.h-saddle,.h-flowers,.h-gold),.passport .dala.p2 :is(.h-saddle,.h-flowers,.h-gold),.passport .dala.p3 :is(.h-flowers,.h-gold),.passport .dala.p4 .h-gold{display:none}.passport-facts{display:flex;flex-wrap:wrap;gap:24px;border-block:1px solid #c8bca2;padding:20px 0;margin:24px 0}.passport-facts strong{font-size:28px;display:block}.passport-stubs{display:grid;grid-template-columns:1fr 1fr;gap:18px}.passport-stub{border:1px solid #c8bca2;border-top:4px solid #9a3e39;padding:20px;break-inside:avoid;overflow-wrap:anywhere}.passport-stub h3{font-size:24px;margin:8px 0}.passport-stub p{margin:8px 0}.passport-stub .note{white-space:pre-wrap;border-top:1px dashed #c8bca2;padding-top:12px}.passport .stamp{color:#9a3e39;font:14px monospace;letter-spacing:.2em}.passport .favourites{padding:20px;border:1px solid #b99b4e;margin:24px 0}.passport .footer{font:12px monospace;margin-top:32px}@media(max-width:600px){.passport{padding:20px}.passport-stubs{grid-template-columns:1fr}.passport h1{font-size:40px}}@media print{@page{size:A4;margin:15mm}body{background:white}.passport{padding:0;max-width:none}.passport-cover{break-after:page}.passport-stubs{grid-template-columns:1fr 1fr}a{color:inherit}}
+/* In the app's own dialog the passport keeps its ink: the app's gold and grey don't read on its paper. */
+.passport .kicker{color:#9a3e39}.passport .fine{color:#4d5866}
 }

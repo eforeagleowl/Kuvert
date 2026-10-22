@@ -68,7 +68,7 @@ export class Club {
     const limit=h("select",{id:"clubMaxMinutes"},new Option(t("Any length"),"0"),new Option(t("90 minutes or less"),"90"),new Option(t("2 hours or less"),"120"),new Option(t("3 hours or less"),"180"));
     const streaming=h("input",{id:"clubStreaming",type:"checkbox"});
     const valid=()=>{if(!name.value.trim()){name.setCustomValidity(t("Enter your name."));name.reportValidity();return false;}name.setCustomValidity("");return true;};name.addEventListener("input",()=>name.setCustomValidity(""));
-    $("clubBody").replaceChildren(h("div",{class:"club-setup card"},h("p",{class:"kicker",text:t("A private table for your friends")}),h("h3",{text:t("Start or join a film club")}),
+    $("clubBody").replaceChildren(h("div",{class:"club-setup card"},h("p",{class:"kicker",text:t("A private table for your friends")}),h("h2",{text:t("Start or join a film club")}),
       h("p",{text:t("Agree on a film together, then reveal your ratings at the same moment.")}),
       h("p",{class:"fine",text:t("Joining shares your name, watched-film IDs, time and service choices with this club. Your private journal is not included.")}),
       field("Your name",name),field("Time available",limit),h("label",{class:"checkline"},streaming,h("span",{text:t("Use my streaming services and discs from Settings")})),
@@ -84,17 +84,17 @@ export class Club {
     const options=h("select",{id:"clubFilmChoice",dataset:{key:"club-film"},attrs:{"aria-label":t("Eligible film")}},...room.eligible.map(f=>new Option(f.title+" · "+f.year+(f.runtime?" · "+f.runtime+" min":""),f.id)));
     const previous=$("clubFilmChoice")?.value;if(room.eligible.some(f=>f.id===previous))options.value=previous;
     const current=room.sessions.filter(s=>!["cancelled","revealed"].includes(s.state));
-    $("clubBody").replaceChildren(h("section",{class:"card club-room"},h("p",{class:"kicker",text:t("Filmklubb")}),h("h3",{text:room.name}),
+    $("clubBody").replaceChildren(h("section",{class:"card club-room"},h("p",{class:"kicker",text:t("Filmklubb")}),h("h2",{text:room.name}),
       h("p",{class:"fine",text:t("{n} people at the table · access expires {date}",{n:active.length,date:new Date(room.expiresAt).toLocaleDateString()})}),
       h("ul",{class:"club-members"},...active.map(m=>h("li",{},h("strong",{text:m.name}),h("span",{text:(m.host?t("Host"):t("Guest"))+(m.constraints.maxMinutes?" · "+m.constraints.maxMinutes+" min":"")})))),
       h("div",{class:"club-constraints"},field("My time available",limit),h("label",{class:"checkline"},streaming,h("span",{text:t("Use my streaming services and discs from Settings")})),btn("Update my choices",()=>this.act(()=>this.client.updateMember({constraints:this.constraints(limit.value,streaming.checked)})))),
       h("div",{class:"row"},me?.host?btn("Invite friends",()=>this.invite()):null,btn("Refresh club",()=>this.refresh()),me?.host?btn("Use my current collection",()=>this.act(()=>this.client.setCatalogue(this.catalogue()))):null,
         btn(me?.host?"Close club":"Leave club",async()=>{const ok=await this.app.dialogs.confirm({title:t(me?.host?"Close this club?":"Leave this club?"),text:t(me?.host?"This closes the club for everyone. Download the scrapbook first if you want to keep it.":"Your local watch history stays. Your club membership will become inactive."),confirm:t(me?.host?"Close club":"Leave club")});if(ok)this.act(async()=>{if(me?.host)await this.client.close();else await this.client.leave();this.client.credential=null;this.client.room=null;});}))),
-      h("section",{class:"card club-draw"},h("h3",{text:t("Find a film for everyone")}),h("p",{text:t("{n} films fit everyone’s choices and watch history.",{n:room.eligible.length})}),
+      h("section",{class:"card club-draw"},h("h2",{text:t("Find a film for everyone")}),h("p",{text:t("{n} films fit everyone’s choices and watch history.",{n:room.eligible.length})}),
         room.eligible.length?field("Eligible film",options):h("p",{class:"fine",text:t("No shared films fit. Increase the time, adjust services, or refresh the host’s movie details.")}),
         me?.host&&room.eligible.length&&!current.length?btn("Propose this film",()=>this.act(()=>this.client.propose({filmId:options.value})),"btn btn-primary"):null),
       ...current.map(session=>this.session(session,me)),
-      h("section",{class:"card club-scrapbook"},h("h3",{text:t("Our scrapbook")}),...room.sessions.filter(s=>s.state==="revealed").map(session=>this.session(session,me)),
+      h("section",{class:"card club-scrapbook"},h("h2",{text:t("Our scrapbook")}),...room.sessions.filter(s=>s.state==="revealed").map(session=>this.session(session,me)),
         room.sessions.some(s=>s.state==="revealed")?btn("Download scrapbook",()=>{
           const safe={club:room.name,sessions:room.sessions.filter(s=>s.state==="revealed").map(({film,ratings,createdAt,revealedAt})=>({film,ratings,createdAt,revealedAt}))};
           download(JSON.stringify(safe,null,2),"kuvert-club-scrapbook.json");
@@ -104,7 +104,7 @@ export class Club {
     const film=session.film||this.client.room.catalogue.find(f=>f.id===session.filmId),title=film?.title||session.filmId;
     const participant=session.participants.find(p=>p.id===me.id),cards=[];
     cards.push(h("p",{class:"kicker",text:t(session.state==="proposed"?"At the table":session.state==="watching"?"Time to watch":"The ratings are open")}));
-    cards.push(h("h4",{text:title}));
+    cards.push(h("h3",{text:title}));
     if(session.note)cards.push(h("p",{text:session.note}));
     cards.push(h("p",{class:"fine",text:session.participants.filter(p=>p.participating).map(p=>p.name+" · "+t(session.state==="proposed"?(p.agreed===true?"Agreed":p.agreed===false?"Suggest another film":"Waiting"):p.submitted?"Submitted":"Waiting")).join(" / ")}));
     if(session.state==="proposed"&&participant?.participating)cards.push(h("div",{class:"row"},btn("I’m in",()=>this.act(()=>this.client.agree(session.id,true)),"btn btn-primary"),btn("Suggest another film",()=>this.act(()=>this.client.agree(session.id,false)))));

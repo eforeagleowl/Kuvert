@@ -19,7 +19,7 @@ before(async()=>{
 });
 after(()=>dom.window.close());
 test('new controller IDs exist, collections render, and without a club service the club stays out of sight',()=>{
- app.journeys.render();assert.equal(document.querySelectorAll('.collection-card').length,3);assert.equal(document.querySelector('#ceremonySelect'),null,'re-running the Oscars became Galan (js/fun/gala.js)');
+ app.journeys.render();assert.equal(document.querySelectorAll('.collection-card').length,4);assert.equal(document.querySelector('#ceremonySelect'),null,'re-running the Oscars became Galan (js/fun/gala.js)');
  assert.equal(document.querySelector('#clubTeaser').hidden,true);
  const ids=[...document.querySelectorAll('[id]')].map(el=>el.id);assert.equal(ids.length,new Set(ids).size,'IDs unique');
 });

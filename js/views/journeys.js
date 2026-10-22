@@ -100,8 +100,8 @@ export class Journeys {
         const seen = this.progress(pack.id), count = pack.films.filter(f => seen.has(f.id)).length;
         const title = localized(pack.title || pack.name);
         return h("article", {class:"collection-card", dataset:{theme:pack.palette || "kuvert"}},
-          h("div", {class:"collection-art",attrs:{"aria-hidden":"true"}}, h("span",{class:"collection-number",text:"0"+(index+1)}), icon("mail"), h("span",{class:"collection-seal",text:index===0?"NATT":index===1?"VINTER":"STUM"})),
-          h("div",{class:"collection-copy"},h("p",{class:"kicker",text:t("Curated envelope")}),h("h3",{text:title}),
+          h("div", {class:"collection-art",attrs:{"aria-hidden":"true"}}, h("span",{class:"collection-number",text:"0"+(index+1)}), icon("mail"), h("span",{class:"collection-seal",text:pack.badge})),
+          h("div",{class:"collection-copy"},h("p",{class:"kicker",text:t("Curated envelope")}),h("h2",{text:title}),
             h("p",{text:localized(pack.tagline || pack.introduction || pack.description || pack.subtitle)}),
             h("p",{class:"fine",text:t("{n} films · {seen} watched",{n:pack.films.length,seen:count})}),
             h("progress",{max:pack.films.length,value:count,attrs:{"aria-label":t("Collection progress")}}),

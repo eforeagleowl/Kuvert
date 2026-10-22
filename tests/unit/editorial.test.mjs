@@ -10,17 +10,19 @@ import { CEREMONIES, ceremonyFor } from "../../js/data/ceremonies.js";
 test("editorial release is complete, sourced and internally consistent", () => {
   const result = validateCatalogue();
   assert.deepEqual(result.errors, []);
-  assert.deepEqual(result.summary, { builtInFilms: 275, collections: 3, curatedUniqueFilms: 19, runtimeCoverage: 275, ceremonies: 98, ballotEntries: 621 });
+  assert.deepEqual(result.summary, { builtInFilms: 275, collections: 4, curatedUniqueFilms: 26, runtimeCoverage: 275, ceremonies: 98, ballotEntries: 621 });
   assert.equal(METADATA_PROVENANCE.coreRuntimeCoverage, FILMS.length);
 });
 
-test("three finite journeys install through the normal list format with stable film IDs", () => {
-  assert.deepEqual(CURATED_COLLECTIONS.map(c => c.films.length), [7, 6, 6]);
+test("four finite journeys install through the normal list format with stable film IDs", () => {
+  assert.deepEqual(CURATED_COLLECTIONS.map(c => c.films.length), [7, 6, 6, 7]);
   for (const collection of CURATED_COLLECTIONS) {
     const installed = buildListDefinition(collection);
     assert.equal(installed.id, collection.id);
     assert.deepEqual(installed.films.map(f => f.id), collection.films.map(f => f.id));
     assert.equal(installed.shelves, null);
+    assert.equal(installed.subtitle, collection.subtitle.en, "the list keeps the English subtitle");
+    assert.ok(collection.subtitle.sv && collection.badge, collection.id + " has a Swedish subtitle and a seal of its own");
   }
   const phantom = CURATED_COLLECTIONS.filter(c => c.films.some(f => f.id === "1921-the-phantom-carriage"));
   assert.equal(phantom.length, 1, "The Phantom Carriage is in the silent envelope only (A Swedish Winter, version 2)");

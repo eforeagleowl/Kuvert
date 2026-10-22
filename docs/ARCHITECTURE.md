@@ -57,7 +57,7 @@ tests/classic/    Kuvert Classic itself, kept for the tests only (never publishe
   `translatePage()` swaps the page's text and labels once at start. Switching language reloads the
   page. `tests/unit/i18n.test.mjs` fails when any string in the page or code lacks a Swedish entry
   (`node tools/i18n-keys.mjs` lists them). SEAGAL stays in English. Film titles come from `js/i18n/titles-sv.js` (each film's Swedish label on
-  Wikidata): the catalog gives its own copy of each film the Swedish title and keeps the original as `orig`,
+  Wikidata, checked against its Swedish Wikipedia article): the catalog gives its own copy of each film the Swedish title and keeps the original as `orig`,
   which TMDB, Letterboxd, invitations and clubs use, and which the main title spots show beneath.
 - **Modern CSS**, used where it earns its place: cascade layers, `@property` for animatable custom
   properties, `color-mix()` palettes, container queries on the ticket, `:has()`, `@starting-style`
@@ -93,7 +93,8 @@ Kuvert Classic never read them.
 ```
 npm ci
 npm test            # unit: formats against fixtures recorded from Kuvert Classic, state, sync
-npm run test:e2e    # browser: the evening end to end, Classic's saves and codes, offline, moves
+npm run test:e2e    # browser: the evening end to end, Classic's saves and codes, offline, moves,
+                    # and accessibility (axe-core, WCAG 2.2 AA, every page and dialog)
 npm run check       # all of the above, plus the service worker stamp
 npm run serve       # http://127.0.0.1:8123/
 ```

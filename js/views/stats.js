@@ -380,7 +380,8 @@ export class Stats {
   watchDays() {
     const { store, catalog } = this.app,
       byDay = watchDayCounts(store.p, catalog);
-    const weeks = matchMedia("(max-width: 540px)").matches ? 17 : 26;
+    // Days sit 25px apart, so each is easy to hit (WCAG 2.5.8): as many weeks as fit the column.
+    const weeks = matchMedia("(max-width: 350px)").matches ? 11 : matchMedia("(max-width: 540px)").matches ? 14 : 26;
     const today = isoToDate(defaultWatchDate());
     const end = new Date(today);
     end.setDate(end.getDate() + ((7 - ((end.getDay() + 6) % 7) - 1) % 7)); // this week's Sunday
@@ -430,9 +431,24 @@ export class Stats {
     if (labels.length > 1 && months.indexOf(labels[1]) - months.indexOf(labels[0]) < 3) labels[0].textContent = "";
     const strip = $("heatStrip");
     strip.style.setProperty("--weeks", weeks);
+    // One stop for Tab, today; the arrow keys go from day to day (up and down) and week to week (sideways).
+    const all = columns.flatMap((c) => [...c.children]),
+      last = all.findLastIndex((c) => !c.disabled);
+    all.forEach((c, i) => (c.tabIndex = i === last ? 0 : -1));
+    const step = { ArrowDown: 1, ArrowUp: -1, ArrowRight: 7, ArrowLeft: -7 };
+    const move = (e) => {
+      const i = all.indexOf(e.target);
+      if (i < 0 || !(e.key in step || e.key === "Home" || e.key === "End")) return;
+      e.preventDefault();
+      const next = e.key === "Home" ? 0 : e.key === "End" ? last : i + step[e.key];
+      if (next < 0 || next > last) return;
+      all[i].tabIndex = -1;
+      all[next].tabIndex = 0;
+      all[next].focus();
+    };
     strip.replaceChildren(
       h("div", { class: "heat-months", attrs: { "aria-hidden": "true" } }, months),
-      h("div", { class: "heat-grid", attrs: { role: "grid", "aria-label": t("Days you watched a film, last {n} weeks", { n: weeks }) } }, columns),
+      h("div", { class: "heat-grid", attrs: { role: "grid", "aria-label": t("Days you watched a film, last {n} weeks", { n: weeks }) }, on: { keydown: move } }, columns),
     );
     $("watchDaysSummary").textContent = days ? t("{films} on {evenings} in {n} weeks", { films: plural(films, "film"), evenings: plural(days, "evening"), n: weeks }) : t("No dated watches in the last {n} weeks", { n: weeks });
     $("heatTip").textContent = days ? t("Hover or tap a day to see what you watched.") : "";
@@ -462,7 +478,7 @@ export class Stats {
           "article",
           { class: "milestone" + (c.complete ? " earned" : "") },
           h("span", { class: "milestone-stamp", attrs: { "aria-hidden": "true" } }, h("b", { class: /^\d+$/.test(c.stamp) ? "" : "word", text: c.stamp })),
-          h("h4", { text: c.title }),
+          h("h3", { text: c.title }),
           h("p", { text: c.description }),
           h("p", { class: "milestone-count", text: c.complete ? t("Earned") : t("{n} of {total}", { n: c.n, total: c.target }) }),
         ),

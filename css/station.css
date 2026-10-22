@@ -1,6 +1,7 @@
 /* The station (js/views/station.js): a blue station sign, a split-flap departure board with an LED
    ticker, the draw button and a ticket printer. The canvases read the --flap-* and --st-* colors
-   below, so those stay plain hex rather than color-mix(). */
+   below, so those stay plain hex rather than color-mix(). Galan's Union Station and SEAGAL's depot
+   repaint it at the end (html[data-station]). */
 @layer station {
   /* ---------------------------------------------------------------- the way there, from Tonight */
   .to-station {
@@ -776,8 +777,212 @@
     }
   }
 
-  /* SEAGAL has no station. */
-  html[data-mode="seagal"] :is(.to-station, .page-station) {
-    display: none;
+  /* ---------------------------------------------------------------- Union Station, Los Angeles (Galan)
+     Art Deco, 1939: black and gold. A sunburst behind the sign, gold rules round the sign, the board
+     and the track, and the ticket printed inside a gold double frame. */
+  :root[data-station="union"] .page-station {
+    --flap-face: #17120d;
+    --flap-ink: #f3e7c9;
+    --flap-hl: #ebc86e;
+    --st-brass: #ebc86e;
+    --st-muted: #bfae8c;
+    --st-lamp: #2a2119;
+    --st-sign: #120d09;
+    --ticket-a: #f8f1de;
+    --ticket-b: #efe2c2;
+  }
+  :root[data-station="union"] .st-sign {
+    padding: 12px 30px 12px 14px;
+    border-radius: 2px;
+    background:
+      repeating-conic-gradient(from -90deg at 50% 140%, #ebc86e17 0 3deg, #0000 3deg 8deg),
+      linear-gradient(180deg, #2a2016, #120d09);
+    box-shadow:
+      inset 0 0 0 3px #120d09,
+      inset 0 0 0 4px #ebc86e,
+      inset 0 0 0 7px #120d09,
+      inset 0 0 0 8px #ebc86e80,
+      0 14px 28px -16px #000;
+  }
+  :root[data-station="union"] .st-horse svg {
+    filter: drop-shadow(0 0 1.5px #ebc86e) drop-shadow(0 0 1px #ebc86e);
+  }
+  :root[data-station="union"] .st-name {
+    color: #f6e7bf;
+    font: 700 clamp(25px, 5.6vw, 32px) / 1 var(--font-display);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  :root[data-station="union"] .st-name small {
+    color: #e3c99a;
+    font-family: var(--font-ui);
+    letter-spacing: 0.3em;
+  }
+  :root[data-station="union"] .st-switch button {
+    border-color: #3a2b1f;
+    border-radius: 2px;
+    background: #0d0a07;
+  }
+  :root[data-station="union"] .st-switch b {
+    color: #f3e7c9;
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  :root[data-station="union"] .st-switch button:hover {
+    border-color: #6b5432;
+  }
+  :root[data-station="union"] .st-switch button[aria-pressed="true"] {
+    border-color: #ebc86e;
+    background: #ebc86e;
+    box-shadow: inset 0 0 0 2px #ebc86e, inset 0 0 0 3px #1f1813;
+    color: #1f1813;
+  }
+  :root[data-station="union"] .st-switch button[aria-pressed="true"] b {
+    color: #1f1813;
+  }
+  :root[data-station="union"] .st-board {
+    border: 1px solid #ebc86e66;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #0f0b08, #080605);
+  }
+  :root[data-station="union"] .st-board-top {
+    border-bottom-color: #ebc86e33;
+  }
+  :root[data-station="union"] .st-title b {
+    color: #f3e7c9;
+    font: 700 clamp(26px, 4.4vw, 38px) / 1 var(--font-display);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  :root[data-station="union"] .st-ticker {
+    border-top-color: #ebc86e33;
+  }
+  :root[data-station="union"] .st-ticket::before {
+    content: "";
+    position: absolute;
+    inset: 7px;
+    border: 3px double #b0893a;
+    border-radius: 3px;
+    pointer-events: none;
+  }
+  :root[data-station="union"] .st-track {
+    border-radius: 2px;
+    background: #120d09;
+    box-shadow: inset 0 0 0 2px #120d09, inset 0 0 0 3px #ebc86e;
+    color: #f6e7bf;
+  }
+
+  /* ---------------------------------------------------------------- Dark Territory (SEAGAL)
+     A rail depot's terminal: green phosphor on black, the board in mono with no flaps, hazard stripes
+     round the sign, and the orders printed on green-bar paper with tractor holes down both edges. */
+  :root[data-station="depot"] .page-station {
+    --flap-face: #04110a;
+    --flap-ink: #8fe05a;
+    --flap-hl: #ff5a4a;
+    --flap-font: "Geist Mono", ui-monospace, monospace;
+    --flap-weight: 500;
+    --flap-scale: 0.66;
+    --st-brass: #8fe05a;
+    --st-muted: #8fae78;
+    --st-lamp: #0b1d12;
+    --st-sign: #0b0f0c;
+    --ticket-a: #eef3e4;
+    --ticket-b: #e3ecd3;
+  }
+  :root[data-station="depot"] .st-sign {
+    padding: 10px 26px 10px 12px;
+    border: 6px solid #e8b83a;
+    border-image: repeating-linear-gradient(-45deg, #e8b83a 0 9px, #111 9px 18px) 6;
+    border-radius: 0;
+    background: #0b0f0c;
+    box-shadow:
+      inset 0 0 0 1px #8fe05a55,
+      0 14px 28px -16px #000;
+  }
+  :root[data-station="depot"] .st-horse svg {
+    filter: drop-shadow(0 0 3px #8fe05a88);
+  }
+  :root[data-station="depot"] .st-name {
+    color: #8fe05a;
+    text-shadow: 0 0 8px #8fe05a66;
+  }
+  :root[data-station="depot"] .st-name small {
+    color: #c9d9a8;
+  }
+  :root[data-station="depot"] .st-switch button {
+    border-color: #1f3a24;
+    background: #050a06;
+  }
+  :root[data-station="depot"] .st-switch b {
+    color: #8fe05a;
+  }
+  :root[data-station="depot"] .st-switch button:hover {
+    border-color: #3d6b45;
+  }
+  :root[data-station="depot"] .st-switch button[aria-pressed="true"] {
+    border-color: #8fe05a;
+    background: #8fe05a;
+    box-shadow: none;
+    color: #04110a;
+    text-shadow: none;
+  }
+  :root[data-station="depot"] .st-switch button[aria-pressed="true"] b {
+    color: #04110a;
+  }
+  :root[data-station="depot"] .st-board {
+    border-color: #1f3a24;
+    background: #020803;
+    box-shadow:
+      0 44px 80px -40px #000,
+      inset 0 0 50px #8fe05a12;
+  }
+  :root[data-station="depot"] .st-title b {
+    color: #8fe05a;
+  }
+  :root[data-station="depot"] .st-ticker-run span {
+    text-shadow: 0 0 7px #8fe05a88;
+  }
+  :root[data-station="depot"] .st-ticket {
+    background: repeating-linear-gradient(180deg, var(--ticket-b) 0 22px, var(--ticket-a) 22px 44px);
+    text-shadow: none;
+  }
+  :root[data-station="depot"] .st-ticket::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle 3px, #0b0f0c40 85%, #0000) left 3px top 6px / 8px 18px repeat-y,
+      radial-gradient(circle 3px, #0b0f0c40 85%, #0000) right 3px top 6px / 8px 18px repeat-y;
+  }
+  :root[data-station="depot"] .st-ttitle {
+    font-size: clamp(22px, 4.6vw, 34px);
+    line-height: 1.12;
+  }
+  :root[data-station="depot"] :is(.st-chip, .st-when) {
+    border-color: #9c2a20;
+    color: #9c2a20;
+  }
+  :root[data-station="depot"] .st-stamp {
+    color: #c8302a;
+  }
+  /* SEAGAL's face runs wide: a wider stub, and a smaller clock on it. */
+  :root[data-station="depot"] .st-ticket {
+    --stub: 172px;
+  }
+  :root[data-station="depot"] .st-time {
+    font-size: 26px;
+  }
+  :root[data-station="depot"] :is(.st-from, .st-date) {
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+  }
+  :root[data-station="depot"] .st-track {
+    border-radius: 0;
+    background: #0b0f0c;
+    box-shadow: inset 0 0 0 2px #0b0f0c, inset 0 0 0 3px #8fe05a;
+    color: #8fe05a;
   }
 }

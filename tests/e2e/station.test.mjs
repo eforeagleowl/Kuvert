@@ -202,18 +202,63 @@ test("with full motion: the ticket prints and gets stamped once, the announcer s
   await context.close();
 });
 
-test("SEAGAL has no station", async () => {
+test("SEAGAL's station is Dark Territory, a rail depot: Zulu time, targets and orders", async () => {
   const context = await newContext();
   await context.addInitScript(() => localStorage.setItem("kuvert:mode", "seagal"));
-  const page = await openPage(context, "/#station");
-  assert.equal(await page.evaluate(() => document.documentElement.dataset.page), "tonight");
-  assert.equal(await page.evaluate(() => location.hash), "#tonight");
-  assert.equal(await page.isVisible("#toStation"), false);
-  await go(page, "/#tonight");
-  await page.evaluate(() => window.kuvert.app.router.show("station"));
-  assert.equal(await page.evaluate(() => document.documentElement.dataset.page), "tonight");
+  const page = await openPage(context, "/");
+  assert.equal(await page.isVisible("#toStation"), true);
+  assert.equal(await page.textContent("#toStation"), "Go to the depot");
+  await page.click("#toStation");
+  await ready(page);
+  assert.equal(await page.evaluate(() => document.documentElement.dataset.station), "depot");
+  assert.equal(await page.textContent("#stationTitle"), "Dark TerritoryRestricted rail depot");
+  assert.equal(await page.textContent("#stationHeading"), "Deployments");
+  assert.match(await page.textContent("#stCount"), /^\d+ targets on the board$/);
+  let b = await board(page);
+  assert.match(b.flaps[0], /^\d{4}Z\|/, "departures in Zulu time: " + b.flaps[0]);
+  assert.deepEqual(await page.$$eval("#stHead th", (ths) => ths.map((th) => th.textContent)), ["Zulu time", "Target", "Year", "Line", "Status"]);
+  await page.click("#stDraw");
+  await drawn(page);
+  b = await board(page);
+  assert.match(b.flaps[0], /\|GO\s*$/, "tonight's target is GO: " + b.flaps[0]);
+  assert.equal(await page.textContent(".st-thead span"), "Dark Territory · Deployment order");
+  assert.equal(await page.textContent("#stDrawMain"), "Redeploy");
+  assert.match(await page.textContent("#stLive"), /^Tonight's target: .* Deploys \d{4}Z on line \d+\. Your orders are printed below\.$/);
+  assert.equal(await page.locator(".st-stamp circle").count(), 3, "a crosshair in the stamp, not the horse");
+  await page.click("#stArr");
+  assert.equal(await page.textContent("#stationHeading"), "Neutralized");
+  await page.keyboard.press("Escape");
+  await page.waitForFunction(() => document.documentElement.dataset.page === "tonight");
   assert.deepEqual(await problems(page), []);
   await context.close();
+});
+
+test("Galan's station is Union Station, Los Angeles: one track for every ceremony", async () => {
+  for (const lang of ["en", "sv"]) {
+    const context = await newContext();
+    await context.addInitScript((lang) => localStorage.setItem("kuvert:lang", lang), lang);
+    const page = await openPage(context, "/");
+    await page.evaluate(() => window.kuvert.app.router.show("settings"));
+    await Promise.all([page.waitForEvent("load"), page.click("#galaLink")]);
+    await page.waitForFunction(() => window.kuvert?.app?.list.id === "gala");
+    await page.click("#toStation");
+    await ready(page);
+    assert.equal(await page.evaluate(() => document.documentElement.dataset.station), "union");
+    assert.equal(await page.textContent("#stationTitle"), "Union StationLos Angeles");
+    // The station's own words, with Swedish under them in Swedish mode.
+    assert.equal(await page.textContent("#stBoardSv"), "Departures");
+    assert.equal(await page.textContent("#stBoardEn"), lang === "sv" ? "Avgångar" : "");
+    assert.equal(await page.textContent(".st-tagline"), lang === "sv" ? "Alla nominerade avgår härifrån, ett spår för varje gala. Dra en och ta biljetten." : "Every nominee leaves from here, one track for each ceremony. Draw one and take the ticket.");
+    const b = await board(page);
+    assert.match(b.flaps[0], /\|(WON|NOM|HM)\s*$/, b.flaps[0]);
+    await page.click("#stDraw");
+    await drawn(page);
+    assert.equal(await page.textContent(".st-thead span"), "Union Station · Admit one");
+    assert.match(await page.textContent(".st-ticker-run span"), /^Now boarding: /);
+    assert.equal(await page.textContent(".st-from"), "Union Station");
+    assert.deepEqual(await problems(page), []);
+    await context.close();
+  }
 });
 
 test("Ankomster: the board turns over to the films you've watched, with your stars, and back to draw", async () => {

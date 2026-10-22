@@ -1,7 +1,8 @@
 // A split-flap display on a canvas: every character is painted once onto a strip (the atlas), and each
 // flap turns through the characters in order until it reaches its own, top half falling over the bottom.
 // Colors and fonts come from CSS custom properties on the station page (--flap-*, --st-*), so a list's
-// palette repaints the board too.
+// palette repaints the board too. With `terminal` it's a phosphor screen instead (the depot's): glowing
+// letters with no flaps, which scramble through random characters as they decrypt into place.
 import { CHARS, CHAR_INDEX } from "./timetable.js";
 
 const COUNT = CHARS.length;
@@ -14,7 +15,7 @@ const withAlpha = (color, a) => {
 };
 
 export class Flaps {
-  /** @param {HTMLCanvasElement} canvas  @param {{ header?: boolean, lamp?: boolean, labels?: Record<string, [string, string]>, theme: Element }} opts */
+  /** @param {HTMLCanvasElement} canvas  @param {{ header?: boolean, lamp?: boolean, terminal?: boolean, labels?: Record<string, [string, string]>, theme: Element }} opts */
   constructor(canvas, opts) {
     this.cv = canvas;
     this.ctx = canvas.getContext("2d");
@@ -108,6 +109,21 @@ export class Flaps {
         x.fillStyle = face;
         x.fill();
         x.clip();
+        if (this.opts.terminal) {
+          // A phosphor letter: no flap, no split, just the glow.
+          if (CHARS[i] !== " ") {
+            x.fillStyle = inks[s];
+            x.shadowColor = inks[s];
+            x.shadowBlur = fh * 0.14;
+            const w = x.measureText(CHARS[i]).width,
+              maxW = fw * 0.86;
+            x.translate(ox + fw / 2, 0);
+            if (w > maxW) x.scale(maxW / w, 1);
+            x.fillText(CHARS[i], 0, oy + hh + capH / 2);
+          }
+          x.restore();
+          continue;
+        }
         // Light from above: the top flap catches it, the bottom one sits in its shadow.
         let gr = x.createLinearGradient(0, oy, 0, oy + hh);
         gr.addColorStop(0, "rgba(255,255,255,.09)");
@@ -232,6 +248,12 @@ export class Flaps {
       A = this.atlas,
       hh = fh / 2;
     ctx.clearRect(c.x, c.y, fw, fh);
+    if (this.opts.terminal) {
+      // Decrypting: any character at all, each frame, until it settles.
+      const i = c.anim ? 1 + Math.floor(Math.random() * (COUNT - 1)) : c.cur;
+      ctx.drawImage(A, i * fw, (c.anim ? c.tsty : c.sty) * fh, fw, fh, c.x, c.y, fw, fh);
+      return;
+    }
     if (!c.anim) {
       ctx.drawImage(A, c.cur * fw, c.sty * fh, fw, fh, c.x, c.y, fw, fh);
       return;

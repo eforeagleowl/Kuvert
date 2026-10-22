@@ -6,7 +6,8 @@ import { resolveList } from "../../js/data/lists.js";
 import { makeCatalog } from "../../js/state/catalog.js";
 import { MemoryStorage } from "./helpers.mjs";
 import * as T from "../../js/station/timetable.js";
-import { britishVoice } from "../../js/station/audio.js";
+import { britishVoice, americanVoice } from "../../js/station/audio.js";
+import { KUVERT_C, UNION_STATION, DARK_TERRITORY, stationFor, sign, spokenZulu } from "../../js/station/stations.js";
 
 const catalog = makeCatalog(resolveList(new MemoryStorage()));
 const film = (id) => catalog.byId.get(id);
@@ -144,4 +145,73 @@ test("arrivals: the latest watched first, with your stars, tonight's lit", () =>
     const units = 1.2 + L.groups.reduce((a, [, n]) => a + n, 0) + 0.8 * (L.groups.length - 1);
     assert.ok(units * L.cw <= w + 0.5, `${w}px fits`);
   }
+});
+
+test("three stations: Kuvert C, Galan's Union Station and SEAGAL's depot", () => {
+  assert.equal(stationFor({}), KUVERT_C);
+  assert.equal(stationFor({ gala: true }), UNION_STATION);
+  assert.equal(stationFor({ seagal: true }), DARK_TERRITORY);
+  // Each station says everything Kuvert C does, and hangs its own signs.
+  for (const st of [UNION_STATION, DARK_TERRITORY]) {
+    for (const key of Object.keys(KUVERT_C)) assert.ok(key in st, `${st.id}: ${key}`);
+    for (const key of Object.keys(KUVERT_C.ticket)) assert.ok(key in st.ticket, `${st.id} ticket: ${key}`);
+    for (const key of ["name", "place", "tagline", "leave", "toStation", "clock", "tray"]) assert.ok(st[key], `${st.id}: ${key}`);
+    for (const kind of ["dep", "arr"]) assert.deepEqual(Object.keys(st.boards[kind].labels), Object.keys(KUVERT_C.boards[kind].labels));
+  }
+  // A sign is the station's own words, then the visitor's where they differ, or a note.
+  assert.deepEqual(sign(KUVERT_C, KUVERT_C.boards.dep.name), ["Avgångar", "Departures"]);
+  assert.deepEqual(sign(UNION_STATION, UNION_STATION.boards.dep.name), ["Departures", ""]);
+  assert.deepEqual(sign(DARK_TERRITORY, DARK_TERRITORY.draw.fresh), ["Deploy", "Draw tonight’s target"]);
+});
+
+test("Union Station: an American clock, Academy Awards ordinals and a newsreel announcer", () => {
+  assert.equal(T.time12(new Date("2026-09-29T23:05:00")), "11:05 PM");
+  assert.equal(T.time12(new Date("2026-09-29T00:07:00")), "12:07 AM");
+  assert.equal(T.time12(new Date("2026-09-29T12:30:00")), "12:30 PM");
+  assert.deepEqual([1, 2, 3, 4, 11, 12, 13, 21, 22, 23, 32, 98, 101, 111, 112].map(T.ordEn), ["1st", "2nd", "3rd", "4th", "11th", "12th", "13th", "21st", "22nd", "23rd", "32nd", "98th", "101st", "111th", "112th"]);
+  const row = { film: film("1959-ben-hur"), time: new Date("2026-09-29T23:05:00") };
+  assert.equal(
+    UNION_STATION.announcement(row, catalog),
+    "Ladies and gentlemen, tonight's feature: Ben-Hur, from 1959. Winner of Best Picture at the 32nd Academy Awards. The 11:05 PM Hollywood Limited is now boarding on track 32. All aboard, and enjoy the picture!",
+  );
+  assert.equal(UNION_STATION.drawnTicker(row, catalog), "Now boarding: Ben-Hur (1959) · Best Picture winner, 32nd Academy Awards · Departs 23:05 from track 32 · All aboard");
+  assert.match(UNION_STATION.idleTicker({ count: 610 }), /^Welcome to Union Station, Los Angeles · 610 nominees on the timetable/);
+  assert.equal(UNION_STATION.rem({ film: film("1959-ben-hur") }), "WON");
+  assert.equal(UNION_STATION.chip(film("1959-ben-hur"), catalog), "Tonight’s winner");
+  const groups = [["time", 5], ["year", 4], ["title", 20], ["track", 2], ["rem", 4]];
+  assert.deepEqual(T.rowStrings(row, groups, catalog, { time: UNION_STATION.time, rem: UNION_STATION.rem }), ["23:05", "1959", "BEN-HUR", "32", "WON"]);
+  assert.deepEqual(T.arrivalStrings({ film: film("1959-ben-hur"), date: "2026-05-03", rating: 4 }, [["date", 6], ["title", 20], ["stars", 5]], { months: UNION_STATION.months }), [" 3 MAY", "BEN-HUR", "★★★★"]);
+});
+
+test("the depot: Zulu time, a status for every target, and a radio dispatcher", () => {
+  const at = new Date(Date.UTC(2026, 8, 29, 7, 5));
+  assert.equal(T.zulu(at), "0705Z");
+  assert.equal(spokenZulu("0705Z"), "zero seven zero five Zulu");
+  assert.equal(spokenZulu("1940Z"), "1940 Zulu");
+  const row = { film: film("1959-ben-hur"), time: at };
+  assert.equal(
+    DARK_TERRITORY.announcement(row, catalog),
+    "Dispatch to all units. Target acquired: Ben-Hur, 1959. Deployment at zero seven zero five Zulu, line 32. Take your orders. Dispatch out.",
+  );
+  assert.equal(DARK_TERRITORY.drawnTicker(row, catalog), "Target acquired: Ben-Hur (1959) · Deploys 0705Z on line 32 · Godspeed");
+  // Tonight's target is GO; every other train keeps the same status from visit to visit.
+  assert.equal(DARK_TERRITORY.rem({ ...row, hl: true }), "GO");
+  assert.equal(DARK_TERRITORY.remText({ ...row, hl: true }), "Tonight's target. Go");
+  const statuses = catalog.films.map((f) => DARK_TERRITORY.rem({ film: f }));
+  assert.deepEqual(statuses, catalog.films.map((f) => DARK_TERRITORY.rem({ film: f })));
+  assert.deepEqual([...new Set(statuses)].sort(), ["DARK", "HOLD", "HOT", "LIVE", "LOCK"]);
+  for (const s of statuses) for (const ch of s) assert.ok(T.CHAR_INDEX.has(ch));
+  assert.equal(DARK_TERRITORY.counts.some(1), "1 target on the board");
+  assert.equal(DARK_TERRITORY.ticket.stamp("29 SEP 2026"), "CLASSIFIED · 29 SEP 2026 ·");
+});
+
+test("Union Station's announcer is an American man, where the device has one", () => {
+  const v = (name, lang) => ({ name, lang });
+  assert.match(americanVoice([v("Microsoft Aria Online (Natural) - English (United States)", "en-US"), v("Microsoft Guy Online (Natural) - English (United States)", "en-US")]).name, /Guy/);
+  assert.match(americanVoice([v("Microsoft Zira - English (United States)", "en-US"), v("Microsoft David - English (United States)", "en-US")]).name, /David/);
+  assert.equal(americanVoice([v("Samantha", "en-US"), v("Fred", "en_US")]).name, "Fred");
+  // Chrome's one US voice is a woman, and there's no one else.
+  assert.equal(americanVoice([v("Google UK English Female", "en-GB"), v("Google US English", "en-US")]).name, "Google US English");
+  assert.equal(americanVoice([v("Daniel", "en-GB"), v("Google UK English Male", "en-GB")]).name, "Google UK English Male");
+  assert.equal(americanVoice([]), null);
 });

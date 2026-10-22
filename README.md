@@ -14,7 +14,8 @@ to your home screen, and it works offline after your first visit.
   services, or are discs on your shelf.
 - **The station.** A split-flap departure board makes the same draw: the board flips, a chime rings, and
   your ticket prints and gets stamped. Switch to *Ankomster* (arrivals) to see the films you've watched
-  lately, with your stars on the flaps.
+  lately, with your stars on the flaps. Galan leaves from Union Station, Los Angeles, in Art Deco black
+  and gold, and SEAGAL from Dark Territory, a rail depot with a green terminal and a radio dispatcher.
 - **Your watchthrough.** Mark films watched, rate them, say whether the winner deserved it, and rank your
   favorites. The Library holds the whole list and a poster wall; Stats show your pace, streaks and
   milestones. The dala horse gets painted as you go.

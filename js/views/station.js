@@ -2,7 +2,9 @@
 // Draw here and the board flips with tonight's film first, lit in brass; a ticket prints from the slot
 // and gets stamped. That ticket is tonight's ticket: "Take your ticket" opens it on Tonight.
 // The same board turns over to Ankomster, the arrivals: the films you've watched, latest first, with
-// your stars on the flaps. A mode of Tonight rather than a tab. Not in SEAGAL mode.
+// your stars on the flaps. A mode of Tonight rather than a tab. Galan's station is Union Station, Los
+// Angeles, and SEAGAL's is Dark Territory, a rail depot: the same engine, with each station's own sign,
+// words, clock and sounds (js/station/stations.js).
 import { $, h, s, reduceMotion, wait } from "../ui/dom.js";
 import { HORSE_BODY } from "../ui/horse.js";
 import { allWatched, plural } from "../state/stats.js";
@@ -13,6 +15,8 @@ import { titleParts } from "../i18n/titles.js";
 import { Flaps } from "../station/flaps.js";
 import { StationAudio } from "../station/audio.js";
 import * as T from "../station/timetable.js";
+import { stationFor, sign, KUVERT_C } from "../station/stations.js";
+import { GALA_LIST_ID } from "../fun/gala.js";
 
 const shuffle = (a) => {
   for (let i = a.length - 1; i > 0; i--) {
@@ -22,14 +26,6 @@ const shuffle = (a) => {
   return a;
 };
 const today = () => new Date().toLocaleDateString(LOCALE, { day: "numeric", month: "short", year: "numeric" });
-const REMARKS = { W: "Won", N: "Nominated", H: "Honorable mention" };
-// The two boards: their names (Swedish, then English) and their column labels.
-const BOARDS = {
-  dep: { sv: "Avgångar", en: "Departures", labels: { time: ["TID", "Time"], year: ["ÅR", "Year"], title: ["TILL", "To"], track: ["SPÅR", "Track"], rem: ["ANM.", "Remarks"] } },
-  arr: { sv: "Ankomster", en: "Arrivals", labels: { date: ["DATUM", "Date"], year: ["ÅR", "Year"], title: ["FRÅN", "From"], stars: ["BETYG", "Stars"] } },
-};
-// Each column's Swedish label, with the English under it (in Swedish mode, the Swedish alone).
-const labelsFor = (kind) => Object.fromEntries(Object.entries(BOARDS[kind].labels).map(([k, [sv, en]]) => [k, [sv, swedish ? "" : en]]));
 
 export class Station {
   constructor(app) {
@@ -46,15 +42,18 @@ export class Station {
     this.clockText = "";
     this.running = false;
     this.kind = "dep";
-    if (app.seagal) return;
-    this.audio = new StationAudio(app.storage);
+    this.st = stationFor({ seagal: app.seagal, gala: app.list?.id === GALA_LIST_ID });
+    document.documentElement.dataset.station = this.st.id;
+    if (this.st !== KUVERT_C) this.paintSigns();
+    this.audio = new StationAudio(app.storage, this.st);
     this.board = new Flaps($("stFlaps"), {
       header: true,
       lamp: true,
+      terminal: this.st.terminal,
       theme: this.el,
-      labels: labelsFor("dep"),
+      labels: this.labels("dep"),
     });
-    this.clock = new Flaps($("stClock"), { theme: this.el });
+    this.clock = new Flaps($("stClock"), { theme: this.el, terminal: this.st.terminal });
     this.frame = this.frame.bind(this);
 
     $("stDraw").addEventListener("click", () => this.draw());
@@ -109,6 +108,43 @@ export class Station {
       });
   }
 
+  // ---------------------------------------------------------------- the station's own signs
+  /** Union Station and the depot hang their own signs over Kuvert C's (the markup in index.html). */
+  paintSigns() {
+    const st = this.st,
+      say = (words) => sign(st, words),
+      icon = (el) => el.querySelector("svg");
+    $("stationTitle").replaceChildren(h("span", { class: "st-place", text: st.name }), h("small", { lang: st.local, text: st.place }));
+    this.el.querySelector(".st-tagline").textContent = st.tagline();
+    for (const [id, kind] of [["stDep", "dep"], ["stArr", "arr"]]) {
+      const [main, sub] = say(st.boards[kind].name);
+      $(id).replaceChildren(h("b", { lang: st.local, text: main }), " ", h("span", { text: sub }));
+    }
+    for (const [id, words] of [["leaveStation", st.leave], ["toStation", st.toStation]]) {
+      const [main, sub] = say(words);
+      $(id).replaceChildren(icon($(id)), h("span", { lang: st.local, text: main }), sub ? " " + sub : "");
+    }
+    const clock = this.el.querySelector(".st-clockwrap span");
+    clock.textContent = st.clock;
+    clock.lang = st.local;
+    $("stBoardSv").lang = st.local;
+    $("stTrayEmpty").textContent = st.tray();
+    // The depot's key hints (Union Station's are Kuvert C's own).
+    if (st.id === "depot") {
+      const [enter, esc] = this.el.querySelectorAll(".keys > span");
+      enter.replaceChildren(h("kbd", { text: "Enter" }), " deploy");
+      esc.replaceChildren(h("kbd", { text: "Esc" }), " " + st.leave.en.toLowerCase());
+    }
+    if (st.horse) {
+      $("stationHorse").title = st.horse.title;
+      $("stationHorse").querySelector(".sr-only").textContent = st.horse.label;
+    }
+  }
+  /** A board's column labels: the station's words, and the visitor's under them where they differ. */
+  labels(kind) {
+    return Object.fromEntries(Object.entries(this.st.boards[kind].labels).map(([k, words]) => [k, sign(this.st, words)]));
+  }
+
   // ---------------------------------------------------------------- the timetable
   pool() {
     return this.app.store.units().map((u) => u.film);
@@ -150,51 +186,53 @@ export class Station {
   }
   boardMessage() {
     if (this.rows.length) return "";
-    return allWatched(this.app.store.p, this.app.catalog) ? "ALLT SETT!" : "INGA TÅG";
+    return allWatched(this.app.store.p, this.app.catalog) ? this.st.empty.done : this.st.empty.none;
   }
   paint({ instant = false, base = 0 } = {}) {
     if (!this.layout) return;
     const { catalog, store } = this.app,
+      st = this.st,
       groups = this.layout.groups,
       quick = instant || reduceMotion(),
       arr = this.kind === "arr";
     // Departures: the timetable. Arrivals: the latest films you've watched, tonight's lit in brass.
     const rows = arr ? T.arrivals(store.p, catalog, this.size, defaultWatchDate()) : this.rows;
-    const message = arr ? (rows.length ? "" : "INGA ANKOMSTER") : this.boardMessage();
+    const message = arr ? (rows.length ? "" : st.empty.arrivals) : this.boardMessage();
     for (let r = 0; r < this.board.rows.length; r++) {
       const row = rows[r],
         lit = arr ? row?.tonight : row?.hl;
-      const strs = row ? (arr ? T.arrivalStrings(row, groups) : T.rowStrings(row, groups, catalog)) : groups.map(([k, n]) => (r === 0 && k === "title" ? message.slice(0, n) : ""));
+      const strs = row ? (arr ? T.arrivalStrings(row, groups, { months: st.months }) : T.rowStrings(row, groups, catalog, { time: st.time, rem: st.rem })) : groups.map(([k, n]) => (r === 0 && k === "title" ? message.slice(0, n) : ""));
       this.board.setRow(r, strs, lit ? 1 : 0, { delay: base + r * 90, instant: quick });
       this.board.lamps[r] = lit && !this.busy ? 1 : 0;
     }
     this.board.lampDirty = true;
     // The same board for screen readers, as a table.
     const cells = arr
-      ? (row) => [row.date ? dayLong(row.date) : "", row.film.t, row.film.y, row.rating ? t("{n} stars", { n: decimal(row.rating) }) : t("Not rated")]
-      : (row) => [T.hhmm(row.time), row.film.t, row.film.y, T.track(row.film, catalog), (row.hl ? t("Tonight's film.") + " " : "") + t(REMARKS[row.film.s] || "")];
-    $("stCaption").textContent = BOARDS[arr ? "arr" : "dep"][swedish ? "sv" : "en"];
-    $("stHead").replaceChildren(...(arr ? ["Date", "Film", "Year", "Stars"] : ["Time", "Film", "Year", "Track", "Remarks"]).map((c) => h("th", { scope: "col", text: t(c) })));
+      ? (row) => [row.date ? dayLong(row.date) : "", row.film.t, row.film.y, row.rating ? t(row.rating === 1 ? "1 star" : "{n} stars", { n: decimal(row.rating) }) : t("Not rated")]
+      : (row) => [st.time(row.time), row.film.t, row.film.y, T.track(row.film, catalog), st.remText(row)];
+    const name = st.boards[this.kind].name;
+    $("stCaption").textContent = name[swedish ? "sv" : "en"] ?? name.en;
+    $("stHead").replaceChildren(...(st.heads?.[this.kind] ?? (arr ? ["Date", "Film", "Year", "Stars"] : ["Time", "Film", "Year", "Track", "Remarks"]).map((c) => t(c))).map((c) => h("th", { scope: "col", text: c })));
     $("stRows").replaceChildren(...rows.map((row) => h("tr", {}, cells(row).map((v) => h("td", { text: String(v) })))));
     this.kick();
   }
   /** Turns the board over to the departures or the arrivals. */
   setBoard(kind, { animate = true } = {}) {
-    if (this.app.seagal || kind === this.kind || this.busy) return;
+    if (kind === this.kind || this.busy) return;
     this.kind = kind;
     this.syncBoard();
     this.layoutKey = "";
     this.relayout({ animate });
     this.setTicker(this.tickerFor());
-    $("stLive").textContent = kind === "arr" ? t("Arrivals: the films you've watched, latest first.") : t("Departures.");
+    $("stLive").textContent = this.st.live[kind]();
   }
   syncBoard() {
-    const b = BOARDS[this.kind];
-    $("stBoardSv").textContent = b.sv;
-    $("stBoardEn").textContent = swedish ? "" : b.en;
+    const [main, sub] = sign(this.st, this.st.boards[this.kind].name);
+    $("stBoardSv").textContent = main;
+    $("stBoardEn").textContent = sub;
     $("stDep").setAttribute("aria-pressed", String(this.kind === "dep"));
     $("stArr").setAttribute("aria-pressed", String(this.kind === "arr"));
-    this.board.opts.labels = labelsFor(this.kind);
+    this.board.opts.labels = this.labels(this.kind);
   }
   frame(now) {
     const dt = Math.min(64, now - this.last);
@@ -233,7 +271,7 @@ export class Station {
   tick() {
     if (!this.fontsReady || !this.visible) return;
     const now = new Date(),
-      text = T.hhmm(now);
+      text = this.st.time(now);
     this.countdown();
     if (text === this.clockText) return;
     this.clockText = text;
@@ -256,60 +294,61 @@ export class Station {
   /** What the ticker says for the board that's showing. */
   tickerFor() {
     const { store, catalog, list } = this.app;
-    if (this.kind === "arr") return T.arrivalsTicker(T.arrivals(store.p, catalog, 1, defaultWatchDate()), store.p.seen.size);
-    if (this.drawn) return T.drawnTicker(this.drawn, catalog);
-    return T.idleTicker({ listName: list.name, count: this.pool().length, saved: this.pending(), allWatched: allWatched(store.p, catalog) });
+    if (this.kind === "arr") return this.st.arrivalsTicker(T.arrivals(store.p, catalog, 1, defaultWatchDate()), store.p.seen.size);
+    if (this.drawn) return this.st.drawnTicker(this.drawn, catalog);
+    return this.st.idleTicker({ listName: list.name, count: this.pool().length, saved: this.pending(), allWatched: allWatched(store.p, catalog) });
   }
 
   // ---------------------------------------------------------------- the ticket
   stamp(date) {
+    const tk = this.st.ticket;
     return s(
       "svg",
       { viewBox: "0 0 120 120", "aria-hidden": "true" },
       s("defs", {}, s("path", { id: "stStampRing", d: "M60,60 m-45,0 a45,45 0 1,1 90,0 a45,45 0 1,1 -90,0" })),
       s("circle", { cx: 60, cy: 60, r: 56, fill: "none", stroke: "currentColor", "stroke-width": 3 }),
       s("circle", { cx: 60, cy: 60, r: 35, fill: "none", stroke: "currentColor", "stroke-width": 1.5 }),
-      s("text", { class: "st-stamp-ring", fill: "currentColor" }, s("textPath", { href: "#stStampRing" }, "KUVERT C · AVGÅNGAR · " + date.toUpperCase() + " ·")),
-      s("g", { transform: "translate(35 38) scale(.5)" }, s("path", { d: HORSE_BODY, fill: "currentColor" })),
+      s("text", { class: "st-stamp-ring", fill: "currentColor" }, s("textPath", { href: "#stStampRing" }, tk.stamp(date.toUpperCase()))),
+      // The dala horse in the middle, or at the depot a crosshair.
+      tk.reticle
+        ? s("g", { fill: "none", stroke: "currentColor", "stroke-width": 3 }, s("circle", { cx: 60, cy: 60, r: 16 }), s("path", { d: "M60 32v18M60 70v18M32 60h18M70 60h18" }))
+        : s("g", { transform: "translate(35 38) scale(.5)" }, s("path", { d: HORSE_BODY, fill: "currentColor" })),
     );
   }
   ticketParts(row) {
     const { catalog, list } = this.app,
+      st = this.st,
+      tk = st.ticket,
       f = row.film,
-      time = T.hhmm(row.time),
+      time = st.time(row.time),
       track = T.track(f, catalog),
       date = today(),
       shelf = catalog.shelfOf(f);
     const sub = f.y + (shelf ? " · " + t(shelf.label) : "") + (f.tri ? " · " + t("{series}, part {n}", { series: catalog.series[f.tri], n: f.ord }) : "");
-    const field = (label, value, extra) => h("div", {}, h("dt", { text: label }), h("dd", {}, value, extra || null));
+    const field = ([label, value, when]) => h("div", {}, h("dt", { text: label }), h("dd", {}, String(value), when ? h("small", { class: "st-when", id: "stWhen" }) : null));
+    const [take, takeSub] = sign(st, tk.take);
     return [
       h(
         "div",
         { class: "st-main" },
-        h("div", { class: "st-thead" }, h("span", { lang: "sv", text: list.name + " · Biobiljett" }), h("span", { text: "Nr " + catalog.ticketNumber(f) + " / " + catalog.films.length })),
-        h("p", { class: "st-chip", lang: "sv", text: T.chip(f, catalog) }),
+        h("div", { class: "st-thead" }, h("span", { lang: st.local, text: tk.head(list) }), h("span", { text: tk.number(catalog.ticketNumber(f), catalog.films.length) })),
+        h("p", { class: "st-chip", lang: st.local, text: st.chip(f, catalog) }),
         h("h3", { class: "st-ttitle" }, ...titleParts(f)),
         h("p", { class: "st-sub", text: sub }),
-        h(
-          "dl",
-          { class: "st-fields" },
-          field(t("Departs"), time, h("small", { class: "st-when", id: "stWhen" })),
-          field(t("Track"), String(track)),
-          field(t("Ceremony"), T.ceremonyLine(f)),
-        ),
+        h("dl", { class: "st-fields" }, ...tk.fields({ film: f, time, track }).map(field)),
         h(
           "div",
           { class: "st-actions" },
-          h("button", { class: "st-take", type: "button", on: { click: () => this.take() } }, h("span", { lang: "sv", text: "Ta biljetten" }), t(" Take your ticket")),
-          h("p", { text: t("Rate it and mark it watched there.") }),
+          h("button", { class: "st-take", type: "button", on: { click: () => this.take() } }, h("span", { lang: st.local, text: take }), takeSub ? " " + takeSub : ""),
+          h("p", { text: tk.note() }),
         ),
       ),
       h(
         "div",
         { class: "st-stub", attrs: { "aria-hidden": "true" } },
-        h("span", { class: "st-from", text: list.name + " C" }),
+        h("span", { class: "st-from", text: tk.from(list) }),
         h("span", { class: "st-time", text: time }),
-        h("span", { class: "st-track" }, h("small", { lang: "sv", text: "Spår" }), h("b", { text: String(track) })),
+        h("span", { class: "st-track" }, h("small", { lang: st.local, text: tk.trackLabel }), h("b", { text: String(track) })),
         h("span", { class: "st-date", text: date }),
       ),
       h("div", { class: "st-stamp" }, this.stamp(date)),
@@ -319,10 +358,9 @@ export class Station {
   countdown() {
     const el = $("stWhen");
     if (!el || !this.drawn) return;
-    const m = T.minutesUntil(this.drawn.time);
-    el.replaceChildren(
-      m > 0 ? h("span", {}, h("span", { lang: "sv", text: "om " + m + " min" }), t(" · in {m} min", { m })) : h("span", {}, h("span", { lang: "sv", text: "Ombordstigning" }), t(" · Now boarding")),
-    );
+    const m = T.minutesUntil(this.drawn.time),
+      [main, sub] = sign(this.st, m > 0 ? this.st.ticket.soon(m) : this.st.ticket.boarding);
+    el.replaceChildren(h("span", {}, h("span", { lang: this.st.local, text: main }), sub ? " · " + sub : ""));
   }
   printTicket(row, { animate }) {
     const t = $("stTicket");
@@ -379,16 +417,19 @@ export class Station {
   setDrawLabel() {
     const pending = this.pending(),
       again = !pending && !!this.drawn;
-    $("stDrawMain").textContent = pending ? "Skriv ut biljetten" : again ? "Dra igen" : "Dra kvällens film";
-    // The English under the Swedish (just the Swedish in Swedish mode).
-    $("stDrawSub").textContent = swedish ? "" : pending ? "Print your saved ticket" : again ? "Draw again" : "Draw tonight’s film";
+    // The station's words, and the visitor's under them where they differ (or a note, at the depot).
+    const [main, sub] = sign(this.st, this.st.draw[pending ? "pending" : again ? "again" : "fresh"]);
+    $("stDrawMain").textContent = main;
+    $("stDrawMain").lang = this.st.local;
+    $("stDrawSub").textContent = sub;
   }
   renderCount() {
     const { store, catalog } = this.app,
-      n = this.pool().length;
+      n = this.pool().length,
+      own = this.st.counts; // the depot counts targets
     $("stCount").textContent = n
-      ? t("{films} on the timetable", { films: plural(n, "film") }) + (this.app.group?.on ? t(" · none of you has seen them") : "") + (hasActiveFilters(store.settings) ? t(" · tonight’s filters apply") : "")
-      : t(allWatched(store.p, catalog) ? "Every film is watched." : "No films match tonight’s filters.");
+      ? (own ? own.some(n) : t("{films} on the timetable", { films: plural(n, "film") })) + (this.app.group?.on ? t(" · none of you has seen them") : "") + (hasActiveFilters(store.settings) ? t(" · tonight’s filters apply") : "")
+      : own ? own[allWatched(store.p, catalog) ? "done" : "none"] : t(allWatched(store.p, catalog) ? "Every film is watched." : "No films match tonight’s filters.");
   }
   async draw() {
     this.audio.unlock();
@@ -423,8 +464,8 @@ export class Station {
     const row = (this.drawn = this.rows[0]);
     this.hideTicket();
     this.board.blinkUntil = 0;
-    this.setTicker(T.updating());
-    $("stLive").textContent = t("Updating the timetable…");
+    this.setTicker(this.st.updating());
+    $("stLive").textContent = this.st.live.updating();
     this.paint();
     await this.board.whenIdle();
     const here = this.visible && this.drawn === row;
@@ -435,11 +476,11 @@ export class Station {
       this.board.lampDirty = true;
       this.kick();
       if (here) this.audio.chime();
-      this.setTicker(T.drawnTicker(row, catalog));
+      this.setTicker(this.st.drawnTicker(row, catalog));
       if (here && !quick) await wait(500);
       this.printTicket(row, { animate: this.visible && !quick });
-      if (this.visible) setTimeout(() => this.visible && this.drawn === row && this.audio.speak(T.announcement(row, catalog)), this.audio.sound && !quick ? 700 : 0);
-      $("stLive").textContent = t("Tonight's film: {title} ({year}). Departs {time} from track {track}. Your ticket is printed below.", { title: film.t, year: film.y, time: T.hhmm(row.time), track: T.track(film, catalog) });
+      if (this.visible) setTimeout(() => this.visible && this.drawn === row && this.audio.speak(this.st.announcement(row, catalog)), this.audio.sound && !quick ? 700 : 0);
+      $("stLive").textContent = this.st.live.drawn({ title: film.t, year: film.y, time: this.st.time(row.time), track: T.track(film, catalog) });
     }
     this.busy = false;
     $("stDraw").removeAttribute("aria-disabled");
@@ -457,7 +498,7 @@ export class Station {
 
   // ---------------------------------------------------------------- showing and leaving
   show() {
-    if (this.app.seagal || this.visible) return;
+    if (this.visible) return;
     this.visible = true;
     const { store } = this.app;
     // Anything watched, put back or drawn on the envelope since the last visit leaves the board.
@@ -478,7 +519,7 @@ export class Station {
       this.board.settle();
       this.paint({ instant: true });
       if (this.drawn && this.rows[0]?.hl) this.board.lamps[0] = 1;
-      this.clockText = T.hhmm(new Date());
+      this.clockText = this.st.time(new Date());
       this.clock.setRow(0, [this.clockText], 0, { instant: true });
       this.countdown();
     }

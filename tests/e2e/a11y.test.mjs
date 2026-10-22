@@ -62,11 +62,18 @@ for (const [lang, mode, width] of [
     await page.click("#drawBtn");
     await page.waitForFunction(() => !window.kuvert.app.stage.busy && window.kuvert.app.stage.open);
     await check("The ticket");
-    for (const name of mode === "seagal" ? ["library", "stats", "settings"] : ["station", "journeys", "library", "stats", "settings"]) {
+    for (const name of mode === "seagal" ? ["station", "library", "stats", "settings"] : ["station", "journeys", "library", "stats", "settings"]) {
       await page.evaluate((n) => window.kuvert.app.router.show(n), name);
       if (name === "library") await page.evaluate(() => (document.getElementById("watchedArchive").open = true));
       await page.waitForTimeout(400);
       await check(name);
+      // The station's printed ticket too (Kuvert C's, Union Station's or the depot's).
+      if (name === "station") {
+        await page.waitForFunction(() => window.kuvert.app.station.fontsReady && !window.kuvert.app.station.busy);
+        await page.click("#stDraw");
+        await page.waitForFunction(() => !window.kuvert.app.station.busy && !document.getElementById("stTicket").hidden);
+        await check("the station's ticket");
+      }
     }
     if (!mode) {
       const film = await page.evaluate(() => window.kuvert.app.catalog.films[10].id);

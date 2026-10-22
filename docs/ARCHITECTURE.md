@@ -19,6 +19,9 @@ the site root. The original, Kuvert Classic, has retired: `/classic/` and the re
   the bottom as films get watched, beside rails with your latest stubs and each decade's progress.
 - **The station**, Kuvert C, draws on a split-flap departure board and prints the ticket. Its
   *Ankomster* board lists the films watched lately, newest first, with their stars on the flaps.
+  Galan's station is Union Station, Los Angeles (Art Deco, 12-hour announcer, NBC chimes) and SEAGAL's
+  is Dark Territory, a rail depot (Zulu time, a phosphor terminal for a board, a radio dispatcher).
+  One engine runs all three; `js/station/stations.js` holds what makes each one itself.
 - **Svenska.** Settings → Language turns the whole app Swedish: every page, dialog, message, date and
   number, the station's boards and the announcer's voice.
 - **SEAGAL** mode is still behind "for the brave." in About, with its terminal skin, case files,
@@ -37,7 +40,7 @@ js/state/         one Store (an EventTarget) and pure rules: draw, stats, dates,
 js/storage/       backup files (File System Access or download) and GitHub Gist sync
 js/tmdb/          posters, runtimes and streaming from TMDB (optional)
 js/views/         Tonight (stage, nixie, evening), the station, Library, Stats, Settings, rails
-js/station/       the station's timetable, split-flap board and sounds
+js/station/       the station's timetable, split-flap board, sounds, and the three stations' profiles
 js/i18n/          Swedish mode: t() and the Swedish dictionary (sv.js), keyed by the English text
 js/ui/            DOM helpers, toast, dialogs, stars, sounds, the horse
 js/share/         ticket and ranking images, drawn on a canvas

@@ -69,8 +69,14 @@ export const ceremonyYear = (c) => (c <= 5 ? [1929, 1930, 1930, 1931, 1932][c - 
 
 const pad2 = (n) => String(n).padStart(2, "0");
 export const hhmm = (d) => pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+/** Military time in UTC, for the depot: "1940Z". */
+export const zulu = (d) => pad2(d.getUTCHours()) + pad2(d.getUTCMinutes()) + "Z";
+/** "11:05 PM", for an American announcer. */
+export const time12 = (d) => ((d.getHours() + 11) % 12) + 1 + ":" + pad2(d.getMinutes()) + (d.getHours() < 12 ? " AM" : " PM");
 /** Swedish ordinals: 1:a, 2:a, 3:e, 11:e, 21:a, 56:e. */
 export const ordSv = (n) => n + ((n % 10 === 1 || n % 10 === 2) && n % 100 !== 11 && n % 100 !== 12 ? ":a" : ":e");
+/** English ordinals whatever the app's language, for an American station: 1st, 2nd, 13th, 23rd. */
+export const ordEn = (n) => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th");
 
 /** Departure times: the first 6 to 15 minutes from now, on the five minutes, then every 5 to 25 minutes. */
 export function schedule(n, from = new Date(), random = Math.random) {
@@ -130,10 +136,11 @@ export function chooseArrivals(width) {
   return { groups, cw: Math.floor(Math.min(width / units(groups), 22) * 4) / 4, rows: 8 };
 }
 
-// Month names on the flaps are Swedish, like the board's own labels.
-const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAJ", "JUN", "JUL", "AUG", "SEP", "OKT", "NOV", "DEC"];
+// Month names on the flaps are the station's own: Swedish at Kuvert C, English elsewhere.
+export const MONTHS_SV = ["JAN", "FEB", "MAR", "APR", "MAJ", "JUN", "JUL", "AUG", "SEP", "OKT", "NOV", "DEC"];
+export const MONTHS_EN = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 /** "2026-09-29" → "29 SEP". */
-export const flapDate = (iso) => (iso ? String(Number(iso.slice(8, 10))).padStart(2, " ") + " " + MONTHS[Number(iso.slice(5, 7)) - 1] : "");
+export const flapDate = (iso, months = MONTHS_SV) => (iso ? String(Number(iso.slice(8, 10))).padStart(2, " ") + " " + months[Number(iso.slice(5, 7)) - 1] : "");
 /** "★★★★½" for 4.5. */
 export const flapStars = (r) => (r ? "★".repeat(Math.floor(r)) + (r % 1 ? "½" : "") : "");
 
@@ -150,9 +157,9 @@ export function arrivals(p, catalog, n, today) {
     .slice(0, n)
     .map(({ film, date }) => ({ film, date, rating: p.reviews[film.id]?.rating || null, tonight: !!date && date === today }));
 }
-export function arrivalStrings(row, groups) {
+export function arrivalStrings(row, groups, { months = MONTHS_SV } = {}) {
   return groups.map(([k, n]) => {
-    if (k === "date") return flapDate(row.date);
+    if (k === "date") return flapDate(row.date, months);
     if (k === "year") return String(row.film.y);
     if (k === "title") return fit(row.film, n);
     if (k === "stars") return flapStars(row.rating);
@@ -160,15 +167,15 @@ export function arrivalStrings(row, groups) {
   });
 }
 
-/** What each column of a row says. */
-export function rowStrings(row, groups, catalog) {
+/** What each column of a row says. A station can tell the time and make its remarks its own way. */
+export function rowStrings(row, groups, catalog, { time = hhmm, rem = (r) => remark(r.film) } = {}) {
   const f = row.film;
   return groups.map(([k, n]) => {
-    if (k === "time") return hhmm(row.time);
+    if (k === "time") return time(row.time);
     if (k === "year") return String(f.y);
     if (k === "title") return fit(f, n);
     if (k === "track") return String(track(f, catalog)).padStart(n, " ");
-    if (k === "rem") return remark(f);
+    if (k === "rem") return rem(row);
     return "";
   });
 }

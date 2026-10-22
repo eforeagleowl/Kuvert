@@ -150,7 +150,7 @@ app.router = {
   },
   /** Shows a page. Resolves once it's in place (after the transition, where there is one). */
   show(name, { focus = true, push = true } = {}) {
-    if (!PAGES.includes(name) || (name === "station" && seagal)) name = "tonight";
+    if (!PAGES.includes(name)) name = "tonight";
     if (name === page) {
       if (focus && name !== "tonight") $(name === "library" ? "libraryHeading" : name + "Heading")?.focus({ preventScroll: true });
       return Promise.resolve();

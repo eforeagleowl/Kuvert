@@ -684,6 +684,7 @@ export const SV = {
   "{weeks} in a row with a film": "{weeks} i rad med en film",
   "Not rated": "Inget betyg",
   "Tonight's film.": "Kvällens film.",
+  "Every nominee leaves from here, one track for each ceremony. Draw one and take the ticket.": "Alla nominerade avgår härifrån, ett spår för varje gala. Dra en och ta biljetten.",
   "Arrivals: the films you've watched, latest first.": "Ankomster: filmerna du har sett, senaste först.",
   "Departures.": "Avgångar.",
   "{series}, part {n}": "{series}, del {n}",

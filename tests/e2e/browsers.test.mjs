@@ -26,7 +26,7 @@ for (const [name, type] of Object.entries({ chromium, firefox, webkit })) {
       await page.click("#markBtn");
       await page.waitForSelector("#watchedPanel:not([hidden])");
       await page.evaluate(() => window.kuvert.app.router.show("journeys"));
-      assert.equal(await page.locator(".collection-card").count(), 3);
+      assert.equal(await page.locator(".collection-card").count(), 4);
       const wide = await page.evaluate(() => {
         const out = [];
         for (const el of document.querySelectorAll("body *")) {

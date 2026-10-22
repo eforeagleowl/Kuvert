@@ -69,7 +69,8 @@ export function buildListDefinition({ name, subtitle, palette, films, series = {
   return {
     id: listId,
     name: String(name || "My list").trim().slice(0, 40) || "My list",
-    subtitle: String(subtitle || "Drawn at random").slice(0, 120),
+    // An envelope's subtitle comes in both languages (js/data/curated.js); the list keeps the English one.
+    subtitle: String((typeof subtitle === "object" ? subtitle?.en : subtitle) || "Drawn at random").slice(0, 120),
     palette: PALETTES[palette] ? palette : "kuvert",
     shelves: hasShelves ? shelves || KUVERT.shelves : null,
     series: seriesNames,

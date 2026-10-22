@@ -217,7 +217,7 @@
     border-color: var(--st-sign);
     background: var(--st-sign);
     box-shadow: inset 0 0 0 2px var(--st-sign), inset 0 0 0 3px #f3ebd9b0;
-    color: #f3ebd9c0;
+    color: #f3ebd9e0;
   }
 
   /* ---------------------------------------------------------------- the board */

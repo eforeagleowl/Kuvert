@@ -17,7 +17,10 @@
     text-align: center;
   }
   .marquee-title {
-    font: 700 var(--fs-display) / 0.86 var(--font-display);
+    /* A name with a word longer than KUVERT (--name-word, set in js/main.js) shrinks until that word fits
+       the page column beside the horse; a word that still doesn't would break rather than run off the screen. */
+    font: 700 min(var(--marquee-size, var(--fs-display)), (min(100vw, var(--content)) - 2 * var(--gutter) - clamp(64px, 12vw, 96px) - clamp(8px, 2vw, 18px)) / (var(--name-word, 1) * 0.86)) / 0.86 var(--font-display);
+    overflow-wrap: break-word;
     letter-spacing: 0.14em;
     margin-right: -0.14em;
     text-transform: uppercase;
@@ -30,7 +33,7 @@
   /* The narrowest phones: the name shrinks with the screen so it and the horse still fit side by side. */
   @media (max-width: 350px) {
     .marquee-title {
-      font-size: 14vw;
+      --marquee-size: 14vw;
     }
   }
   .marquee-sub {
@@ -497,9 +500,13 @@
     position: absolute;
     z-index: 3;
   }
+  /* The name mark ends before the postmark, on one line (below the seal): a long name (--name-len, set in
+     js/main.js) gets smaller, and trails off only if it still can't fit. */
   .edition {
     left: 7%;
+    right: calc(7% + clamp(64px, 14vw, 84px) + 10px);
     bottom: 9%;
+    container-type: inline-size;
     display: grid;
     color: color-mix(in oklab, var(--ink) 80%, transparent);
     font: 600 11px / 1.2 var(--font-ui);
@@ -507,8 +514,11 @@
     text-transform: uppercase;
   }
   .edition strong {
-    font: 700 clamp(22px, 5.2vw, 34px) / 1 var(--font-display);
+    font: 700 min(clamp(22px, 5.2vw, 34px), max(15px, 100cqi / (var(--name-len, 6) * 0.86))) / 1 var(--font-display);
     letter-spacing: 0.1em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     color: var(--ink);
     transition: font-size var(--resize);
   }
@@ -661,8 +671,11 @@
   .stage[data-state="open"] .envelope-hit {
     display: none;
   }
+  .stage[data-state="open"] .edition {
+    right: calc(7% + 58px + 10px);
+  }
   .stage[data-state="open"] .edition strong {
-    font-size: 24px;
+    font-size: min(24px, max(15px, 100cqi / (var(--name-len, 6) * 0.86)));
   }
   .stage[data-state="open"] .postmark {
     width: 58px;

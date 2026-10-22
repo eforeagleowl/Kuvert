@@ -8,7 +8,7 @@
     --glow: #243034;
     --navy: #1b2427;
     --text: #b5cc86;
-    --brass: #e2473b;
+    --brass: #e8564a;
     --brass-hi: #f0645a;
     --velvet: #6f8a3a;
     --blue: #55636a;
@@ -16,6 +16,8 @@
     --ink: #0b0f0c;
     --nixie: #8fe05a;
     --stamp: #e2473b;
+    /* Faint, but still readable small (4.5:1) on every SEAGAL surface. */
+    --faint: color-mix(in oklab, var(--text) 66%, var(--night));
     --r-1: 0px;
     --r-2: 0px;
     --r-3: 0px;
@@ -275,8 +277,19 @@
     --paper-line: #3d4c38;
     --ink: #c3d994;
     --ink-2: #a4bb78;
-    --ink-3: #6f8354;
+    --ink-3: #809665;
     --stamp: var(--brass);
+  }
+  /* The stand-in poster's title, in the ticket's ink and small enough for Michroma's wide letters. */
+  html[data-mode="seagal"] .film-card-title {
+    inset-inline: 6px;
+    color: var(--ink);
+    font-size: clamp(0.62rem, 2cqi, 1rem);
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+  html[data-mode="seagal"] .count {
+    color: var(--text);
   }
   html[data-mode="seagal"] .paper {
     border: 1px solid color-mix(in oklab, var(--text) 50%, transparent);

@@ -8,10 +8,10 @@ import { swedish } from "../i18n/index.js";
 export const CHARS = " ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ0123456789.,:-'&!?()/★½";
 export const CHAR_INDEX = new Map(Array.from(CHARS, (c, i) => [c, i]));
 
-/** Upper case, with anything a flap doesn't carry turned into its plain letter (é → E) or a space. */
+/** Upper case, with anything a flap doesn't carry turned into its plain letter (é → E, – → -) or a space. */
 export function toFlap(text) {
   let out = "";
-  for (const ch of String(text).toUpperCase().replace(/[’‘`]/g, "'")) {
+  for (const ch of String(text).toUpperCase().replace(/[’‘`]/g, "'").replace(/[–—]/g, "-")) {
     if (CHAR_INDEX.has(ch)) {
       out += ch;
       continue;

@@ -21,7 +21,8 @@ to your home screen, and it works offline after your first visit.
 - **Group night.** Add your friends' codes, and the draw only picks films none of you has seen.
 - **Your own lists.** Import any film list, or bring your history in from Letterboxd.
 - **Envelopes.** Small curated collections (seven nights of noir, a Swedish winter, first steps into
-  silent cinema), each with its own progress, context cards and a printable keepsake when it's done.
+  silent cinema, a Hitchcock week), each with its own progress, context cards and a printable keepsake
+  when it's done.
 - **Sealed invitations.** Send a friend tonight's film as a link or QR code; they break the seal to see it.
 - **Cinema passport.** A printable journal of the films you've watched, for all time or one year.
 - **Film club.** Friends agree on a film together and reveal their stars at the same moment. It needs
@@ -70,6 +71,7 @@ How it's built: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Every feature:
   ([assets/fonts/OFL.txt](assets/fonts/OFL.txt)).
 - QR codes: qrcode-generator 2.0.4 by Kazuhiko Arase, MIT ([license](js/vendor/QRCODE-LICENSE.txt)).
 - Offline structured film facts: Wikidata (CC0), plus linked presentation sources.
+- Swedish film titles: Wikidata (CC0), checked against [Swedish Wikipedia](https://sv.wikipedia.org/).
 - Icons: [Lucide](https://lucide.dev/), ISC License.
 - This website uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.
   Streaming availability data by [JustWatch](https://www.justwatch.com/).

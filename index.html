@@ -95,8 +95,8 @@
 
 <header class="appbar">
   <div class="appbar-in">
-    <a class="brand" href="#tonight" data-route="tonight" aria-label="Kuvert, back to Tonight">
-      <span class="brand-horse" data-horse="brand" aria-hidden="true"></span><span class="brand-name" data-name>Kuvert</span>
+    <a class="brand" href="#tonight" data-route="tonight">
+      <span class="brand-horse" data-horse="brand" aria-hidden="true"></span><span class="brand-name" data-name>Kuvert</span><span class="sr-only">, back to Tonight</span>
     </a>
     <p class="tally" id="tally" aria-live="off"></p>
     <nav class="tabs" aria-label="App views">
@@ -351,11 +351,11 @@
   <!-- ============================================================ STATION
        Kuvert's departure board: a mode of Tonight, drawing from the same films, filters and progress.
        Its printed ticket is tonight's ticket. Not in SEAGAL mode. -->
-  <section class="page page-station" id="page-station" aria-labelledby="stationHeading" hidden>
+  <section class="page page-station" id="page-station" aria-labelledby="stationTitle" hidden>
     <header class="st-head">
       <div class="st-sign">
         <button class="st-horse" id="stationHorse" type="button" title="Dalahäst"><span class="sr-only">Pat the dala horse</span><span class="st-horse-art" data-horse="station" aria-hidden="true"></span></button>
-        <p class="st-name"><span class="st-place"><span data-name>Kuvert</span> C</span><small lang="sv">Centralstation</small></p>
+        <h1 class="st-name" id="stationTitle"><span class="st-place"><span data-name>Kuvert</span> C</span><small lang="sv">Centralstation</small></h1>
       </div>
       <a class="st-leave" id="leaveStation" href="#tonight" data-route="tonight"><svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg><span lang="sv">Tillbaka till kuvertet</span> Back to the envelope</a>
     </header>
@@ -373,7 +373,7 @@
       <div class="st-ticker" id="stTicker" aria-hidden="true"></div>
       <div class="sr-only">
         <table>
-          <caption>Departures</caption>
+          <caption id="stCaption">Departures</caption>
           <thead><tr id="stHead"><th scope="col">Time</th><th scope="col">Film</th><th scope="col">Year</th><th scope="col">Track</th><th scope="col">Remarks</th></tr></thead>
           <tbody id="stRows"></tbody>
         </table>
@@ -399,12 +399,12 @@
   </section>
 
   <section class="page page-journeys" id="page-journeys" aria-labelledby="journeysHeading" hidden>
-    <header class="page-head"><p class="kicker" lang="sv">Kuvertsamlingen</p><h2 class="page-title" id="journeysHeading" tabindex="-1">A shelf of possibilities</h2><p class="page-lede">Small collections. A little context. A film night worth keeping.</p></header>
+    <header class="page-head"><p class="kicker" lang="sv">Kuvertsamlingen</p><h1 class="page-title" id="journeysHeading" tabindex="-1">A shelf of possibilities</h1><p class="page-lede">Small collections. A little context. A film night worth keeping.</p></header>
     <div class="curated-grid" id="curatedGrid"></div>
-    <section class="club-teaser card" id="clubTeaser" hidden><div><p class="kicker" lang="sv">Filmklubb</p><h3>Make it a shared ritual</h3><p>Find a film together. Keep ratings sealed until everyone is ready.</p></div><button class="btn btn-primary" id="openClub" type="button">Open film club</button></section>
+    <section class="club-teaser card" id="clubTeaser" hidden><div><p class="kicker" lang="sv">Filmklubb</p><h2>Make it a shared ritual</h2><p>Find a film together. Keep ratings sealed until everyone is ready.</p></div><button class="btn btn-primary" id="openClub" type="button">Open film club</button></section>
   </section>
   <section class="page page-club" id="page-club" aria-labelledby="clubHeading" hidden>
-    <header class="page-head"><p class="kicker" lang="sv">Filmklubb</p><h2 class="page-title" id="clubHeading" tabindex="-1">Our film night</h2><p class="page-lede">A private invitation. One film. Everyone’s stars, revealed together.</p></header>
+    <header class="page-head"><p class="kicker" lang="sv">Filmklubb</p><h1 class="page-title" id="clubHeading" tabindex="-1">Our film night</h1><p class="page-lede">A private invitation. One film. Everyone’s stars, revealed together.</p></header>
     <p class="status" id="clubStatus" role="status" aria-live="polite"></p><div id="clubBody"></div>
   </section>
 
@@ -412,7 +412,7 @@
   <section class="page page-library" id="page-library" aria-labelledby="libraryHeading" hidden>
     <header class="page-head">
       <p class="kicker" lang="sv">Samlingen</p>
-      <h2 class="page-title" id="libraryHeading" tabindex="-1" data-sg="Dossier">The collection</h2>
+      <h1 class="page-title" id="libraryHeading" tabindex="-1" data-sg="Dossier">The collection</h1>
       <p class="page-lede" id="leftline"></p>
     </header>
     <div class="toolbar" id="libraryToolbar">
@@ -427,7 +427,7 @@
       <div class="seg seg-shelves" id="shelfFilters" role="group" aria-label="Award shelf">
         <button type="button" data-s="W">Won</button>
         <button type="button" data-s="N">Nom</button>
-        <button type="button" data-s="H" aria-label="Honorable mentions">HM</button>
+        <button type="button" data-s="H" title="Honorable mentions">HM</button>
       </div>
       <label class="search"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><input id="search" type="search" placeholder="Find a film…" aria-label="Find a title" autocomplete="off" spellcheck="false"></label>
     </div>
@@ -463,7 +463,7 @@
   <section class="page page-stats" id="page-stats" aria-labelledby="statsHeading" hidden>
     <header class="page-head">
       <p class="kicker" lang="sv">Filmåret</p>
-      <h2 class="page-title" id="statsHeading" tabindex="-1" data-sg="Debrief">Your watchthrough</h2>
+      <h1 class="page-title" id="statsHeading" tabindex="-1" data-sg="Debrief">Your watchthrough</h1>
     </header>
     <div class="passport-action"><button class="btn" id="openPassport" type="button">Open cinema passport</button><p class="fine">A printable journal of your films, stars and favorite discoveries.</p></div>
     <div class="stats-lead">
@@ -481,7 +481,7 @@
     </nav>
 
     <section class="block" id="rankSection" aria-labelledby="rankHeading">
-      <div class="block-head"><h3 id="rankHeading" data-sg="Target ranking">Your ranking</h3><span class="fine" id="rankSummary"></span></div>
+      <div class="block-head"><h2 id="rankHeading" data-sg="Target ranking">Your ranking</h2><span class="fine" id="rankSummary"></span></div>
       <div class="row">
         <button class="btn btn-sm" id="copyRanking" type="button"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg>Copy for group chat</button>
         <button class="btn btn-sm" id="shareRanking" type="button"><svg class="icon" aria-hidden="true"><use href="#i-share"/></svg>Share as image</button>
@@ -490,18 +490,18 @@
       <textarea id="rankingText" class="copy-fallback" readonly hidden aria-label="Ranking as text"></textarea>
       <ol class="ranks" id="rankList"></ol>
       <div id="unrankedBox" hidden>
-        <h4 class="sub-head">Not ranked yet</h4>
+        <h3 class="sub-head">Not ranked yet</h3>
         <ul class="ranks unranked" id="unrankedList"></ul>
       </div>
     </section>
 
     <section class="block" id="verdictBox" aria-labelledby="verdictHeading" hidden>
-      <div class="block-head"><h3 id="verdictHeading" data-sg="Justified?">Deserved the win?</h3><span class="fine" id="verdictSummary"></span></div>
+      <div class="block-head"><h2 id="verdictHeading" data-sg="Justified?">Deserved the win?</h2><span class="fine" id="verdictSummary"></span></div>
       <ul class="verdict-list" id="verdictList"></ul>
     </section>
 
     <section class="block" id="watchDays" aria-labelledby="watchDaysHeading">
-      <div class="block-head"><h3 id="watchDaysHeading" data-sg="Operations log">Watch days</h3><span class="fine" id="watchDaysSummary"></span></div>
+      <div class="block-head"><h2 id="watchDaysHeading" data-sg="Operations log">Watch days</h2><span class="fine" id="watchDaysSummary"></span></div>
       <div class="watchdays">
         <div class="heat">
           <div class="heat-scroll"><div class="heat-strip" id="heatStrip"></div></div>
@@ -513,17 +513,17 @@
     </section>
 
     <section class="block" id="milestoneSection" aria-labelledby="milestonesHeading">
-      <div class="block-head"><h3 id="milestonesHeading" data-sg="Commendations">Milestones</h3><span class="fine" id="milestoneSummary"></span></div>
+      <div class="block-head"><h2 id="milestonesHeading" data-sg="Commendations">Milestones</h2><span class="fine" id="milestoneSummary"></span></div>
       <div class="milestones" id="milestoneGrid"></div>
     </section>
 
     <section class="block" id="shelfSection" aria-labelledby="shelvesHeading">
-      <div class="block-head"><h3 id="shelvesHeading" data-sg="By clearance">By award shelf</h3></div>
+      <div class="block-head"><h2 id="shelvesHeading" data-sg="By clearance">By award shelf</h2></div>
       <div class="shelf-stats" id="statsShelves"></div>
     </section>
 
     <section class="block" id="decadeSection" aria-labelledby="decadeHeading">
-      <div class="block-head"><h3 id="decadeHeading" data-sg="By era">By decade</h3></div>
+      <div class="block-head"><h2 id="decadeHeading" data-sg="By era">By decade</h2></div>
       <div class="table-wrap">
         <table class="stats-table">
           <thead><tr><th scope="col">Decade</th><th scope="col">Watched</th><th scope="col">Your average</th></tr></thead>
@@ -537,7 +537,7 @@
   <section class="page page-settings" id="page-settings" aria-labelledby="settingsHeading" hidden>
     <header class="page-head">
       <p class="kicker" lang="sv">Inställningar</p>
-      <h2 class="page-title" id="settingsHeading" tabindex="-1" data-sg="Loadout">Settings</h2>
+      <h1 class="page-title" id="settingsHeading" tabindex="-1" data-sg="Loadout">Settings</h1>
       <p class="page-lede" data-sg="Intel stays on this device unless you authorize sync.">Personal progress is local by default. Sync and film clubs share the data you choose.</p>
     </header>
     <div class="settings">
@@ -546,7 +546,7 @@
       </nav>
       <div class="settings-main">
         <section class="group" id="backup" aria-labelledby="sgData">
-          <h3 id="sgData" data-sg="Intel">Your data</h3>
+          <h2 id="sgData" data-sg="Intel">Your data</h2>
           <div class="card setting" id="syncPanel">
             <div class="setting-head"><svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg><p class="setting-title">Sync between devices</p></div>
             <p class="fine" id="syncState">Keep your devices in step through a secret GitHub Gist. It's unlisted: only someone with its exact link can open it.</p>
@@ -589,7 +589,7 @@
         </section>
 
         <section class="group" id="sgMoviesBlock" aria-labelledby="sgMovies">
-          <h3 id="sgMovies" data-sg="Recon">Movie details</h3>
+          <h2 id="sgMovies" data-sg="Recon">Movie details</h2>
           <div class="card setting" id="tmdbBlock">
             <div class="setting-head"><svg class="icon" aria-hidden="true"><use href="#i-film"/></svg><p class="setting-title">Posters, runtimes and streaming from TMDB</p></div>
             <p class="fine" id="tmdbState"></p>
@@ -632,7 +632,7 @@
         </section>
 
         <section class="group" id="sgListsBlock" aria-labelledby="sgLists">
-          <h3 id="sgLists" data-sg="Arsenal">Lists &amp; imports</h3>
+          <h2 id="sgLists" data-sg="Arsenal">Lists &amp; imports</h2>
           <div class="card setting" id="listsPanel">
             <label class="field"><span>Movie list</span><select id="listSelect"></select></label>
             <div class="row">
@@ -657,7 +657,7 @@
         </section>
 
         <section class="group" id="languageGroup" aria-labelledby="sgLanguage">
-          <h3 id="sgLanguage">Language</h3>
+          <h2 id="sgLanguage">Language</h2>
           <div class="card setting">
             <div class="seg" id="languageChoice" role="group" aria-label="Language">
               <button type="button" data-lang="en" lang="en" aria-pressed="true">English</button>
@@ -668,7 +668,7 @@
         </section>
 
         <section class="group" id="soundGroup" aria-labelledby="sgSound">
-          <h3 id="sgSound">Sound</h3>
+          <h2 id="sgSound">Sound</h2>
           <div class="card setting">
             <label class="switch"><input type="checkbox" id="paperSounds"><span>Paper sounds</span></label>
             <p class="fine">The seal cracking, the envelope tearing open, the year dial ticking, stamps landing and a wooden knock when you tap the horse. Off by default, and only on this device.</p>
@@ -676,7 +676,7 @@
         </section>
 
         <section class="group about" id="aboutSection" aria-labelledby="sgAbout" tabindex="-1">
-          <h3 id="sgAbout" data-sg="About this operation">About Kuvert</h3>
+          <h2 id="sgAbout" data-sg="About this operation">About Kuvert</h2>
           <div class="card setting">
             <p>Kuvert keeps a film list in an envelope and draws one at random, so tonight’s pick is a surprise. The built-in list has every Best Picture winner and selected nominees, plus honorable mentions.</p>
             <p>Your progress stays in this browser. Posters load from TMDB’s image server; Kuvert only asks TMDB for film details when you connect it, and only talks to GitHub when you turn on sync.</p>
@@ -872,7 +872,7 @@
   </div>
 </dialog>
 <noscript><p class="noscript">Kuvert needs JavaScript to draw a film.</p></noscript>
-<dialog id="journeyDialog" class="journey-dialog" aria-labelledby="journeyTitle"><header class="dialog-head"><h2 id="journeyTitle"></h2><button class="btn btn-sm" id="journeyClose" type="button" aria-label="Close">×</button></header><div id="journeyContent" class="journey-content"></div></dialog>
-<dialog id="passportDialog" class="passport-dialog" aria-labelledby="passportHeading"><header class="dialog-head"><h2 id="passportHeading">Cinema passport</h2><button class="btn btn-sm" id="passportClose" type="button" aria-label="Close">×</button></header><div id="passportControls"></div><p id="passportCount" class="fine"></p><div id="passportPrint"></div></dialog>
+<dialog id="journeyDialog" class="journey-dialog" aria-labelledby="journeyTitle"><div class="dialog-head"><h2 id="journeyTitle"></h2><button class="btn btn-sm" id="journeyClose" type="button" aria-label="Close">×</button></div><div id="journeyContent" class="journey-content"></div></dialog>
+<dialog id="passportDialog" class="passport-dialog" aria-labelledby="passportHeading"><div class="dialog-head"><h2 id="passportHeading">Cinema passport</h2><button class="btn btn-sm" id="passportClose" type="button" aria-label="Close">×</button></div><div id="passportControls"></div><p id="passportCount" class="fine"></p><div id="passportPrint"></div></dialog>
 </body>
 </html>

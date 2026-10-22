@@ -298,6 +298,11 @@ if (!seagal) {
   const editorial = list.id === GALA_LIST_ID ? GALA : CURATED_COLLECTIONS.find(p => p.id === list.id);
   const displayName = editorial ? localized(editorial.title || editorial.name) : list.name;
   for (const el of document.querySelectorAll("[data-name]")) el.textContent = displayName;
+  // Long names: the masthead and the envelope's name mark size themselves by these (css/tonight.css).
+  const root = document.documentElement.style,
+    longest = Math.max(...displayName.split(/\s+/).map((w) => [...w].length));
+  if (longest > 6) root.setProperty("--name-word", longest);
+  root.setProperty("--name-len", [...displayName].length);
   for (const el of document.querySelectorAll("[data-subtitle]")) el.textContent = editorial?.subtitle ? localized(editorial.subtitle) : list.custom ? list.subtitle : t(list.subtitle);
   document.title = displayName + (list.custom ? "" : t(" — Best Picture watchthrough"));
   const palette = PALETTES[list.palette];

@@ -15,6 +15,7 @@ const { makeCatalog } = await import("../../js/state/catalog.js");
 const { exactMatch } = await import("../../js/tmdb/client.js");
 const { letterboxdMatcher } = await import("../../js/import/importers.js");
 const { MemoryStorage } = await import("./helpers.mjs");
+const T = await import("../../js/station/timetable.js");
 
 const catalog = makeCatalog(resolveList(new MemoryStorage()));
 const godfather = catalog.byId.get("1972-the-godfather");
@@ -48,6 +49,27 @@ test("in Swedish the catalog shows Swedish titles and keeps the original; the li
 test("either title finds a film", () => {
   for (const q of ["gudfadern", "godfather", "Borta med", "gone with the wind", "gökboet", "cuckoo"])
     assert.ok(catalog.films.some((f) => catalog.matchesSearch(f, q) && /godfather|gone-with|cuckoo/.test(f.id)), q);
+});
+
+test("Swedish Wikipedia's titles where it and Wikidata differed", () => {
+  assert.equal(SV_TITLES["1970-patton"], "Patton – Pansargeneralen");
+  assert.equal(SV_TITLES["1937-a-star-is-born"], "Hollywood");
+  assert.equal(SV_TITLES["1941-citizen-kane"], "En sensation");
+  assert.equal(SV_TITLES["2002-the-pianist"], undefined, "\"Pianisten\" is its title in Finland; in Sweden it kept the original");
+});
+
+test("every Swedish title can be shown on the station's flaps", () => {
+  const films = [...catalog.films, ...galaFilms().map(localFilm), ...CURATED_COLLECTIONS.flatMap((c) => c.films).map(localFilm)].filter((f) => f.orig);
+  assert.ok(films.length > 300, films.length + " films with a Swedish title");
+  for (const f of films) {
+    for (const ch of T.toFlap(f.t)) assert.ok(T.CHAR_INDEX.has(ch), `${f.t}: ${ch}`);
+    for (const n of [9, 14, 18, 26]) {
+      const fitted = T.fit(f, n);
+      assert.ok(fitted.length <= n && fitted.length > 0, `${f.t} in ${n}: "${fitted}"`);
+      assert.doesNotMatch(fitted, /[\s,:&-]$/, `${f.t} in ${n} ends cleanly: "${fitted}"`);
+    }
+  }
+  assert.equal(T.toFlap("Patton – Pansargeneralen"), "PATTON - PANSARGENERALEN");
 });
 
 test("TMDB and Letterboxd are matched on the original title", () => {

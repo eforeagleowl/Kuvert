@@ -173,6 +173,7 @@ export class Station {
     const cells = arr
       ? (row) => [row.date ? dayLong(row.date) : "", row.film.t, row.film.y, row.rating ? t("{n} stars", { n: decimal(row.rating) }) : t("Not rated")]
       : (row) => [T.hhmm(row.time), row.film.t, row.film.y, T.track(row.film, catalog), (row.hl ? t("Tonight's film.") + " " : "") + t(REMARKS[row.film.s] || "")];
+    $("stCaption").textContent = BOARDS[arr ? "arr" : "dep"][swedish ? "sv" : "en"];
     $("stHead").replaceChildren(...(arr ? ["Date", "Film", "Year", "Stars"] : ["Time", "Film", "Year", "Track", "Remarks"]).map((c) => h("th", { scope: "col", text: t(c) })));
     $("stRows").replaceChildren(...rows.map((row) => h("tr", {}, cells(row).map((v) => h("td", { text: String(v) })))));
     this.kick();

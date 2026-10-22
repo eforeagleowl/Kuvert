@@ -3,6 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { env, openPage, problems } from "./helpers.mjs";
+import { CURATED_COLLECTIONS } from "../../js/data/curated.js";
 
 const CORS = { "access-control-allow-origin": "*", "access-control-allow-headers": "*" };
 const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAIAAAA2iEnWAAAAFklEQVR4nGP4z8DAwMDAxMDAwMDAAAANHQEDasKb6QAAAABJRU5ErkJggg==", "base64");
@@ -71,16 +72,25 @@ test("on phones, no page is wider than the screen", async () => {
     ...[320, 360, 375, 390, 430].map((w) => [w, ""]),
     [360, "seagal"],
     [390, "seagal"],
+    // The longest one-word name: Hitchcock Week in Swedish, Hitchcockveckan.
+    [320, "envelope"],
+    [390, "envelope"],
   ];
   for (const [w, mode] of cases) {
     const context = await env.browser.newContext({ viewport: { width: w, height: 844 }, isMobile: true, hasTouch: true, serviceWorkers: "block", reducedMotion: "reduce" });
     await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
     await context.addInitScript((mode) => {
       localStorage.setItem("kuvert:welcomed", "1");
-      if (mode) localStorage.setItem("kuvert:mode", mode);
+      if (mode === "seagal") localStorage.setItem("kuvert:mode", mode);
+      if (mode === "envelope") localStorage.setItem("kuvert:lang", "sv");
     }, mode);
     await fullTmdb(context);
     const page = await openPage(context, "/");
+    if (mode === "envelope") {
+      const hitchcock = CURATED_COLLECTIONS.find((c) => c.id === "curated-hitchcock");
+      await Promise.all([page.waitForEvent("load"), page.evaluate((pack) => window.kuvert.app.journeys.start(pack), hitchcock)]);
+      await page.waitForFunction(() => window.kuvert?.app?.list.id === "curated-hitchcock");
+    }
     await page.evaluate(() => {
       document.getElementById("tmdbTok").value = "eyJhbGciOiJIUzI1NiJ9.test-read-access-token.signature-for-tests-only";
       document.getElementById("tmdbSave").click();
@@ -100,11 +110,15 @@ test("on phones, no page is wider than the screen", async () => {
       assert.ok(r.width <= r.W && !r.over.length, `${where} is ${r.width}px wide on a ${r.W}px screen (${at}); past the edge: ${r.over.join(", ")}`);
     };
     await check("Tonight");
+    if (mode === "envelope") {
+      const gap = await page.evaluate(() => document.querySelector(".postmark").getBoundingClientRect().left - document.querySelector(".edition strong").getBoundingClientRect().right);
+      assert.ok(gap >= 0, `the envelope's name mark stops before the postmark (${at})`);
+    }
     await page.click("#drawBtn");
     await page.waitForFunction(() => !window.kuvert.app.stage.busy && window.kuvert.app.stage.open);
     await page.waitForTimeout(400);
     await check("Tonight's ticket");
-    if (!mode) {
+    if (mode !== "seagal") {
       await page.evaluate(() => window.kuvert.app.router.show("station"));
       await page.waitForFunction(() => window.kuvert.app.station.fontsReady && !window.kuvert.app.station.busy);
       await check("The station");

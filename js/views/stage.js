@@ -35,6 +35,21 @@ export class Stage {
     this.nixie = new Nixie($("nixie"), $("nixieTubes"), { onTick: (last) => app.play(last ? "settle" : "tick") });
     this.stars = new StarSlider($("ticketStars"), { label: t("Your rating"), onChange: (v) => this.shown && this.rate(this.shown.id, v) });
     this.wire();
+    // The stand-in poster's title is fitted again whenever its card changes size, and once the fonts are in.
+    if (typeof ResizeObserver === "function") new ResizeObserver(() => this.fitCard()).observe($("posterWell"));
+    document.fonts?.ready.then(() => this.fitCard());
+  }
+
+  /** The stand-in poster's title (no poster yet) gets smaller until it fits its card, clear of the year:
+   *  long titles, long single words and narrow phones. */
+  fitCard() {
+    const well = $("posterWell"),
+      title = well.querySelector(".film-card-title"),
+      year = well.querySelector(".film-card-year");
+    if (!title?.offsetParent || !year) return;
+    title.style.removeProperty("font-size");
+    const over = () => title.scrollWidth > title.clientWidth + 1 || title.getBoundingClientRect().top < year.getBoundingClientRect().bottom + 2;
+    for (let size = parseFloat(getComputedStyle(title).fontSize); size > 9 && over(); size--) title.style.fontSize = size - 1 + "px";
   }
 
   get store() {
@@ -806,6 +821,7 @@ export class Stage {
     const well = $("posterWell");
     well.querySelectorAll(".film-card-title,.film-card-year").forEach(el => el.remove());
     well.append(h("span", {class:"film-card-title",text:f.t,attrs:{"aria-hidden":"true"}}),h("span",{class:"film-card-year",text:String(f.y),attrs:{"aria-hidden":"true"}}));
+    this.fitCard();
     const runtime = this.store.p.runtimes[f.id];
     if (runtime || basic?.director) {
       setText("pickFacts", [runtime ? runtime + " min" : null, basic?.director ? t("dir. {names}", { names: basic.director }) : null].filter(Boolean).join(" · "));

@@ -4,9 +4,13 @@ import { $, h, check, mark, emptyState, keepFocus } from "../ui/dom.js";
 import { imageUrl } from "../tmdb/client.js";
 import { byYear, decadeOf } from "../state/catalog.js";
 import { fmtWhen } from "../state/dates.js";
-import { plural, ratingLabel, starText, wallFilms, watchedFilms } from "../state/stats.js";
+import { plural, starText, wallFilms, watchedFilms } from "../state/stats.js";
 import { t, listOf, decimal } from "../i18n/index.js";
 import { titleParts } from "../i18n/titles.js";
+
+// Row buttons say what they do on screen and which film only to screen readers, so each one's name starts
+// with the words you see (voice control finds it by them).
+const forReaders = (text) => h("span", { class: "sr-only", text });
 
 const ARCHIVES = ["skipped", "recent", "missing", "shelf"];
 
@@ -241,7 +245,7 @@ export class Library {
               type: "button",
               title: t("{decade}s — {n} of {total} watched. Click to filter the list.", { decade: dk, n: c.w, total: c.t }),
               dataset: { key: "dec-" + dk },
-              attrs: { "aria-pressed": String(st.decadeFilter === dk), "aria-label": t("{decade}s: {n} of {total} watched", { decade: dk, n: c.w, total: c.t }) },
+              attrs: { "aria-pressed": String(st.decadeFilter === dk) },
               on: { click: () => store.set({ decadeFilter: st.decadeFilter === dk ? null : dk }) },
             },
             h("span", { text: "’" + String(dk).slice(2) }),
@@ -353,14 +357,7 @@ export class Library {
           "li",
           {},
           h("div", { class: "archive-main" }, h("span", { class: "film-title" }, ...titleParts(f)), h("span", { class: "archive-meta", text: f.y + t(" · not on your shelf") })),
-          h("button", {
-            class: "btn btn-sm",
-            type: "button",
-            text: t("Add to shelf"),
-            dataset: { key: "shelfadd-" + f.id },
-            attrs: { "aria-label": t("Add {title} to your shelf", { title: f.t }) },
-            on: { click: () => this.app.toggleShelf(f.id) },
-          }),
+          h("button", { class: "btn btn-sm", type: "button", dataset: { key: "shelfadd-" + f.id }, on: { click: () => this.app.toggleShelf(f.id) } }, t("Add to shelf"), forReaders(": " + f.t)),
           h("span"),
         ),
       ),
@@ -369,7 +366,7 @@ export class Library {
         const meta = f.y + (p.seen.has(id) ? t(" · Watched") : p.skipped.has(id) ? t(" · Skipped") : "") + (p.runtimes[id] ? " · " + p.runtimes[id] + " min" : "");
         const extra =
           st.filter === "shelf"
-            ? h("button", { class: "btn btn-sm", type: "button", text: t("Remove"), dataset: { key: "shelfoff-" + id }, attrs: { "aria-label": t("Take {title} off your shelf", { title: f.t }) }, on: { click: () => this.app.toggleShelf(id) } })
+            ? h("button", { class: "btn btn-sm", type: "button", dataset: { key: "shelfoff-" + id }, on: { click: () => this.app.toggleShelf(id) } }, t("Remove"), forReaders(t(" from your shelf: {title}", { title: f.t })))
             : p.seen.has(id)
               ? h("button", { class: "btn btn-sm", type: "button", text: t(p.reviews[id] ? "Edit note" : "Add note"), on: { click: () => this.app.dialogs.editReview(id) } })
               : h("span");
@@ -401,23 +398,19 @@ export class Library {
           "thumb",
           this.title(f),
           h("span", { class: "yr", text: String(f.y) }),
-          h("button", {
-            class: "when",
-            type: "button",
-            text: p.dates[f.id] ? fmtWhen(p.dates[f.id]) : t("+ date"),
-            title: t("Edit watch date"),
-            dataset: { key: "date-" + f.id },
-            attrs: { "aria-label": t("Edit watch date for {title}", { title: f.t }) },
-            on: { click: () => this.app.dialogs.editDate(f.id) },
-          }),
-          h("button", {
-            class: "btn btn-sm btn-quiet",
-            type: "button",
-            text: r ? (r.rating ? ratingLabel(r.rating) + t(" · Note") : t("Edit note")) : t("Add note"),
-            dataset: { key: "review-" + f.id },
-            attrs: { "aria-label": t("Movie note for {title}", { title: f.t }) },
-            on: { click: () => this.app.dialogs.editReview(f.id) },
-          }),
+          h(
+            "button",
+            { class: "when", type: "button", title: t("Edit watch date"), dataset: { key: "date-" + f.id }, on: { click: () => this.app.dialogs.editDate(f.id) } },
+            p.dates[f.id] ? fmtWhen(p.dates[f.id]) : t("+ date"),
+            forReaders(t(", watch date for {title}", { title: f.t })),
+          ),
+          h(
+            "button",
+            { class: "btn btn-sm btn-quiet", type: "button", dataset: { key: "review-" + f.id }, on: { click: () => this.app.dialogs.editReview(f.id) } },
+            // The stars are for the eye; the number says the same to a screen reader.
+            r?.rating ? [h("span", { attrs: { "aria-hidden": "true" }, text: starText(r.rating) + " " }), decimal(r.rating) + t(" · Note")] : t(r ? "Edit note" : "Add note"),
+            forReaders(t(", note for {title}", { title: f.t })),
+          ),
         ]);
       }),
     );

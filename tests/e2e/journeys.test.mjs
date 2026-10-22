@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {newContext,openPage,problems} from './helpers.mjs';
 test('curated envelope, offline facts, reflection, invitation and private-note journal',async()=>{
  const context=await newContext({welcomed:false});const page=await openPage(context,'/');
- await page.click('#openJourneys');assert.equal(await page.locator('#curatedGrid .collection-card').count(),3);
+ await page.click('#openJourneys');assert.equal(await page.locator('#curatedGrid .collection-card').count(),4);
  assert.equal(await page.locator('#ceremonySelect').count(),0);assert.equal(await page.locator('#clubTeaser').isVisible(),false,'no club service here, so no club on offer');
  await page.locator('#curatedGrid .collection-card').first().getByRole('button',{name:'Start this envelope',exact:true}).click();
  await page.waitForFunction(()=>window.kuvert?.app?.list.id==='curated-noir');

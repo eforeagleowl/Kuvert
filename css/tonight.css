@@ -1422,6 +1422,11 @@
   .btn-draw.busy {
     pointer-events: none;
   }
+  /* The same evening's saved ticket: put it back without opening it. */
+  .put-back {
+    min-height: 32px;
+    font-size: var(--fs-2);
+  }
   /* The English under the Swedish (js/views/stage.js; empty in Swedish mode). */
   .btn-draw small {
     display: block;

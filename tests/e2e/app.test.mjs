@@ -90,7 +90,9 @@ test("a saved ticket stays sealed: nothing names it or its year until the envelo
     return { id: f.id, t: f.t, y: f.y };
   });
   const sealed = async (when) => {
-    await page.waitForSelector("#resumePick:not([hidden])");
+    // The same evening, the draw button says the ticket is inside, with a way to put it back.
+    await page.waitForSelector("#putBackTonight:not([hidden])");
+    assert.equal(await page.textContent("#drawSub"), "Your saved ticket is inside", when);
     const seen = await page.evaluate(() => ({ text: document.getElementById("page-tonight").innerText, year: window.kuvert.app.stage.nixie.value }));
     assert.ok(!seen.text.includes(film.t), when + ": the title shows before the envelope opens");
     assert.ok(!seen.text.includes(String(film.y)), when + ": the year shows before the envelope opens");
@@ -264,7 +266,7 @@ test("group night: add a friend's code, and the draw only picks films neither of
   assert.match(await page.textContent("#eligibleCount"), /none of you has seen/);
 
   // The ticket already out says Anna has seen it; drawing again picks one she hasn't.
-  await page.click("#resumeFilm");
+  await page.click("#drawBtn");
   await page.waitForSelector("#ticket:not([hidden])");
   await page.waitForSelector("#groupLine:not([hidden])");
   assert.equal(await page.textContent("#groupLine"), "Anna has seen this one.");

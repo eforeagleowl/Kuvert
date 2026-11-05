@@ -1039,7 +1039,7 @@ export class Stage {
     draw.hidden = open;
     const saved = this.saved();
     draw.disabled = !saved && p.seen.size < catalog.films.length && (!units.length || (!!cur && !other));
-    $("drawMain").textContent = all ? this.sg("Se slutbiljetten", "Final debrief") : this.sg("Öppna kuvertet", "Deploy");
+    $("drawMain").textContent = all ? this.sg("Se slutbiljetten", "Final debrief") : saved && seagal ? "Resume mission" : this.sg("Öppna kuvertet", "Deploy");
     $("drawMain").lang = seagal ? "en" : "sv";
     $("drawSub").textContent = seagal ? "" : t(all ? "Your final ticket" : saved ? "Your saved ticket is inside" : "Open the envelope");
     $("drawSub").hidden = !$("drawSub").textContent;

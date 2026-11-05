@@ -146,13 +146,10 @@
         <button class="btn btn-quiet btn-sm" id="unreadableFresh" type="button">Start fresh</button>
       </div>
     </aside>
-    <div class="resume card" id="resumePick" hidden>
-      <p class="kicker" id="resumeLabel">Your saved ticket</p>
-      <div class="row between">
-        <button class="link resume-film" id="resumeFilm" type="button"></button>
-        <button class="link" id="putBackTonight" type="button" title="Close tonight’s ticket; the film goes back in the draw">Put it back</button>
-      </div>
-      <div class="row" id="staleActions" hidden>
+    <!-- A ticket drawn on an earlier evening: asked about first thing (the same evening, the draw button says so). -->
+    <div class="resume card stale" id="resumePick" hidden>
+      <p class="kicker" id="resumeLabel"></p>
+      <div class="row" id="staleActions">
         <button class="btn btn-primary btn-sm" id="watchedIt" type="button">Watched it</button>
         <button class="btn btn-sm" id="keepTicket" type="button">Keep it for tonight</button>
         <button class="btn btn-sm" id="putBack" type="button">Put it back</button>
@@ -341,6 +338,7 @@
     <div class="draw-bar">
       <button class="btn-draw" id="drawBtn" type="button" aria-controls="ticket" aria-expanded="false"><span id="drawMain" lang="sv">Öppna kuvertet</span><small id="drawSub"></small></button>
       <p class="eligible" id="eligibleCount" role="status"></p>
+      <button class="link put-back" id="putBackTonight" type="button" hidden>Put it back in the draw</button>
       <p class="sleepy-note" id="sleepyNote" hidden><span lang="sv">Dags att sova?</span> Time for bed? One more is fine too.</p>
       <a class="to-station" id="toStation" href="#station" data-route="station"><svg class="icon" aria-hidden="true"><use href="#i-train"/></svg><span lang="sv">Gå till stationen</span> Go to the station</a>
     </div>

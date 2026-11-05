@@ -52,13 +52,20 @@ export class Evening {
       }
     });
     $("checkDetails").addEventListener("click", () => this.checkDetails());
-    $("resumeFilm").addEventListener("click", () => app.stage.resume());
-    $("keepTicket").addEventListener("click", () => {
-      store.keepTicket();
-      app.stage.resume();
-    });
-    $("putBack").addEventListener("click", () => app.stage.putBack());
-    $("watchedIt").addEventListener("click", () => app.stage.watchedIt());
+    // The card above the envelope goes first, so nothing moves under the envelope once it starts opening.
+    const answer = (fn) => () => {
+      $("resumePick").hidden = true;
+      requestAnimationFrame(fn);
+    };
+    $("keepTicket").addEventListener(
+      "click",
+      answer(() => {
+        store.keepTicket();
+        app.stage.resume();
+      }),
+    );
+    $("putBack").addEventListener("click", answer(() => app.stage.putBack()));
+    $("watchedIt").addEventListener("click", answer(() => app.stage.watchedIt()));
     $("putBackTonight").addEventListener("click", () => app.stage.putBack());
     $("openSkipped").addEventListener("click", () => {
       const id = [...store.p.skipped].find((x) => !store.p.seen.has(x));
@@ -205,19 +212,14 @@ export class Evening {
         (st.finishTime && end.getTime() > st.finishDeadline ? t(" · past your finish time") : "");
 
     // Your saved ticket (house rule: a film is pulled on the evening you watch it; an older ticket asks first).
-    // It stays sealed: nothing here names the film, so opening the envelope is still the reveal.
-    // Not mid-draw either: the new film is already tonight's before the envelope has opened on it.
-    const resume = !!cur && !p.seen.has(cur.id) && !stage.open && !stage.busy;
-    $("resumePick").hidden = !resume;
-    if (resume) {
-      const stale = !!p.drawnOn && p.drawnOn < defaultWatchDate();
-      $("resumePick").classList.toggle("stale", stale);
-      $("resumeLabel").textContent = stale ? t("A ticket drawn {day} is still sealed · watched it, or still on for tonight?", { day: drawnDayLabel(p.drawnOn) }) : this.app.sg("Your saved ticket, still sealed", "Active mission, still classified");
-      $("resumeFilm").textContent = this.app.sg("Open it", "Open the file");
-      $("resumeFilm").hidden = stale;
-      $("staleActions").hidden = !stale;
-      $("putBackTonight").hidden = stale;
-    }
+    // It stays sealed: nothing here names the film, so opening the envelope is still the reveal. The same
+    // evening the draw button says it's inside, with a quiet way to put it back; one from an earlier evening
+    // asks, at the top. Not mid-draw either: the new film is already tonight's before the envelope opens.
+    const resume = !!cur && !p.seen.has(cur.id) && !stage.open && !stage.busy,
+      stale = resume && !!p.drawnOn && p.drawnOn < defaultWatchDate();
+    $("resumePick").hidden = !stale;
+    $("putBackTonight").hidden = !resume || stale;
+    if (stale) $("resumeLabel").textContent = t("A ticket drawn {day} is still sealed · watched it, or still on for tonight?", { day: drawnDayLabel(p.drawnOn) });
     $("sleepyNote").hidden = seagal || !isLateNight() || stage.open || allWatched(p, catalog);
   }
 

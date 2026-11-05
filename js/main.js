@@ -20,6 +20,7 @@ import { Safekeeping } from "./storage/safekeeping.js";
 import { Details } from "./tmdb/client.js";
 import { Stage } from "./views/stage.js";
 import { Evening } from "./views/evening.js";
+import { InstallHint } from "./ui/install.js";
 import { Library } from "./views/library.js";
 import { Stats } from "./views/stats.js";
 import { Settings } from "./views/settings.js";
@@ -199,6 +200,7 @@ window.addEventListener("popstate", () => {
 app.stage = new Stage(app);
 app.library = new Library(app);
 app.stats = new Stats(app);
+app.install = new InstallHint(app);
 app.evening = new Evening(app);
 app.settings = new Settings(app);
 app.rails = new Rails(app);

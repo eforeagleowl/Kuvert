@@ -52,12 +52,20 @@ export class Evening {
       }
     });
     $("checkDetails").addEventListener("click", () => this.checkDetails());
-    $("resumeFilm").addEventListener("click", () => app.stage.resume());
-    $("keepTicket").addEventListener("click", () => {
-      store.keepTicket();
-      app.stage.resume();
-    });
-    $("putBack").addEventListener("click", () => app.stage.putBack());
+    // The card above the envelope goes first, so nothing moves under the envelope once it starts opening.
+    const answer = (fn) => () => {
+      $("resumePick").hidden = true;
+      requestAnimationFrame(fn);
+    };
+    $("keepTicket").addEventListener(
+      "click",
+      answer(() => {
+        store.keepTicket();
+        app.stage.resume();
+      }),
+    );
+    $("putBack").addEventListener("click", answer(() => app.stage.putBack()));
+    $("watchedIt").addEventListener("click", answer(() => app.stage.watchedIt()));
     $("putBackTonight").addEventListener("click", () => app.stage.putBack());
     $("openSkipped").addEventListener("click", () => {
       const id = [...store.p.skipped].find((x) => !store.p.seen.has(x));
@@ -119,13 +127,16 @@ export class Evening {
     $("unreadable").hidden = !store.writeLocked;
     const remind = this.app.safekeeping.reminder();
     $("keepCopy").hidden = !remind || stage.open || !!store.writeLocked;
+    // The Home Screen hint waits while there's a copy to keep (one notice at a time).
+    this.app.install?.render({ stageOpen: stage.open || !$("keepCopy").hidden });
     if (remind) $("keepCopyText").textContent = remind + t(this.app.safekeeping.canShareFile && !this.app.files.canPick ? " Send one to Notes, Files or iCloud Drive with one tap." : " A backup file takes one click.");
 
-    // The eligible count.
-    const drawWord = seagal ? (eligible === 1 ? "live target" : "live targets") : t(eligible === 1 ? "eligible ticket" : "eligible tickets");
+    // How many films are in the draw.
     $("eligibleCount").textContent = this.app.group?.on
       ? plural(eligible, "film") + this.app.sg(" none of you has seen", " no one in the squad has neutralized") + (active ? t(" · tonight’s filters apply") : "")
-      : eligible + " " + drawWord + (active ? this.app.sg(" · tonight’s filters apply", " · rules of engagement apply") : this.app.sg(" · drawing from all unseen films", " · all hostiles in play"));
+      : seagal
+        ? eligible + (eligible === 1 ? " live target" : " live targets") + (active ? " · rules of engagement apply" : " · all hostiles in play")
+        : t(active ? "{films} fit tonight’s filters" : "{films} left in the envelope", { films: plural(eligible, "film") });
 
     // Missing details for tonight's filters.
     $("metadataTools").hidden = !(this.checking || (active && (pending > 0 || eligible === 0)));
@@ -201,18 +212,14 @@ export class Evening {
         (st.finishTime && end.getTime() > st.finishDeadline ? t(" · past your finish time") : "");
 
     // Your saved ticket (house rule: a film is pulled on the evening you watch it; an older ticket asks first).
-    // It stays sealed: nothing here names the film, so opening the envelope is still the reveal.
-    const resume = !!cur && !p.seen.has(cur.id) && !stage.open;
-    $("resumePick").hidden = !resume;
-    if (resume) {
-      const stale = !!p.drawnOn && p.drawnOn < defaultWatchDate();
-      $("resumePick").classList.toggle("stale", stale);
-      $("resumeLabel").textContent = stale ? t("A ticket drawn {day} is still sealed · still on for tonight?", { day: drawnDayLabel(p.drawnOn) }) : this.app.sg("Your saved ticket, still sealed", "Active mission, still classified");
-      $("resumeFilm").textContent = this.app.sg("Open it", "Open the file");
-      $("resumeFilm").hidden = stale;
-      $("staleActions").hidden = !stale;
-      $("putBackTonight").hidden = stale;
-    }
+    // It stays sealed: nothing here names the film, so opening the envelope is still the reveal. The same
+    // evening the draw button says it's inside, with a quiet way to put it back; one from an earlier evening
+    // asks, at the top. Not mid-draw either: the new film is already tonight's before the envelope opens.
+    const resume = !!cur && !p.seen.has(cur.id) && !stage.open && !stage.busy,
+      stale = resume && !!p.drawnOn && p.drawnOn < defaultWatchDate();
+    $("resumePick").hidden = !stale;
+    $("putBackTonight").hidden = !resume || stale;
+    if (stale) $("resumeLabel").textContent = t("A ticket drawn {day} is still sealed · watched it, or still on for tonight?", { day: drawnDayLabel(p.drawnOn) });
     $("sleepyNote").hidden = seagal || !isLateNight() || stage.open || allWatched(p, catalog);
   }
 
@@ -289,6 +296,9 @@ export class Evening {
       show = !storage?.getItem(KEYS.welcomed) && !store.p.seen.size && !store.p.current && !store.lastBackup && !sync.on;
     } catch {}
     $("welcome").hidden = !show || this.app.seagal;
+    // Once you've been before, the masthead steps back on a phone (css/tonight.css). Set once, at the start:
+    // it never changes size under a draw.
+    document.documentElement.toggleAttribute("data-returning", $("welcome").hidden);
     const dismiss = () => {
       try {
         storage?.setItem(KEYS.welcomed, "1");
@@ -298,6 +308,10 @@ export class Evening {
     $("welcomeStart").addEventListener("click", () => {
       dismiss();
       this.app.stage.drawOrFinale();
+    });
+    $("welcomeSeen").addEventListener("click", () => {
+      dismiss();
+      this.app.library.setBackfill(true);
     });
     $("welcomeImport").addEventListener("click", () => {
       dismiss();

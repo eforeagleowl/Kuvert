@@ -10,6 +10,14 @@ import { qrSVG } from "../journeys/qr.js";
 import { download } from "../storage/files.js";
 import { exportLibrary, readLibraryBackup, previewLibraryRestore, restoreLibrary } from "../storage/library-backup.js";
 import { Passport } from "../journeys/passport.js";
+import { GALA, GALA_LIST_ID, galaFilms, enterGala, leaveGala } from "../fun/gala.js";
+import { CEREMONIES } from "../data/ceremonies.js";
+import { POSTERS, POSTERS_AT } from "../data/posters.js";
+import { freshPosters } from "../state/catalog.js";
+import { imageUrl } from "../tmdb/client.js";
+
+// The built-in list's posters, for the envelopes' films that are on it too.
+const BUILTIN_POSTERS = freshPosters(POSTERS, POSTERS_AT);
 
 export const localized = value => typeof value === "string" ? value : value?.[swedish ? "sv" : "en"] || value?.en || "";
 export function metadataFor(id) { return CURATED_METADATA[id] || BASIC_METADATA[id] || null; }
@@ -63,11 +71,7 @@ export class Journeys {
     this.dialog = $("journeyDialog");
     $("journeyClose").addEventListener("click", () => this.dialog.close());
     this.dialog.addEventListener("close", () => { if (this.pendingLibraryRestore) { this.pendingLibraryRestore = null; location.reload(); } });
-    $("openJourneys").addEventListener("click", () => app.router.show("journeys"));
-    $("sendInvite").addEventListener("click", () => this.invite(app.stage.shown));
     $("saveLibrary").addEventListener("click", () => this.backup());
-    $("loadLibrary").addEventListener("click", () => $("libraryBackupInput").click());
-    $("libraryBackupInput").addEventListener("change", e => this.restore(e.target));
     this.contextKey = null;
   }
   open(title, ...children) {
@@ -100,7 +104,7 @@ export class Journeys {
         const seen = this.progress(pack.id), count = pack.films.filter(f => seen.has(f.id)).length;
         const title = localized(pack.title || pack.name);
         return h("article", {class:"collection-card", dataset:{theme:pack.palette || "kuvert"}},
-          h("div", {class:"collection-art",attrs:{"aria-hidden":"true"}}, h("span",{class:"collection-number",text:"0"+(index+1)}), icon("mail"), h("span",{class:"collection-seal",text:pack.badge})),
+          h("div", {class:"collection-art"}, h("span",{class:"collection-number",attrs:{"aria-hidden":"true"},text:"0"+(index+1)}), this.filmStrip(pack.films, seen), h("span",{class:"collection-seal",attrs:{"aria-hidden":"true"},text:pack.badge})),
           h("div",{class:"collection-copy"},h("p",{class:"kicker",text:t("Curated envelope")}),h("h2",{text:title}),
             h("p",{text:localized(pack.tagline || pack.introduction || pack.description || pack.subtitle)}),
             h("p",{class:"fine",text:t("{n} films · {seen} watched",{n:pack.films.length,seen:count})}),
@@ -108,9 +112,32 @@ export class Journeys {
             count === pack.films.length ? h("p",{class:"completion-stamp",text:localized(pack.completion)}) : null,
             h("div",{class:"row"},button(count ? "Continue this envelope" : "Start this envelope",()=>this.start(pack),"btn btn-primary"),button("Look inside",()=>this.preview(pack))),
             count === pack.films.length ? button("Print your keepsake",()=>this.passport.show({listId:pack.id})) : null));
-      }));
+      }), this.galaCard());
       $("clubTeaser").hidden = !this.app.club?.available;
     });
+  }
+  // An envelope's films as little stubs: the poster where there is one, else the year. Watched ones are ticked.
+  filmStrip(films, seen) {
+    return h("ol",{class:"collection-films",attrs:{"aria-label":t("The films in this envelope")}},...films.map(f=>{
+      const path=this.app.store.posterPath(f.id) || BUILTIN_POSTERS[f.id]?.[1], name=localFilm(f).t+" ("+f.y+")";
+      return h("li",{class:seen.has(f.id)?"seen":"",title:name},
+        path?h("img",{alt:"",src:imageUrl("w92",path),crossOrigin:"anonymous",loading:"lazy",decoding:"async",on:{error:e=>e.target.remove()}}):null,
+        h("span",{attrs:{"aria-hidden":"true"},text:String(f.y)}),
+        h("span",{class:"sr-only",text:name+(seen.has(f.id)?t(", watched"):"")}));
+    }));
+  }
+  // Galan, every Best Picture nominee: a list of its own beside the envelopes (js/fun/gala.js).
+  galaCard() {
+    const here=this.app.list.id===GALA_LIST_ID, total=this.galaTotal??=galaFilms().length;
+    const seen=here?this.app.store.p.seen.size:this.progress(GALA_LIST_ID).size, years=CEREMONIES[0].year+" – "+CEREMONIES.at(-1).year;
+    const go=(fn)=>()=>this.app.storage && fn(this.app.storage);
+    return h("article",{class:"collection-card gala-card",dataset:{theme:"gala"}},
+      h("div",{class:"collection-art"},h("span",{class:"collection-number",attrs:{"aria-hidden":"true"},text:String(CEREMONIES.length)}),h("p",{class:"gala-years",attrs:{"aria-hidden":"true"},text:years}),h("span",{class:"collection-seal",attrs:{"aria-hidden":"true"},text:"GALA"})),
+      h("div",{class:"collection-copy"},h("p",{class:"kicker",text:t("The full ballot")}),h("h2",{text:localized(GALA.name)}),
+        h("p",{text:localized(GALA.subtitle)}),
+        h("p",{class:"fine",text:t("{n} films · {seen} watched",{n:total,seen})}),
+        h("progress",{max:total,value:seen,attrs:{"aria-label":t("Collection progress")}}),
+        h("div",{class:"row"},here?button("Leave the gala",go(leaveGala),"btn btn-primary"):button(seen?"Back to the gala":"Enter the gala",go(enterGala),"btn btn-primary"))));
   }
   preview(pack) {
     this.open(localized(pack.title || pack.name),h("p",{text:localized(pack.curatorNote || pack.introduction || pack.subtitle)}),
@@ -119,7 +146,6 @@ export class Journeys {
   }
   context(f) {
     const data = f && metadataFor(f.id), key = f?.id+":"+this.app.store.p.seen.has(f?.id)+":"+this.app.stage.open;
-    $("sendInvite").hidden=!f || this.app.stage.finale;
     if (key===this.contextKey) return;
     this.contextKey=key;
     const target=$("filmContext");target.hidden=!data || !this.app.stage.open || this.app.stage.finale;
@@ -130,6 +156,11 @@ export class Journeys {
       data.editionNote || data.editionNotes ? h("p",{class:"fine",text:localized(data.editionNote || data.editionNotes)}):null,
       data.questions ? watched ? h("details",{},h("summary",{text:t("After the film · conversation starters")}),h("ol",{},...(localized(data.questions) instanceof Array?localized(data.questions):data.questions?.[swedish?"sv":"en"] || []).map(q=>h("li",{text:q})))) :
       h("p",{class:"fine",text:t("Discussion prompts open after you mark the film watched.")}) : null,sourceLink(data.source)].filter(Boolean));
+  }
+  // Share on the ticket: the ticket as a picture, or a sealed invitation.
+  shareChoice(f) {
+    this.open(t("Share tonight’s film"),h("p",{text:t("Send the ticket as a picture, or as a sealed invitation: your friend opens an envelope to see the film.")}),
+      h("div",{class:"row"},button("Ticket image",()=>{this.dialog.close();this.app.share.ticket(f);},"btn btn-primary"),button("Sealed invitation",()=>this.invite(f))));
   }
   invite(f) {
     if(!f) return;
@@ -172,8 +203,9 @@ export class Journeys {
     try { const snapshot=exportLibrary(this.app.storage,{store:this.app.store});download(JSON.stringify(snapshot,null,2),"kuvert-library.json");this.app.store.recordBackup(this.app.store.data(),"library");this.app.toast.show(t("Full library backup downloaded. Keep it somewhere safe.")); }
     catch(e){this.app.toast.show(t(e.message));}
   }
-  async restore(input) {
-    const file=input.files?.[0];input.value="";if(!file)return;
+  // A whole-library backup, from Settings' "Restore from a file" (js/views/settings.js).
+  async restoreFile(file) {
+    if(!file)return;
     try {
       if(file.size>20_000_000)throw Error(t("That backup is too large."));
       const data=await readLibraryBackup(file),mode=h("select",{attrs:{"aria-label":t("Restore method")}},new Option(t("Merge with this library"),"merge"),new Option(t("Replace entire library"),"replace"));

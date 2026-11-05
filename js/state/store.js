@@ -15,6 +15,20 @@ import { t } from "../i18n/index.js";
 const FILTERS = ["unseen", "all", "skipped", "recent", "missing", "shelf"];
 const WALL_SORTS = ["recent", "rank", "stars", "year"];
 
+/** A ranking with `id` in it: after everything rated the same or higher (unrated films count as higher). */
+function insertByStars(p, list, id) {
+  const r = ratingOf(p, id);
+  let at = list.length;
+  if (r !== null) {
+    at = 0;
+    list.forEach((x, i) => {
+      const rx = ratingOf(p, x);
+      if (rx === null || rx >= r) at = i + 1;
+    });
+  }
+  return [...list.slice(0, at), id, ...list.slice(at)];
+}
+
 export class Store extends EventTarget {
   /**
    * @param {{ list: object, catalog: object, storage?: Storage|null, now?: () => Date }} o
@@ -466,18 +480,24 @@ export class Store extends EventTarget {
   }
 
   // ---------------------------------------------------------------- watching
-  /** Marks a film watched or not. A series stays on the ticket: its next part becomes tonight's film. */
-  markSeen(id, on) {
+  /**
+   * Marks a film watched or not. A series stays on the ticket: its next part becomes tonight's film.
+   * date: the evening it was watched (tonight's by default), or null for a film seen before Kuvert,
+   * which has no date and so never counts toward your pace.
+   */
+  markSeen(id, on, { date } = {}) {
     this.reconcileStorage();
     const f = this.catalog.byId.get(id);
     if (!f) return null;
+    if (on && date && !validDate(date)) date = undefined;
     const undo = this.snapshot(),
       before = earnedIds(this.p, this.catalog),
       p = this.p;
     if (on) {
       p.seen.add(id);
       p.skipped.delete(id);
-      p.dates[id] ??= defaultWatchDate(this.now());
+      if (date === null) delete p.dates[id];
+      else p.dates[id] ??= date || defaultWatchDate(this.now());
     } else {
       p.seen.delete(id);
       delete p.dates[id];
@@ -504,13 +524,16 @@ export class Store extends EventTarget {
     this.save("progress");
     return undo;
   }
+  /** Stars for a film. A watched film's first stars also put it in your ranking, by those stars. */
   rate(id, rating) {
     this.reconcileStorage();
     const note = this.p.reviews[id]?.note || "",
       was = ratingOf(this.p, id);
     if (rating || note) this.p.reviews[id] = { note, rating: rating || null };
     else delete this.p.reviews[id];
-    this.touch(id);
+    const place = !!rating && this.p.seen.has(id) && !this.p.rankings.includes(id);
+    if (place) this.p.rankings = insertByStars(this.p, this.p.rankings.filter((x) => this.p.seen.has(x)), id);
+    this.touch(id, place && "$ranking");
     this.save("rating");
     return was;
   }
@@ -569,17 +592,18 @@ export class Store extends EventTarget {
   // New films go after everything rated the same or higher, so the list starts in a sensible place.
   placeInRanking(id) {
     const undo = this.snapshot();
-    const r = ratingOf(this.p, id);
-    const list = this.p.rankings.filter((x) => this.p.seen.has(x) && x !== id);
-    let at = list.length;
-    if (r !== null) {
-      at = 0;
-      list.forEach((x, i) => {
-        const rx = ratingOf(this.p, x);
-        if (rx === null || rx >= r) at = i + 1;
-      });
-    }
-    list.splice(at, 0, id);
+    this.p.rankings = insertByStars(this.p, this.p.rankings.filter((x) => this.p.seen.has(x) && x !== id), id);
+    this.touch("$ranking");
+    this.save("ranking");
+    return undo;
+  }
+  /** Every rated film that isn't in the ranking yet goes in by its stars: from before rating placed films. */
+  placeRated() {
+    const undo = this.snapshot();
+    const out = watchedFilms(this.p, this.catalog).filter((f) => ratingOf(this.p, f.id) !== null && !this.p.rankings.includes(f.id));
+    out.sort((a, b) => ratingOf(this.p, b.id) - ratingOf(this.p, a.id) || (this.p.dates[a.id] || "").localeCompare(this.p.dates[b.id] || ""));
+    let list = this.p.rankings.filter((x) => this.p.seen.has(x));
+    for (const f of out) list = insertByStars(this.p, list, f.id);
     this.p.rankings = list;
     this.touch("$ranking");
     this.save("ranking");

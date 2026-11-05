@@ -26,6 +26,10 @@ export class Library {
     this.pause = { until: 0, streak: 0, reason: "", timer: null, tries: new Map() };
     addEventListener("online", () => this.resumeLookups());
     const store = app.store;
+    // "Seen some before Kuvert?": while it's on, ticks mark films watched with no date.
+    this.backfill = false;
+    $("backfillStart").addEventListener("click", () => this.setBackfill(true));
+    $("backfillDone").addEventListener("click", () => this.setBackfill(false));
     $("libraryTabs").addEventListener("click", (e) => {
       const b = e.target.closest("button[data-f]");
       if (b) store.set({ filter: b.dataset.f });
@@ -187,7 +191,7 @@ export class Library {
         type: "button",
         dataset: { key: "tick-" + f.id },
         attrs: { "aria-pressed": String(seen), "aria-label": t(seen ? "Mark unwatched: {title}" : "Mark watched: {title}", { title: f.t }) },
-        on: { click: () => this.app.stage.toggleSeen(f.id) },
+        on: { click: () => this.app.stage.toggleSeen(f.id, { before: this.backfill }) },
       },
       check(),
     );
@@ -205,6 +209,15 @@ export class Library {
     return h("li", { class: [cls, thumb ? "" : "no-thumb"].filter(Boolean).join(" ") }, cells.map((c) => (c === "thumb" ? thumb : c)));
   }
 
+  /** Ticking off films seen before Kuvert: every film shows, and ticks go in undated. */
+  setBackfill(on) {
+    this.backfill = on;
+    this.app.router.show("library", { focus: false });
+    if (on && this.app.store.settings.filter !== "all") this.app.store.set({ filter: "all" });
+    else this.render();
+    $(on ? "backfillDone" : "backfillStart").focus({ preventScroll: true });
+    if (on) $("backfillBar").scrollIntoView({ block: "nearest" });
+  }
   render() {
     const { store, catalog } = this.app,
       p = store.p,
@@ -217,7 +230,9 @@ export class Library {
     for (const b of $("libraryTabs").querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.f === st.filter));
     $("missingTab").hidden = st.filter !== "missing";
     $("skippedTab").replaceChildren(this.app.sg("Skipped", "Cowardice"), h("span", { class: "n", text: String(p.skipped.size) }));
-    $("shelfTab").replaceChildren(t("Shelf"), h("span", { class: "n", text: String(p.shelf.size) }));
+    $("shelfTab").replaceChildren(t("On disc"), h("span", { class: "n", text: String(p.shelf.size) }));
+    $("backfillBar").hidden = !this.backfill;
+    $("backfillStart").hidden = this.backfill || p.seen.size === catalog.films.length;
     $("missingTab").replaceChildren(t("Missing runtimes"), h("span", { class: "n", text: String(missing.length) }));
     $("shelfFilters").hidden = isArchive || !catalog.hasShelves;
     for (const b of $("shelfFilters").querySelectorAll("button")) {
@@ -439,6 +454,8 @@ export class Library {
           { class: "wall-film", type: "button", dataset: { film: f.id, key: "wall-" + f.id }, on: { click: () => this.app.stage.openFilm(f.id) } },
           h("span", { class: "wall-art", attrs: { "aria-hidden": "true" } }, mark("dala-mark", "poster-mark"), h("span", { class: "wall-rank" })),
           h("span", { class: "wall-caption", text: f.t }),
+          // A space between them, so the title and year read as two words (the label repeats them).
+          " ",
           h("span", { class: "wall-year" }),
         );
       }

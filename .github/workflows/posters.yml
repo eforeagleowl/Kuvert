@@ -27,6 +27,9 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 22
+          cache: npm
+      # The unit tests below need the dev dependencies (jsdom).
+      - run: npm ci
       - name: Fetch posters from TMDB
         env:
           TMDB_TOKEN: ${{ secrets.TMDB_TOKEN }}

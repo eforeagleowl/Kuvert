@@ -69,7 +69,7 @@ export class Settings {
         const picked = await files.pick();
         if (!picked) return;
         if (!picked.file) return $("fileInput").click();
-        await dialogs.readProgress(picked.file, picked.handle);
+        await this.restoreFile(picked.file, picked.handle);
       } catch (e) {
         app.toast.show(t(e.message || "Could not load that file."));
       }
@@ -79,7 +79,7 @@ export class Settings {
       async (e) => {
         const f = e.target.files?.[0];
         try {
-          if (f) await dialogs.readProgress(f);
+          if (f) await this.restoreFile(f);
         } catch (err) {
           app.toast.show(t(err.message || "Could not read that backup."));
         }
@@ -92,7 +92,7 @@ export class Settings {
         const got = await files.reconnect();
         if (got) await dialogs.readProgress(got.file, got.handle);
       } catch (e) {
-        app.toast.show(t(e.message?.startsWith("File access") ? e.message : "Could not reconnect. Use Load progress to select the file again."));
+        app.toast.show(t(e.message?.startsWith("File access") ? e.message : "Could not reconnect. Use Restore from a file to select it again."));
       }
     });
     files.remembered().then((h) => {
@@ -258,9 +258,20 @@ export class Settings {
     if (app.details.connected) this.loadCountries();
   }
 
-  /** Opens Settings, optionally scrolled to and focused on one control. */
+  /** Restore from a file: a whole-library backup goes to the library restore, anything else is read as progress. */
+  async restoreFile(file, handle) {
+    let raw = null;
+    try {
+      raw = file.size < 25_000_000 ? JSON.parse(await file.text()) : null;
+    } catch {}
+    if (raw?.app === "kuvert-library") return this.app.journeys.restoreFile(file);
+    return this.app.dialogs.readProgress(file, handle);
+  }
+
+  /** Opens Settings, optionally scrolled to and focused on one control (opening whatever it's folded in). */
   open(focusId = null) {
     if (focusId && !$(focusId)) focusId = null;
+    for (let d = focusId && $(focusId).closest("details"); d; d = d.parentElement.closest("details")) d.open = true;
     this.app.router.show("settings", { focus: !focusId });
     if (focusId) {
       requestAnimationFrame(() => {

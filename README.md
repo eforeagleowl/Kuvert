@@ -8,29 +8,32 @@ to your home screen, and it works offline after your first visit.
 
 ## What it does
 
-- **The draw.** Break the seal, watch the year dial roll, and pull out tonight's ticket. Series play in
-  order, and you can set one film aside for later.
+- **The draw.** Break the seal, watch the year dial roll, and pull out tonight's ticket, with a link to
+  where it's streaming. Series play in order, and you can set one film aside for later. Drew one you saw
+  years ago? "Seen it before" marks it and draws another.
 - **Tonight's filters.** Draw only films that fit the time you have, suit a mood, are on your streaming
   services, or are discs on your shelf.
 - **The station.** A split-flap departure board makes the same draw: the board flips, a chime rings, and
   your ticket prints and gets stamped. Switch to *Ankomster* (arrivals) to see the films you've watched
   lately, with your stars on the flaps. Galan leaves from Union Station, Los Angeles, in Art Deco black
   and gold, and SEAGAL from Dark Territory, a rail depot with a green terminal and a radio dispatcher.
-- **Your watchthrough.** Mark films watched, rate them, say whether the winner deserved it, and rank your
-  favorites. The Library holds the whole list and a poster wall; Stats show your pace, streaks and
-  milestones. The dala horse gets painted as you go.
+- **Your watchthrough.** Mark films watched (the next day too: "Watched it" dates the film the night you
+  drew it), rate them, say whether the winner deserved it, and rank your favorites: your stars put each
+  film in the ranking, and you fine-tune it. The Library holds the whole list and a poster wall, and lets
+  you tick off films you'd seen before Kuvert without a date, so they never skew your pace. Stats show
+  your pace, streaks and milestones. The dala horse gets painted as you go.
 - **Group night.** Add your friends' codes, and the draw only picks films none of you has seen.
 - **Your own lists.** Import any film list, or bring your history in from Letterboxd.
 - **Envelopes.** Small curated collections (seven nights of noir, a Swedish winter, first steps into
   silent cinema, a Hitchcock week), each with its own progress, context cards and a printable keepsake
-  when it's done.
+  when it's done. Galan, every Best Picture nominee from all 98 ceremonies, is there too.
 - **Sealed invitations.** Send a friend tonight's film as a link or QR code; they break the seal to see it.
 - **Cinema passport.** A printable journal of the films you've watched, for all time or one year.
 - **Film club.** Friends agree on a film together and reveal their stars at the same moment. It needs
   the small Kuvert service in `server/` running somewhere. It's ready for Railway
   ([step by step](docs/HOSTING.md#railway-step-by-step)); until it runs, the club stays out of sight on GitHub Pages.
 - **Galan.** For the completists: every film ever nominated for Best Picture, all 98 ceremonies, 621
-  films and no honorable mentions. Switch it on from "for the completists." in About. The regular list
+  films and no honorable mentions. Switch it on from its card on the Envelopes page (or "for the completists." in About). The regular list
   of 275 stays as it is, and films watched in one count in the other.
 - **På svenska.** Switch the whole app to Swedish under Settings → Language. Films get their Swedish
   titles (*Gudfadern*, *Borta med vinden*), with the original in small type beneath.

@@ -19,7 +19,7 @@ before(async()=>{
 });
 after(()=>dom.window.close());
 test('new controller IDs exist, collections render, and without a club service the club stays out of sight',()=>{
- app.journeys.render();assert.equal(document.querySelectorAll('.collection-card').length,4);assert.equal(document.querySelector('#ceremonySelect'),null,'re-running the Oscars became Galan (js/fun/gala.js)');
+ app.journeys.render();assert.equal(document.querySelectorAll('.collection-card:not(.gala-card)').length,4);assert.equal(document.querySelectorAll('.gala-card').length,1,'Galan has a card of its own');assert.equal(document.querySelector('#ceremonySelect'),null,'re-running the Oscars became Galan (js/fun/gala.js)');
  assert.equal(document.querySelector('#clubTeaser').hidden,true);
  const ids=[...document.querySelectorAll('[id]')].map(el=>el.id);assert.equal(ids.length,new Set(ids).size,'IDs unique');
 });
@@ -50,7 +50,7 @@ test('club UI preserves drafts across refresh, hides other private ratings, and 
 test('restore dialog offers Replace when a corrupt current library cannot be merged',async()=>{
  const {exportLibrary}=await import('../../js/storage/library-backup.js');const snapshot=exportLibrary(localStorage,{store:app.store});
  const raw=localStorage.getItem('kuvert:v4');localStorage.setItem('kuvert:v4','BROKEN');app.store.writeLocked=true;
- await app.journeys.restore({files:[new File([JSON.stringify(snapshot)],'library.json',{type:'application/json'})],value:''});
+ await app.journeys.restoreFile(new File([JSON.stringify(snapshot)],'library.json',{type:'application/json'}));
  assert.equal(app.journeys.dialog.open,true);const mode=document.querySelector('#journeyContent select');assert.ok(mode);assert.match(document.querySelector('#journeyContent').textContent,/Choose Replace entire library/);
  mode.value='replace';mode.dispatchEvent(new dom.window.Event('change'));assert.equal([...document.querySelectorAll('#journeyContent button')].find(b=>b.textContent==='Restore library').disabled,false);
  localStorage.setItem('kuvert:v4',raw);app.store.writeLocked=false;app.journeys.dialog.close();

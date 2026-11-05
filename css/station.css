@@ -4,36 +4,30 @@
    repaint it at the end (html[data-station]). */
 @layer station {
   /* ---------------------------------------------------------------- the way there, from Tonight */
+  /* A quiet link under the draw button: the station draws the same film, a different way. */
   .to-station {
     display: inline-flex;
     align-items: center;
     gap: var(--s-2);
     min-height: 44px;
-    margin-top: var(--s-2);
-    padding: 0 var(--s-4) 0 var(--s-3);
-    border: 1px solid var(--line);
-    border-radius: var(--r-pill);
+    padding: 0 var(--s-2);
+    border-radius: var(--r-1);
     color: var(--muted);
     font-size: var(--fs-2);
     font-weight: 500;
     text-decoration: none;
-    transition:
-      border-color var(--t-1),
-      background-color var(--t-1),
-      color var(--t-1);
+    transition: color var(--t-1);
   }
   .to-station span {
     color: var(--brass);
-    font: italic 600 var(--fs-4) / 1 var(--font-display);
+    font: italic 600 var(--fs-3) / 1 var(--font-display);
   }
   .to-station .icon {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     color: var(--brass);
   }
   .to-station:hover {
-    border-color: var(--brass-lo);
-    background: var(--brass-wash);
     color: var(--text);
   }
   .to-station:hover .icon {

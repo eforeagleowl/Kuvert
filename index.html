@@ -130,13 +130,31 @@
       <p>Open an envelope. Watch a film. Keep the ticket. Your collection grows with every film night.</p>
       <div class="row">
         <button class="btn btn-primary" id="welcomeStart" type="button">Start with this list</button>
+        <button class="btn" id="welcomeSeen" type="button">I've seen some already</button>
         <button class="btn" id="welcomeImport" type="button">Bring my own list</button>
         <button class="btn" id="welcomeTmdb" type="button" hidden>Add posters &amp; streaming</button>
       </div>
       <p class="fine">The collection is ready. Used Kuvert on another device? <button class="link" id="welcomeSync" type="button">Connect sync or load a backup</button></p>
     </section>
 
-    <div class="journeys-shortcut"><button class="link" id="openJourneys" type="button">Explore curated envelopes</button></div>
+    <aside class="notice card danger" id="unreadable" role="alert" aria-labelledby="unreadableTitle" hidden>
+      <div class="notice-head"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><h2 id="unreadableTitle">Kuvert couldn’t read the progress saved in this browser</h2></div>
+      <p>It’s kept exactly as it was, and nothing will be written over it. Restore a backup or a code to carry on, or start fresh.</p>
+      <div class="row">
+        <button class="btn btn-primary btn-sm" id="unreadableRestore" type="button">Restore a backup</button>
+        <button class="btn btn-sm" id="unreadableDownload" type="button">Download the unreadable save</button>
+        <button class="btn btn-quiet btn-sm" id="unreadableFresh" type="button">Start fresh</button>
+      </div>
+    </aside>
+    <!-- A ticket drawn on an earlier evening: asked about first thing (the same evening, the draw button says so). -->
+    <div class="resume card stale" id="resumePick" hidden>
+      <p class="kicker" id="resumeLabel"></p>
+      <div class="row" id="staleActions">
+        <button class="btn btn-primary btn-sm" id="watchedIt" type="button">Watched it</button>
+        <button class="btn btn-sm" id="keepTicket" type="button">Keep it for tonight</button>
+        <button class="btn btn-sm" id="putBack" type="button">Put it back</button>
+      </div>
+    </div>
     <div class="stage" id="stage" data-state="closed">
       <div class="nixie" id="nixie">
         <span class="nixie-label" lang="sv" aria-hidden="true" data-sg="Year">Årtal</span>
@@ -226,17 +244,23 @@
               <button class="link" id="wpClear" type="button" hidden>Clear stars</button>
             </div>
             <p class="wp-line"><span id="wpWhen"></span> <button class="link" id="wpDate" type="button">Change date</button></p>
-            <p class="wp-line" id="wpRank" hidden></p>
-            <div class="wp-verdict" id="wpVerdict" hidden>
-              <span class="wp-label" id="wpVerdictLabel">Deserved Best Picture?</span>
-              <span class="verdicts" id="wpVerdictGroup" role="group" aria-labelledby="wpVerdictLabel"></span>
-              <label class="should-won" id="wpShouldWrap" hidden>Should have won <select id="wpShould"></select></label>
-            </div>
-            <blockquote class="wp-note" id="wpNote" hidden></blockquote>
             <div class="row wp-actions">
-              <button class="btn btn-paper" id="wpNoteBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-note"/></svg><span id="wpNoteLabel">Add a note</span></button>
-              <button class="btn btn-paper" id="wpShare" type="button"><svg class="icon" aria-hidden="true"><use href="#i-share"/></svg>Share</button>
               <button class="btn btn-ink" id="wpDone" type="button">Done</button>
+              <button class="btn btn-paper" id="wpMore" type="button" aria-expanded="false" aria-controls="wpExtras"><span id="wpMoreLabel">Note and more</span><svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+            </div>
+            <!-- The extras: open when you come back to a stub, folded away on the night itself. -->
+            <div class="wp-extras" id="wpExtras" hidden>
+              <p class="wp-line" id="wpRank" hidden></p>
+              <div class="wp-verdict" id="wpVerdict" hidden>
+                <span class="wp-label" id="wpVerdictLabel">Deserved Best Picture?</span>
+                <span class="verdicts" id="wpVerdictGroup" role="group" aria-labelledby="wpVerdictLabel"></span>
+                <label class="should-won" id="wpShouldWrap" hidden>Should have won <select id="wpShould"></select></label>
+              </div>
+              <blockquote class="wp-note" id="wpNote" hidden></blockquote>
+              <div class="row">
+                <button class="btn btn-paper" id="wpNoteBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-note"/></svg><span id="wpNoteLabel">Add a note</span></button>
+                <button class="btn btn-paper" id="wpShare" type="button"><svg class="icon" aria-hidden="true"><use href="#i-share"/></svg>Share</button>
+              </div>
             </div>
           </section>
 
@@ -245,9 +269,12 @@
             <button class="btn btn-ink" id="markBtn" type="button">Mark as watched</button>
             <button class="btn btn-paper" id="againBtn" type="button" aria-describedby="pickActionsHelp"><svg class="icon" aria-hidden="true"><use href="#i-shuffle"/></svg>Draw again</button>
             <button class="btn btn-paper" id="skipBtn" type="button" aria-describedby="pickActionsHelp">Set aside</button>
-            <button class="btn btn-paper" id="sendInvite" type="button" hidden>Send invitation</button>
-            <button class="btn btn-paper" id="shareBtn" type="button" title="Share this ticket as an image"><svg class="icon" aria-hidden="true"><use href="#i-share"/></svg>Share</button>
-            <a class="t-link" id="lbxBtn" target="_blank" rel="noopener" hidden>Letterboxd<svg class="icon" aria-hidden="true"><use href="#i-external"/></svg></a>
+            <button class="btn btn-paper" id="shareBtn" type="button" aria-haspopup="dialog"><svg class="icon" aria-hidden="true"><use href="#i-share"/></svg>Share</button>
+            <p class="t-links">
+              <button class="link" id="seenBefore" type="button" data-sg="Already neutralized">Seen it before</button>
+              <a class="t-link" id="watchLink" target="_blank" rel="noopener" hidden><span data-sg="Locate the target">Where to watch</span><svg class="icon" aria-hidden="true"><use href="#i-external"/></svg></a>
+              <a class="t-link" id="lbxBtn" target="_blank" rel="noopener" hidden>Letterboxd<svg class="icon" aria-hidden="true"><use href="#i-external"/></svg></a>
+            </p>
           </div>
 
           <details class="t-details" id="moreDetails" hidden>
@@ -258,6 +285,7 @@
             <p class="t-line" id="pickMoney" hidden></p>
             <section class="film-context" id="filmContext" hidden></section>
             <p class="fine" id="moodSource"></p>
+            <p class="fine" id="tmdbHint" hidden><button class="link" id="tmdbHintLink" type="button">Cast, tagline and streaming: connect TMDB in Settings</button></p>
             <div class="row">
               <button class="btn btn-paper btn-sm" id="editMoods" type="button">Edit mood tags</button>
               <button class="btn btn-paper btn-sm" id="changeMatch" type="button">Change movie match</button>
@@ -266,37 +294,11 @@
         </div>
       </article>
     </div>
-
-    <div class="draw-bar">
-      <button class="btn-draw" id="drawBtn" type="button" aria-controls="ticket" aria-expanded="false">Öppna kuvertet</button>
-      <p class="eligible" id="eligibleCount" role="status"></p>
-      <p class="sleepy-note" id="sleepyNote" hidden><span lang="sv">Dags att sova?</span> Time for bed? One more is fine too.</p>
-      <a class="to-station" id="toStation" href="#station" data-route="station"><svg class="icon" aria-hidden="true"><use href="#i-train"/></svg><span lang="sv">Gå till stationen</span> Go to the station</a>
-    </div>
-
-    <aside class="notice card danger" id="unreadable" role="alert" aria-labelledby="unreadableTitle" hidden>
-      <div class="notice-head"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><h2 id="unreadableTitle">Kuvert couldn’t read the progress saved in this browser</h2></div>
-      <p>It’s kept exactly as it was, and nothing will be written over it. Restore a backup or a code to carry on, or start fresh.</p>
-      <div class="row">
-        <button class="btn btn-primary btn-sm" id="unreadableRestore" type="button">Restore a backup</button>
-        <button class="btn btn-sm" id="unreadableDownload" type="button">Download the unreadable save</button>
-        <button class="btn btn-quiet btn-sm" id="unreadableFresh" type="button">Start fresh</button>
-      </div>
-    </aside>
-    <aside class="notice card" id="keepCopy" aria-labelledby="keepCopyTitle" hidden>
-      <div class="notice-head"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><h2 id="keepCopyTitle" data-sg="Secure the intel">Keep a copy of your progress</h2></div>
-      <p id="keepCopyText"></p>
-      <div class="row">
-        <button class="btn btn-primary btn-sm" id="keepCopySave" type="button">Save a copy</button>
-        <button class="btn btn-quiet btn-sm" id="keepCopyLater" type="button">Not now</button>
-      </div>
-    </aside>
-
     <div class="prefs">
       <div class="pref-bar">
         <div class="chips" id="activeChips" aria-label="Active draw preferences"></div>
         <button class="btn btn-quiet btn-sm" id="adjustPreferences" type="button" aria-expanded="false" aria-controls="preferencesPanel"><svg class="icon" aria-hidden="true"><use href="#i-sliders"/></svg><span>Adjust</span></button>
-        <button class="btn btn-quiet btn-sm" id="openGroup" type="button" aria-haspopup="dialog"><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg><span data-sg="Squad">Group night</span></button>
+        <button class="chip chip-group" id="groupChip" type="button" aria-haspopup="dialog" hidden></button>
       </div>
       <section class="pref-panel card" id="preferencesPanel" hidden aria-labelledby="prefTitle">
         <div class="pref-head"><h2 id="prefTitle">Tonight’s preferences</h2><button class="link" id="donePreferences" type="button">Done</button></div>
@@ -322,6 +324,10 @@
         </div>
         <p class="fine" id="servicesSummary"></p>
         <button class="link" id="clearFilters" type="button" hidden>Clear all filters</button>
+        <div class="row between pref-group">
+          <p class="fine">Watching with friends? Draw only films none of you has seen.</p>
+          <button class="btn btn-sm" id="openGroup" type="button" aria-haspopup="dialog"><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg><span data-sg="Squad">Group night</span></button>
+        </div>
       </section>
       <div class="metadata-tools card" id="metadataTools" hidden>
         <p id="metadataHint"></p>
@@ -329,18 +335,29 @@
         <p class="fine" id="metadataStatus" role="status"></p>
       </div>
     </div>
-
-    <div class="resume card" id="resumePick" hidden>
-      <p class="kicker" id="resumeLabel">Your saved ticket</p>
-      <div class="row between">
-        <button class="link resume-film" id="resumeFilm" type="button"></button>
-        <button class="link" id="putBackTonight" type="button" title="Close tonight’s ticket; the film goes back in the draw">Put it back</button>
-      </div>
-      <div class="row" id="staleActions" hidden>
-        <button class="btn btn-sm" id="keepTicket" type="button">Keep it for tonight</button>
-        <button class="btn btn-sm" id="putBack" type="button">Put it back</button>
-      </div>
+    <div class="draw-bar">
+      <button class="btn-draw" id="drawBtn" type="button" aria-controls="ticket" aria-expanded="false"><span id="drawMain" lang="sv">Öppna kuvertet</span><small id="drawSub"></small></button>
+      <p class="eligible" id="eligibleCount" role="status"></p>
+      <button class="link put-back" id="putBackTonight" type="button" hidden>Put it back in the draw</button>
+      <p class="sleepy-note" id="sleepyNote" hidden><span lang="sv">Dags att sova?</span> Time for bed? One more is fine too.</p>
+      <a class="to-station" id="toStation" href="#station" data-route="station"><svg class="icon" aria-hidden="true"><use href="#i-train"/></svg><span lang="sv">Gå till stationen</span> Go to the station</a>
     </div>
+    <aside class="notice card" id="keepCopy" aria-labelledby="keepCopyTitle" hidden>
+      <div class="notice-head"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><h2 id="keepCopyTitle" data-sg="Secure the intel">Keep a copy of your progress</h2></div>
+      <p id="keepCopyText"></p>
+      <div class="row">
+        <button class="btn btn-primary btn-sm" id="keepCopySave" type="button">Save a copy</button>
+        <button class="btn btn-quiet btn-sm" id="keepCopyLater" type="button">Not now</button>
+      </div>
+    </aside>
+    <aside class="notice card" id="installHint" aria-labelledby="installTitle" hidden>
+      <div class="notice-head"><svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg><h2 id="installTitle" data-sg="Install the field kit">Put Kuvert on your Home Screen</h2></div>
+      <p id="installText"></p>
+      <div class="row">
+        <button class="btn btn-primary btn-sm" id="installNow" type="button" hidden>Install</button>
+        <button class="btn btn-quiet btn-sm" id="installLater" type="button">Got it</button>
+      </div>
+    </aside>
     <aside class="skip-reminder card" id="skipReminder" hidden>
       <p id="skipReminderText"></p>
       <button class="link" id="openSkipped" type="button"></button>
@@ -414,27 +431,33 @@
       <p class="kicker" lang="sv">Samlingen</p>
       <h1 class="page-title" id="libraryHeading" tabindex="-1" data-sg="Dossier">The collection</h1>
       <p class="page-lede" id="leftline"></p>
+      <p class="backfill-start"><button class="link" id="backfillStart" type="button" data-sg="Log earlier operations">Seen some before Kuvert? Tick them off</button></p>
     </header>
+    <aside class="backfill card" id="backfillBar" hidden>
+      <p><b>Ticking films you saw before Kuvert.</b> They go in as watched with no date, so they don't count toward your pace.</p>
+      <button class="btn btn-primary btn-sm" id="backfillDone" type="button">Done</button>
+    </aside>
     <div class="toolbar" id="libraryToolbar">
-      <div class="seg" id="libraryTabs" role="group" aria-label="Show">
-        <button type="button" data-f="unseen" data-sg="Hostile">Unseen</button>
-        <button type="button" data-f="all">All</button>
-        <button type="button" data-f="shelf" id="shelfTab">Shelf</button>
-        <button type="button" data-f="skipped" id="skippedTab">Skipped</button>
-        <button type="button" data-f="recent">Recent</button>
-        <button type="button" data-f="missing" id="missingTab" hidden>Missing runtimes</button>
-      </div>
-      <div class="seg seg-shelves" id="shelfFilters" role="group" aria-label="Award shelf">
-        <button type="button" data-s="W">Won</button>
-        <button type="button" data-s="N">Nom</button>
-        <button type="button" data-s="H" title="Honorable mentions">HM</button>
+      <div class="filter-row">
+        <div class="seg" id="libraryTabs" role="group" aria-label="Show">
+          <button type="button" data-f="unseen" data-sg="Hostile">Unseen</button>
+          <button type="button" data-f="all">All</button>
+          <button type="button" data-f="shelf" id="shelfTab">On disc</button>
+          <button type="button" data-f="skipped" id="skippedTab">Skipped</button>
+          <button type="button" data-f="recent">Recent</button>
+          <button type="button" data-f="missing" id="missingTab" hidden>Missing runtimes</button>
+        </div>
+        <div class="seg seg-shelves" id="shelfFilters" role="group" aria-label="Award shelf">
+          <button type="button" data-s="W">Won</button>
+          <button type="button" data-s="N">Nom</button>
+          <button type="button" data-s="H" title="Honorable mentions">HM</button>
+        </div>
       </div>
       <label class="search"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><input id="search" type="search" placeholder="Find a film…" aria-label="Find a title" autocomplete="off" spellcheck="false"></label>
     </div>
     <div class="decades" id="decs" aria-label="Coverage by decade"></div>
     <div class="row between scope">
       <label class="switch"><input type="checkbox" id="drawSelection"><span>Use these filters for tonight’s draw</span></label>
-      <a class="link" href="#tonight" data-route="tonight">Back to tonight</a>
     </div>
     <p class="fine" id="archiveHint" hidden></p>
     <ul class="films" id="list"></ul>
@@ -465,7 +488,6 @@
       <p class="kicker" lang="sv">Filmåret</p>
       <h1 class="page-title" id="statsHeading" tabindex="-1" data-sg="Debrief">Your watchthrough</h1>
     </header>
-    <div class="passport-action"><button class="btn" id="openPassport" type="button">Open cinema passport</button><p class="fine">A printable journal of your films, stars and favorite discoveries.</p></div>
     <div class="stats-lead">
       <p class="headline" id="statsHeadline"></p>
       <figure class="led" id="led">
@@ -485,13 +507,19 @@
       <div class="row">
         <button class="btn btn-sm" id="copyRanking" type="button"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg>Copy for group chat</button>
         <button class="btn btn-sm" id="shareRanking" type="button"><svg class="icon" aria-hidden="true"><use href="#i-share"/></svg>Share as image</button>
-        <button class="btn btn-sm" id="rankByStars" type="button" hidden>Start from my stars</button>
       </div>
       <textarea id="rankingText" class="copy-fallback" readonly hidden aria-label="Ranking as text"></textarea>
       <ol class="ranks" id="rankList"></ol>
       <div id="unrankedBox" hidden>
         <h3 class="sub-head">Not ranked yet</h3>
-        <ul class="ranks unranked" id="unrankedList"></ul>
+        <div class="row between unranked-head">
+          <p class="fine" id="unrankedSummary"></p>
+          <button class="btn btn-sm" id="placeRated" type="button" hidden>Place them by their stars</button>
+        </div>
+        <details class="unranked-more" id="unrankedMore">
+          <summary>Show them</summary>
+          <ul class="ranks unranked" id="unrankedList"></ul>
+        </details>
       </div>
     </section>
 
@@ -515,6 +543,7 @@
     <section class="block" id="milestoneSection" aria-labelledby="milestonesHeading">
       <div class="block-head"><h2 id="milestonesHeading" data-sg="Commendations">Milestones</h2><span class="fine" id="milestoneSummary"></span></div>
       <div class="milestones" id="milestoneGrid"></div>
+      <button class="link milestone-more" id="milestoneMore" type="button" aria-controls="milestoneGrid" hidden></button>
     </section>
 
     <section class="block" id="shelfSection" aria-labelledby="shelvesHeading">
@@ -531,6 +560,7 @@
         </table>
       </div>
     </section>
+    <div class="passport-action"><button class="btn" id="openPassport" type="button">Open cinema passport</button><p class="fine">A printable journal of your films, stars and favorite discoveries.</p></div>
   </section>
 
   <!-- ============================================================ SETTINGS -->
@@ -542,42 +572,88 @@
     </header>
     <div class="settings">
       <nav class="settings-nav" aria-label="Settings sections">
-        <a href="#backup">Your data</a><a href="#sgMoviesBlock">Movie details</a><a href="#sgListsBlock">Lists &amp; imports</a><a href="#languageGroup">Language</a><a href="#soundGroup">Sound</a><a href="#aboutSection">About</a>
+        <a href="#languageGroup">Language</a><a href="#soundGroup">Sound</a><a href="#sgListsBlock">Lists &amp; imports</a><a href="#backup">Your data</a><a href="#sgMoviesBlock">Movie details</a><a href="#aboutSection">About</a>
       </nav>
       <div class="settings-main">
+        <section class="group" id="languageGroup" aria-labelledby="sgLanguage">
+          <h2 id="sgLanguage">Language</h2>
+          <div class="card setting">
+            <div class="seg" id="languageChoice" role="group" aria-label="Language">
+              <button type="button" data-lang="en" lang="en" aria-pressed="true">English</button>
+              <button type="button" data-lang="sv" lang="sv" aria-pressed="false">Svenska</button>
+            </div>
+            <p class="fine">Kuvert in English with a little Swedish, or all of it in Swedish. Only on this device.</p>
+          </div>
+        </section>
+
+        <section class="group" id="soundGroup" aria-labelledby="sgSound">
+          <h2 id="sgSound">Sound</h2>
+          <div class="card setting">
+            <label class="switch"><input type="checkbox" id="paperSounds"><span>Paper sounds</span></label>
+            <p class="fine">The seal cracking, the envelope tearing open, the year dial ticking, stamps landing and a wooden knock when you tap the horse. Off by default, and only on this device.</p>
+          </div>
+        </section>
+
+        <section class="group" id="sgListsBlock" aria-labelledby="sgLists">
+          <h2 id="sgLists" data-sg="Arsenal">Lists &amp; imports</h2>
+          <div class="card setting" id="listsPanel">
+            <label class="field"><span>Movie list</span><select id="listSelect"></select></label>
+            <div class="row">
+              <button class="btn" id="importList" type="button"><svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg>Import a list</button>
+              <button class="btn" id="exportList" type="button"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>Export this list</button>
+              <button class="btn btn-danger" id="deleteList" type="button" hidden>Delete this list</button>
+              <input type="file" id="listFile" accept=".csv,.json,text/csv,application/json" hidden>
+            </div>
+            <details class="help"><summary><svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg>File format</summary>
+              <p>A CSV or JSON file with <code>title</code> and <code>year</code>, and optionally <code>shelf</code> (W, N or H), <code>series</code> and <code>part</code>. Letterboxd list exports work too. Each list keeps its own progress.</p>
+            </details>
+          </div>
+          <div class="card setting" id="lbxPanel">
+            <p class="setting-title">Letterboxd ratings and dates</p>
+            <p class="fine">On Letterboxd, go to Settings → Data → Export your data, then choose the ZIP here (or the <code>ratings.csv</code> and <code>diary.csv</code> inside it).</p>
+            <div class="row">
+              <button class="btn" id="lbxChoose" type="button">Load Letterboxd export</button>
+              <input type="file" id="lbxFile" accept=".zip,.csv,application/zip,text/csv" multiple hidden>
+            </div>
+            <p class="fine" id="lbxStatus" role="status"></p>
+          </div>
+        </section>
+
         <section class="group" id="backup" aria-labelledby="sgData">
           <h2 id="sgData" data-sg="Intel">Your data</h2>
-          <div class="card setting" id="syncPanel">
-            <div class="setting-head"><svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg><p class="setting-title">Sync between devices</p></div>
-            <p class="fine" id="syncState">Keep your devices in step through a secret GitHub Gist. It's unlisted: only someone with its exact link can open it.</p>
-            <div id="syncSetup">
-              <label class="field" for="syncToken"><span>GitHub token with Gist access</span></label>
-              <div class="row tight"><input id="syncToken" type="password" autocomplete="off" placeholder="ghp_…"><button class="btn btn-primary" id="syncConnect" type="button">Connect</button></div>
-              <details class="help"><summary><svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg>How to make a token</summary>
-                <p>On GitHub, go to Settings → Developer settings → Personal access tokens → Tokens (classic). Generate a token with only the <b>gist</b> box ticked and use it on each device. It stays in this browser and never goes into backups or the gist.</p>
-              </details>
-            </div>
-            <div class="row" id="syncActions" hidden>
-              <button class="btn" id="syncNow" type="button">Sync now</button>
-              <button class="btn" id="syncDisconnect" type="button">Turn off sync</button>
-            </div>
-          </div>
-          <div class="card setting">
-            <div class="setting-head"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><p class="setting-title">Progress file</p></div>
+          <div class="card setting" id="backupCard">
+            <div class="setting-head"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><p class="setting-title">Back up and restore</p></div>
             <p class="fine status" id="backupStatus"></p>
             <div class="row">
               <button class="btn btn-primary" id="saveFile" type="button">Back up progress</button>
+              <button class="btn" id="saveLibrary" type="button">Back up every list</button>
+              <button class="btn" id="openFile" type="button">Restore from a file</button>
               <button class="btn" id="shareCopy" type="button" hidden>Send a copy…</button>
-              <button class="btn" id="openFile" type="button">Load progress</button>
               <button class="btn" id="reconnect" type="button" hidden>Reconnect</button>
               <input type="file" id="fileInput" accept=".json,application/json" hidden>
             </div>
             <p class="fine" id="fhint"></p>
             <p class="fine" id="storageStatus"></p>
+            <p class="fine">Restore takes either kind of backup: this list’s progress, or every list with your preferences. Credentials and club access are never in a backup.</p>
           </div>
-          <div class="card setting"><div class="setting-head"><p class="setting-title">Your whole library</p></div><p class="fine">Back up every list, its progress and your preferences. Credentials and club access are excluded.</p><div class="row"><button class="btn btn-primary" id="saveLibrary" type="button">Back up everything</button><button class="btn" id="loadLibrary" type="button">Restore full library</button><input type="file" id="libraryBackupInput" accept=".json,application/json" hidden></div></div>
+          <div class="card setting" id="syncPanel">
+            <div class="setting-head"><svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg><p class="setting-title">Sync between devices</p></div>
+            <p class="fine" id="syncState">Keep your devices in step through a secret GitHub Gist. It's unlisted: only someone with its exact link can open it.</p>
+            <details class="help sync-setup" id="syncSetup">
+              <summary><svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg>Set it up with a GitHub token</summary>
+              <label class="field" for="syncToken"><span>GitHub token with Gist access</span></label>
+              <div class="row tight"><input id="syncToken" type="password" autocomplete="off" placeholder="ghp_…"><button class="btn btn-primary" id="syncConnect" type="button">Connect</button></div>
+              <details class="help"><summary><svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg>How to make a token</summary>
+                <p>On GitHub, go to Settings → Developer settings → Personal access tokens → Tokens (classic). Generate a token with only the <b>gist</b> box ticked and use it on each device. It stays in this browser and never goes into backups or the gist.</p>
+              </details>
+            </details>
+            <div class="row" id="syncActions" hidden>
+              <button class="btn" id="syncNow" type="button">Sync now</button>
+              <button class="btn" id="syncDisconnect" type="button">Turn off sync</button>
+            </div>
+          </div>
           <details class="card setting advanced">
-            <summary><svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg>Recovery &amp; reset</summary>
+            <summary><svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg>Progress code and reset</summary>
             <label class="field" for="code"><span>Progress code</span></label>
             <input id="code" readonly spellcheck="false">
             <div class="row">
@@ -629,50 +705,6 @@
             </div>
             <p class="fine">Availability by <a href="https://www.justwatch.com/" target="_blank" rel="noopener">JustWatch</a> via TMDB. It can change, so check the film’s watch page.</p>
           </details>
-        </section>
-
-        <section class="group" id="sgListsBlock" aria-labelledby="sgLists">
-          <h2 id="sgLists" data-sg="Arsenal">Lists &amp; imports</h2>
-          <div class="card setting" id="listsPanel">
-            <label class="field"><span>Movie list</span><select id="listSelect"></select></label>
-            <div class="row">
-              <button class="btn" id="importList" type="button"><svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg>Import a list</button>
-              <button class="btn" id="exportList" type="button"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>Export this list</button>
-              <button class="btn btn-danger" id="deleteList" type="button" hidden>Delete this list</button>
-              <input type="file" id="listFile" accept=".csv,.json,text/csv,application/json" hidden>
-            </div>
-            <details class="help"><summary><svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg>File format</summary>
-              <p>A CSV or JSON file with <code>title</code> and <code>year</code>, and optionally <code>shelf</code> (W, N or H), <code>series</code> and <code>part</code>. Letterboxd list exports work too. Each list keeps its own progress.</p>
-            </details>
-          </div>
-          <div class="card setting" id="lbxPanel">
-            <p class="setting-title">Letterboxd ratings and dates</p>
-            <p class="fine">On Letterboxd, go to Settings → Data → Export your data, then choose the ZIP here (or the <code>ratings.csv</code> and <code>diary.csv</code> inside it).</p>
-            <div class="row">
-              <button class="btn" id="lbxChoose" type="button">Load Letterboxd export</button>
-              <input type="file" id="lbxFile" accept=".zip,.csv,application/zip,text/csv" multiple hidden>
-            </div>
-            <p class="fine" id="lbxStatus" role="status"></p>
-          </div>
-        </section>
-
-        <section class="group" id="languageGroup" aria-labelledby="sgLanguage">
-          <h2 id="sgLanguage">Language</h2>
-          <div class="card setting">
-            <div class="seg" id="languageChoice" role="group" aria-label="Language">
-              <button type="button" data-lang="en" lang="en" aria-pressed="true">English</button>
-              <button type="button" data-lang="sv" lang="sv" aria-pressed="false">Svenska</button>
-            </div>
-            <p class="fine">Kuvert in English with a little Swedish, or all of it in Swedish. Only on this device.</p>
-          </div>
-        </section>
-
-        <section class="group" id="soundGroup" aria-labelledby="sgSound">
-          <h2 id="sgSound">Sound</h2>
-          <div class="card setting">
-            <label class="switch"><input type="checkbox" id="paperSounds"><span>Paper sounds</span></label>
-            <p class="fine">The seal cracking, the envelope tearing open, the year dial ticking, stamps landing and a wooden knock when you tap the horse. Off by default, and only on this device.</p>
-          </div>
         </section>
 
         <section class="group about" id="aboutSection" aria-labelledby="sgAbout" tabindex="-1">
@@ -798,7 +830,7 @@
 </dialog>
 <dialog class="group-dialog" id="groupDialog" aria-labelledby="groupTitle">
   <h2 id="groupTitle"><span lang="sv" data-sg="Squad deployment">Filmkväll med vänner</span></h2>
-  <p class="fine" id="groupIntro">Group night. Add your friends’ progress codes, and tonight’s draw only picks films none of you has seen. Their code is in their Kuvert under Settings, then Recovery &amp; reset. Only their name and which films they’ve watched are kept, on this device.</p>
+  <p class="fine" id="groupIntro">Group night. Add your friends’ progress codes, and tonight’s draw only picks films none of you has seen. Their code is in their Kuvert under Settings, then Progress code and reset. Only their name and which films they’ve watched are kept, on this device.</p>
   <ul class="group-people" id="groupPeople" aria-label="Your group"></ul>
   <form class="group-add" id="groupForm">
     <label class="field" for="groupName"><span>Name</span></label>

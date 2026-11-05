@@ -37,15 +37,21 @@ export class Stats {
       app.toast.show(t(ok ? "Ranking copied. Paste it into the group chat." : "Select the ranking below and copy it."));
     });
     $("shareRanking").addEventListener("click", () => app.share.ranking());
-    $("rankByStars").addEventListener("click", () => {
-      const undo = store.rankByStars();
-      app.toast.show(t("Ranking started from your stars. Reorder it to match what you enjoyed most."), undo);
+    $("placeRated").addEventListener("click", () => {
+      const undo = store.placeRated();
+      app.toast.show(t("Placed by their stars. Drag any of them to fine-tune."), undo);
     });
     $("viewFinale").addEventListener("click", () => {
       app.router.show("tonight");
       app.stage.displayFinale();
     });
     $("ledBoard").addEventListener("click", () => this.showCount());
+    // Milestones show the next few to earn; the rest are a tap away.
+    this.allMilestones = false;
+    $("milestoneMore").addEventListener("click", () => {
+      this.allMilestones = !this.allMilestones;
+      this.milestones();
+    });
   }
 
   enter() {
@@ -121,13 +127,18 @@ export class Stats {
     const pace = paceData(this.app.store.p, this.app.catalog);
     if (!pace) return el.replaceChildren(line(b(plural(d.watched, "film")), t(" watched, {n} to go.", { n: d.remaining })), line(t("Your pace shows up after a week of dated watches.")));
     const span = pace.days < 14 ? plural(pace.days, "day") : plural(Math.round(pace.days / 7), "week");
+    // The pace counts dated watches only: films you'd seen before Kuvert have no date.
+    const before = d.watched - pace.count;
     el.replaceChildren(
-      line(b(plural(d.watched, "film")), t(" in {span}, about {pace}.", { span, pace: paceText(pace.perWeek) })),
-      line(
-        t("At this pace you finish around "),
-        b(pace.finish.toLocaleDateString(LOCALE, { month: "long", year: "numeric" })),
-        this.app.sg(".", ", before his next direct-to-video release."),
-      ),
+      ...[
+        line(b(plural(pace.count, "film")), t(" in {span}, about {pace}.", { span, pace: paceText(pace.perWeek) })),
+        before > 0 ? line(t("Plus {films} you'd seen before.", { films: plural(before, "film") })) : null,
+        line(
+          t("At this pace you finish around "),
+          b(pace.finish.toLocaleDateString(LOCALE, { month: "long", year: "numeric" })),
+          this.app.sg(".", ", before his next direct-to-video release."),
+        ),
+      ].filter(Boolean),
     );
   }
 
@@ -204,12 +215,11 @@ export class Stats {
       unranked = unrankedFilms(p, catalog);
     $("rankSummary").textContent = t("{n} ranked", { n: ranked.length }) + (unranked.length ? t(" · {n} to place", { n: unranked.length }) : "");
     $("copyRanking").hidden = $("shareRanking").hidden = !ranked.length;
-    $("rankByStars").hidden = !!ranked.length || !watchedFilms(p, catalog).some((f) => ratingOf(p, f.id) !== null);
     const list = $("rankList");
     if (!ranked.length)
       list.replaceChildren(
         watchedFilms(p, catalog).length
-          ? emptyState(t("Nothing ranked yet"), t("Add films from the list below, or start from your stars."))
+          ? emptyState(t("Nothing ranked yet"), t("Give a film stars and it takes its place here."))
           : emptyState(t("No ranking yet"), this.app.sg("It starts with your first watched film. The horse is keeping the top spot warm.", "It starts with your first watched film.")),
       );
     else
@@ -247,7 +257,16 @@ export class Stats {
           return li;
         }),
       );
+    // Rated films go in by their stars as you rate them; what's left is films without stars (and any
+    // rated before that, or taken out). One line for them, and the list itself folded away.
+    const rated = unranked.filter((f) => ratingOf(p, f.id) !== null).length,
+      unrated = unranked.length - rated;
     $("unrankedBox").hidden = !unranked.length;
+    $("unrankedSummary").textContent = [
+      rated ? t(rated === 1 ? "1 rated film isn't in your ranking." : "{n} rated films aren't in your ranking.", { n: rated }) : "",
+      unrated ? t(unrated === 1 ? "1 watched film has no stars yet: stars put it in." : "{n} watched films have no stars yet: stars put them in.", { n: unrated }) : "",
+    ].filter(Boolean).join(" ");
+    $("placeRated").hidden = !rated;
     $("unrankedList").replaceChildren(
       ...unranked.map((f) => {
         const r = ratingOf(p, f.id),
@@ -469,11 +488,19 @@ export class Stats {
   }
 
   milestones() {
-    const cards = computeMilestones(this.app.store.p, this.app.catalog);
-    $("milestoneSummary").textContent = t("{n} of {total} earned", { n: cards.filter((c) => c.complete).length, total: cards.length });
+    const cards = computeMilestones(this.app.store.p, this.app.catalog),
+      earned = cards.filter((c) => c.complete).length;
+    $("milestoneSummary").textContent = t("{n} of {total} earned", { n: earned, total: cards.length });
+    // The next few to earn, closest first; or every one of them.
+    const share = (c) => (c.target ? c.n / c.target : 0),
+      next = cards.filter((c) => !c.complete).sort((a, b) => share(b) - share(a)).slice(0, 4);
+    const shown = this.allMilestones || !next.length ? cards : next;
+    $("milestoneMore").hidden = shown.length === cards.length && !this.allMilestones;
+    $("milestoneMore").textContent = this.allMilestones ? t("Show the next few") : t(earned ? "Show all {n}, with the {earned} you've earned" : "Show all {n}", { n: cards.length, earned });
+    $("milestoneMore").setAttribute("aria-expanded", String(this.allMilestones));
     const grid = $("milestoneGrid");
     grid.replaceChildren(
-      ...cards.map((c) =>
+      ...shown.map((c) =>
         h(
           "article",
           { class: "milestone" + (c.complete ? " earned" : "") },

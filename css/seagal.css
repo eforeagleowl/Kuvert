@@ -147,6 +147,18 @@
     --b-fg: var(--text);
     --b-line: color-mix(in oklab, var(--text) 45%, transparent);
   }
+  /* Links on the dark case file (the ticket's quiet links, Change date) in its light phosphor (the ticket's
+     --ink), and its stamp in full ink: the stamping animation holds 0.86 otherwise. */
+  html[data-mode="seagal"] .paper :is(.link, .t-link, .t-link span) {
+    color: var(--ink);
+  }
+  html[data-mode="seagal"] .ticket.watched .stamp-sedd {
+    opacity: 1 !important;
+  }
+  /* The tab bar is solid here: the case file under it would make its labels too faint. */
+  html[data-mode="seagal"] .tabbar {
+    background: var(--deep);
+  }
   html[data-mode="seagal"] .btn-draw {
     border: 0;
     border-radius: 0;

@@ -93,7 +93,7 @@ test("codes work in both directions", async () => {
   // A classic code, pasted into the rebuild.
   const two = await newContext();
   const page = await openPage(two, "/#settings");
-  await page.click("text=Recovery & reset");
+  await page.click("text=Progress code and reset");
   await page.click("#loadCode");
   await page.fill("#codeInput", classicCode);
   await page.click("#codeRestore");

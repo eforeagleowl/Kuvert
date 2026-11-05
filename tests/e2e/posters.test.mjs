@@ -162,10 +162,11 @@ test("with no TMDB key, the list's own posters show on the wall, in the rows and
     if (fresh) {
       await page.waitForFunction(() => document.getElementById("poster").naturalWidth > 0);
       assert.match(await page.getAttribute("#poster", "src"), /\/t\/p\/w342\/list8\.jpg\?cors=1$/);
-      assert.match(await page.textContent("#infoStatus"), /Connect TMDB in Settings for the runtime, cast and where to stream it/);
+      assert.equal(await page.textContent("#infoStatus"), "", "the ticket doesn't ask for a TMDB key");
     } else {
       assert.equal(await page.isVisible("#poster"), false);
-      assert.match(await page.textContent("#infoStatus"), /Connect TMDB in Settings for the poster and details/);
+      assert.equal(await page.textContent("#infoStatus"), "");
+      assert.equal(await page.evaluate(() => document.getElementById("tmdbHint").hidden), false, "Film details says where the rest comes from");
     }
     // The Library's wall and rows.
     await page.click('a[data-route="library"]:visible');

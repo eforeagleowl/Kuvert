@@ -12,6 +12,7 @@ export class GroupNight {
     this.group.addEventListener("change", () => app.renderSoon());
     const dlg = $("groupDialog");
     $("openGroup").addEventListener("click", () => this.open());
+    $("groupChip").addEventListener("click", () => this.open());
     $("groupDone").addEventListener("click", () => dlg.close());
     $("groupForm").addEventListener("submit", (e) => {
       e.preventDefault();
@@ -24,12 +25,17 @@ export class GroupNight {
       if (file) this.add(await file.text());
     });
     $("groupOn").addEventListener("change", (e) => this.group.setOn(e.target.checked));
-    dlg.addEventListener("close", () => $("openGroup").focus({ preventScroll: true }));
+    // Focus goes back to whichever opened it: the button in Adjust, or the chip beside the filters.
+    dlg.addEventListener("close", () => {
+      const back = [this.opener, $("groupChip"), $("adjustPreferences")].find((el) => el?.isConnected && el.getClientRects().length);
+      back?.focus({ preventScroll: true });
+    });
   }
   get on() {
     return this.group.on;
   }
   open() {
+    this.opener = document.activeElement;
     $("groupError").textContent = "";
     $("groupName").placeholder = this.group.nextName();
     this.renderDialog();
@@ -89,6 +95,9 @@ export class GroupNight {
     if ($("groupDialog").open) this.renderDialog();
     $("openGroup").classList.toggle("on", g.on);
     $("openGroup").querySelector("span").textContent = g.on ? this.app.sg("Group night", "Squad") + " · " + (g.people.length + 1) : this.app.sg("Group night", "Squad");
+    // The button lives in Adjust; while group night is on, a chip beside the filters says so.
+    $("groupChip").hidden = !g.on;
+    $("groupChip").textContent = this.app.sg("Group night", "Squad") + " · " + (g.people.length + 1);
     // On tonight's ticket: whether anyone in the group has seen it.
     const f = stage.open && stage.mode === "tonight" ? store.currentFilm : null,
       line = $("groupLine");

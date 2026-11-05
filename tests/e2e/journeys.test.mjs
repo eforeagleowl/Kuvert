@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {newContext,openPage,problems} from './helpers.mjs';
 test('curated envelope, offline facts, reflection, invitation and private-note journal',async()=>{
  const context=await newContext({welcomed:false});const page=await openPage(context,'/');
- await page.click('#openJourneys');assert.equal(await page.locator('#curatedGrid .collection-card').count(),4);
+ await page.click('a[data-route="journeys"]:visible');assert.equal(await page.locator('#curatedGrid .collection-card:not(.gala-card)').count(),4);
+ assert.equal(await page.locator('#curatedGrid .collection-card').first().locator('.collection-films li').count(),7,'the envelope shows its seven films');
  assert.equal(await page.locator('#ceremonySelect').count(),0);assert.equal(await page.locator('#clubTeaser').isVisible(),false,'no club service here, so no club on offer');
  await page.locator('#curatedGrid .collection-card').first().getByRole('button',{name:'Start this envelope',exact:true}).click();
  await page.waitForFunction(()=>window.kuvert?.app?.list.id==='curated-noir');
@@ -12,7 +13,7 @@ test('curated envelope, offline facts, reflection, invitation and private-note j
  assert.match(await page.textContent('#pickFacts'),/108 min/);
  assert.equal(await page.locator('#filmContext').isVisible(),false);await page.click('#moreDetails > summary');
  assert.match(await page.textContent('#filmContext'),/insurance office/);assert.doesNotMatch(await page.textContent('#filmContext'),/null/);
- await page.click('#sendInvite');await page.fill('#inviteMessage','Friday fika 🍿');await page.getByRole('button',{name:'Create invitation',exact:true}).click();
+ await page.click('#shareBtn');await page.getByRole('button',{name:'Sealed invitation',exact:true}).click();await page.fill('#inviteMessage','Friday fika 🍿');await page.getByRole('button',{name:'Create invitation',exact:true}).click();
  const invitation=await page.locator('#inviteOutput textarea').inputValue();assert.equal(await page.locator('#inviteOutput .invite-qr').count(),1);
  const guest=await context.newPage();await guest.goto(invitation);await guest.waitForSelector('#journeyDialog[open]');
  assert.doesNotMatch(await guest.textContent('#journeyDialog'),/Double Indemnity/);await guest.getByRole('button',{name:'Open the invitation',exact:true}).click();assert.match(await guest.textContent('#journeyDialog'),/Double Indemnity/);await guest.close();
@@ -28,8 +29,10 @@ test('curated envelope, offline facts, reflection, invitation and private-note j
 test('Galan: every Best Picture nominee as an extra mode, with watched films carried both ways',async()=>{
  const context=await newContext();const page=await openPage(context,'/');
  await page.evaluate(()=>{const{store}=window.kuvert.app;for(const id of ['1942-casablanca','1976-rocky','1995-heat'])store.markSeen(id,true);});
- await page.evaluate(()=>window.kuvert.app.router.show('settings'));
- await Promise.all([page.waitForEvent('load'),page.click('#galaLink')]);await page.waitForFunction(()=>window.kuvert?.app);
+ // In from its card on Envelopes.
+ await page.evaluate(()=>window.kuvert.app.router.show('journeys'));
+ assert.match(await page.textContent('.gala-card'),/621 films · 0 watched/);
+ await Promise.all([page.waitForEvent('load'),page.locator('.gala-card').getByRole('button',{name:'Enter the gala',exact:true}).click()]);await page.waitForFunction(()=>window.kuvert?.app);
  const gala=await page.evaluate(()=>{const{list,catalog,store}=window.kuvert.app;return{list:list.id,films:catalog.films.length,hm:catalog.films.filter(f=>f.s==='H').length,seen:[...store.p.seen].sort(),palette:document.documentElement.dataset.palette,name:document.querySelector('[data-name]').textContent};});
  assert.deepEqual(gala,{list:'gala',films:621,hm:0,seen:['1942-casablanca','1976-rocky'],palette:'gala',name:'Galan'},'Heat is an honorable mention, so it stays behind');
  assert.match(await page.textContent('#toast'),/2 films came along from Kuvert/);

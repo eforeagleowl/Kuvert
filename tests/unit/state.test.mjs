@@ -213,3 +213,44 @@ test("the list's own posters: used while fresh, only for the built-in list, and 
   assert.equal(custom.poster("1959-ben-hur"), null, "imported lists don't borrow the built-in list's posters");
   assert.equal(custom.hasPosters, false);
 });
+
+test("watched on a given evening, or seen before Kuvert with no date", async () => {
+  const { paceData } = await import("../../js/state/stats.js");
+  const store = makeStore();
+  const [a, b, c] = store.catalog.films;
+  store.markSeen(a.id, true);
+  assert.equal(store.p.dates[a.id], "2026-09-26", "tonight by default");
+  store.markSeen(b.id, true, { date: "2026-09-20" });
+  assert.equal(store.p.dates[b.id], "2026-09-20", "the night it was drawn");
+  store.markSeen(c.id, true, { date: null });
+  assert.ok(store.p.seen.has(c.id) && !(c.id in store.p.dates), "seen before: watched, no date");
+  store.markSeen(store.catalog.films[3].id, true, { date: "not a date" });
+  assert.equal(store.p.dates[store.catalog.films[3].id], "2026-09-26", "a bad date falls back to tonight");
+  // The pace only counts dated watches.
+  for (const f of store.catalog.films.slice(10, 40)) store.markSeen(f.id, true, { date: null });
+  const pace = paceData(store.p, store.catalog, new Date("2026-09-26T20:00:00"));
+  assert.equal(pace.count, 3);
+});
+
+test("a watched film's first stars put it in the ranking, by those stars", () => {
+  const store = makeStore();
+  const [a, b, c, d, e] = store.catalog.films;
+  for (const f of [a, b, c, d, e]) store.markSeen(f.id, true);
+  store.rate(a.id, 3);
+  store.rate(b.id, 5);
+  store.rate(c.id, 4);
+  assert.deepEqual(store.p.rankings, [b.id, c.id, a.id]);
+  // Your own order stays: re-rating a ranked film doesn't move it, and ties go after their equals.
+  store.moveRank(a.id, -2);
+  store.rate(a.id, 2);
+  store.rate(d.id, 4);
+  assert.deepEqual(store.p.rankings, [a.id, b.id, c.id, d.id]);
+  // Not watched: no place yet. Rated before ranking-by-stars (or taken out): placeRated puts them in.
+  store.rate(store.catalog.films[9].id, 5);
+  assert.ok(!store.p.rankings.includes(store.catalog.films[9].id));
+  store.removeFromRanking(c.id);
+  store.p.reviews[e.id] = { note: "", rating: 4.5 };
+  const undo = store.placeRated();
+  assert.deepEqual(store.p.rankings, [a.id, b.id, e.id, d.id, c.id], "4.5 after the 5; the 4 after the other 4");
+  assert.ok(undo);
+});

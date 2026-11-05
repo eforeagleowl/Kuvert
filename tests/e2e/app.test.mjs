@@ -248,6 +248,8 @@ test("group night: add a friend's code, and the draw only picks films neither of
   });
   // Tonight's ticket before group night: a film Anna has seen.
   await page.evaluate((id) => window.kuvert.app.store.pick(id), annaSeen[5]);
+  // Group night lives in Adjust.
+  await page.click("#adjustPreferences");
   await page.click("#openGroup");
   await page.fill("#groupName", "Anna");
   await page.fill("#groupCode", code);
@@ -256,6 +258,7 @@ test("group night: add a friend's code, and the draw only picks films neither of
   assert.match(await page.textContent("#groupSummary"), /films none of the 2 people has seen/);
   await page.click("#groupDone");
   assert.match(await page.textContent("#openGroup"), /Group night · 2/);
+  assert.equal(await page.textContent("#groupChip"), "Group night · 2", "while it's on, a chip beside the filters says so");
   const after = await page.evaluate(() => window.kuvert.app.store.units().length);
   assert.ok(after < before && after > 0);
   assert.match(await page.textContent("#eligibleCount"), /none of you has seen/);

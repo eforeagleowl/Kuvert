@@ -116,7 +116,7 @@ export class FileBackup extends EventTarget {
     this.store.recordBackup(data, "download");
     return "download";
   }
-  /** "Load progress": resolves to { file, handle } or null. */
+  /** "Restore from a file": resolves to { file, handle } or null. */
   async pick() {
     if (typeof window !== "undefined" && window.showOpenFilePicker) {
       try {

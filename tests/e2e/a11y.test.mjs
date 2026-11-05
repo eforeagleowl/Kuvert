@@ -12,6 +12,9 @@ const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-prac
 /** Every finding, as "rule: where (why)". */
 async function audit(page, include = null) {
   if (!(await page.evaluate(() => !!window.axe))) await page.evaluate(AXE);
+  // Let any transition finish first: newer headless Chromium can hold one at its first frame for a while,
+  // and axe would see a button halfway between two states.
+  await page.waitForFunction(() => document.getAnimations().every((a) => a.constructor.name !== "CSSTransition" || a.playState !== "running"), null, { timeout: 3000 }).catch(() => {});
   const { violations } = await page.evaluate(([inc, tags]) => window.axe.run(inc ? { include: [inc] } : document, { runOnly: { type: "tag", values: tags }, resultTypes: ["violations"] }), [include, TAGS]);
   return violations.flatMap((v) =>
     v.nodes
@@ -62,9 +65,22 @@ for (const [lang, mode, width] of [
     await page.click("#drawBtn");
     await page.waitForFunction(() => !window.kuvert.app.stage.busy && window.kuvert.app.stage.open);
     await check("The ticket");
+    if (mode !== "seagal") {
+      await page.click("#shareBtn");
+      await page.waitForSelector("#journeyDialog[open]");
+      await check("the share choice", "#journeyDialog");
+      await page.evaluate(() => document.getElementById("journeyDialog").close());
+    }
+    // Marked watched: the stub, with its extras open too.
+    await page.click("#markBtn");
+    await page.waitForSelector("#watchedPanel:not([hidden])");
+    await page.click("#wpMore");
+    await check("the stub");
     for (const name of mode === "seagal" ? ["station", "library", "stats", "settings"] : ["station", "journeys", "library", "stats", "settings"]) {
       await page.evaluate((n) => window.kuvert.app.router.show(n), name);
       if (name === "library") await page.evaluate(() => (document.getElementById("watchedArchive").open = true));
+      // Ticking off films seen before Kuvert: the bar that says so.
+      if (name === "library") await page.evaluate(() => window.kuvert.app.library.setBackfill(true));
       await page.waitForTimeout(400);
       await check(name);
       // The station's printed ticket too (Kuvert C's, Union Station's or the depot's).
@@ -93,7 +109,7 @@ for (const [lang, mode, width] of [
         await page.evaluate((d) => document.getElementById(d).close(), id);
       }
       await page.evaluate(() => window.kuvert.app.router.show("journeys"));
-      await page.locator("#curatedGrid .collection-card").last().locator("button").last().click();
+      await page.locator("#curatedGrid .collection-card:not(.gala-card)").last().locator("button").last().click();
       await page.waitForSelector("#journeyDialog[open]");
       await check("an envelope's preview", "#journeyDialog");
       await page.evaluate(() => document.getElementById("journeyDialog").close());

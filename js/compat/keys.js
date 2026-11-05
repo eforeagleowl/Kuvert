@@ -20,6 +20,7 @@ export const KEYS = Object.freeze({
   group: (listId) => "kuvert:group:" + listId, // group night: { on, people: [{ name, seen, added }] }
   station: (k) => "kuvert:station:" + k, // the station's "sound" and "voice" switches: "on" | "off"
   lang: "kuvert:lang", // "sv" for Swedish; English otherwise
+  installHint: "kuvert:installHint", // "1" once the Home Screen hint on Tonight is put away
   // sessionStorage
   clearance: "kuvert:clearance", // show the SEAGAL boot screen once
   pendingRestore: "kuvert:pendingRestore", // a backup to preview after switching lists

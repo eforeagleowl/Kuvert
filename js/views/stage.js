@@ -18,6 +18,8 @@ const VERDICTS = [
   ["unsure", "Unsure"],
   ["no", "No"],
 ];
+/** JustWatch's search for a film in your streaming country (Settings → Movie details); JustWatch calls the UK "uk". */
+export const whereToWatch = (f, country = "US") => "https://www.justwatch.com/" + (country === "GB" ? "uk" : country.toLowerCase()) + "/search?q=" + encodeURIComponent(f.orig ?? f.t);
 
 export class Stage {
   constructor(app) {
@@ -70,7 +72,9 @@ export class Stage {
     on("againBtn", () => this.draw());
     on("markBtn", () => this.markWatched());
     on("skipBtn", () => this.app.seagalSkip?.() ?? this.skip());
-    on("shareBtn", () => this.shown && this.app.share.ticket(this.shown));
+    on("shareBtn", () => this.shareMenu());
+    on("seenBefore", () => this.seenBefore());
+    on("wpMore", () => this.showExtras($("wpExtras").hidden));
     on("wpShare", () => this.shown && this.app.share.ticket(this.shown));
     on("wpDone", () => this.finishWatched());
     on("wpClear", () => this.shown && this.rate(this.shown.id, null));
@@ -78,6 +82,7 @@ export class Stage {
     on("wpNoteBtn", () => this.shown && this.app.dialogs.editReview(this.shown.id));
     on("shelfBtn", () => this.shown && this.app.toggleShelf(this.shown.id));
     on("retryInfo", () => this.showInfo(this.shown));
+    on("tmdbHintLink", () => this.app.settings.open("tmdbTok"));
     on("changeMatch", () => this.changeMatch());
     on("editMoods", () => this.shown && this.app.dialogs.editMoods(this.shown.id));
     on("finaleStats", () => this.app.router.show("stats"));
@@ -407,6 +412,7 @@ export class Stage {
     $("stubNo").textContent = "Nr " + catalog.ticketNumber(f);
     $("pickTitle").replaceChildren(...titleParts(f));
     $("pickMeta").textContent = f.y + (catalog.shelfOf(f) ? " · " + t(catalog.shelfOf(f).label) : "");
+    $("watchLink").href = whereToWatch(f, this.store.settings.country);
     const line = catalog.oscarLine(f);
     setText("oscarLine", this.app.seagal ? line.replace(/^Lost to /, "Outgunned by ").replace(/^Beat /, "Took out ") : line);
     this.ticket.classList.toggle("win", catalog.isWinner(f));
@@ -445,8 +451,24 @@ export class Stage {
       paint();
       await this.openStage({ animate, roll: roll ? f.y : null, year: f.y });
     }
-    if (animate) this.ticket.focus({ preventScroll: true });
+    if (animate) {
+      this.ticket.focus({ preventScroll: true });
+      // On a phone the title would sit under the fold, under the envelope: bring the ticket up to it.
+      this.bringIntoView($("pickTitle"), this.ticket);
+    }
     this.app.renderSoon();
+  }
+  /** Scrolls so `el` shows between the app bar and the tab bar; if it has to move, `anchor` goes to the top. */
+  bringIntoView(el, anchor = el) {
+    const bar = document.querySelector(".appbar"),
+      tabs = document.querySelector(".tabbar"),
+      top = bar ? bar.getBoundingClientRect().bottom : 0,
+      bottom = tabs?.getClientRects().length ? tabs.getBoundingClientRect().top : innerHeight,
+      r = el.getBoundingClientRect();
+    if (!r.height || (r.top >= top + 4 && r.bottom <= bottom - 4)) return;
+    const y = Math.max(0, scrollY + anchor.getBoundingClientRect().top - top - 12);
+    if (reduceMotion()) window.scrollTo({ top: y, behavior: "instant" });
+    else return this.glideTo(y);
   }
   drawOrFinale() {
     if (this.busy) return this.skipAhead();
@@ -500,6 +522,50 @@ export class Stage {
     this.app.router.show("tonight", { focus: false });
     // The reveal: the seal breaks and the dial rolls to the year, as for a new draw.
     this.displayCurrent({ animate: true, roll: !this.open });
+  }
+  /** Share: the ticket as an image, or a sealed invitation for a friend (SEAGAL and the finale share the image). */
+  shareMenu() {
+    const f = this.shown;
+    if (!f) return;
+    if (this.app.seagal || this.finale || !this.app.journeys) return this.app.share.ticket(f);
+    this.app.journeys.shareChoice(f);
+  }
+  /**
+   * "Seen it before": a film you saw before Kuvert. It goes in as watched with no date, so it never counts
+   * toward your pace, and the envelope draws another (or a series' next part).
+   */
+  seenBefore() {
+    const f = this.store.currentFilm;
+    if (this.busy || !f || this.store.p.seen.has(f.id) || this.mode !== "tonight" || this.shown?.id !== f.id) return;
+    const res = this.store.markSeen(f.id, true, { date: null });
+    if (res.earned.length) this.app.horse.gallop();
+    if (allWatched(this.store.p, this.app.catalog)) this.displayFinale();
+    else if (res.next) this.displayCurrent({ animate: true, roll: true });
+    else {
+      this.draw();
+      // Nothing left that fits tonight's filters: the envelope closes on the count instead.
+      if (!this.store.currentFilm) this.close({ focus: false });
+    }
+    this.app.toast.show(t("{title} marked as seen before. It won't count toward your pace.", { title: f.t }), res.undo);
+  }
+  /**
+   * The next day's "Watched it": a ticket drawn on an earlier evening and watched that evening. It opens
+   * stamped, dated that evening, on its stars.
+   */
+  async watchedIt() {
+    const f = this.store.currentFilm;
+    if (this.busy || !f || this.store.p.seen.has(f.id)) return;
+    const day = this.store.p.drawnOn || defaultWatchDate();
+    const res = this.store.markSeen(f.id, true, { date: day });
+    if (res.earned.length) this.app.horse.gallop();
+    this.app.router.show("tonight", { focus: false });
+    this.app.announce(t("{title} marked watched. How many stars?", { title: f.t }));
+    await this.showWatched(f, { fresh: true });
+    this.showInk(res.earned);
+    this.app.toast.show(t("{title} marked watched for {day}.", { title: f.t, day: fmtDay(day) }) + (res.next ? t(" Up next: {title}.", { title: res.next.t }) : ""), res.undo);
+    await this.bringIntoView($("wpDone"), $("watchedPanel"));
+    this.stars.el.focus({ preventScroll: true });
+    this.app.toast.keepClear($("wpDone"));
   }
   skip() {
     const r = this.store.skipCurrent();
@@ -559,7 +625,8 @@ export class Stage {
       this.showWatched(f, { fresh: true });
       this.showInk(res.earned);
       this.stars.el.focus({ preventScroll: true });
-      this.app.toast.keepClear(this.stars.el);
+      // The stars and Done stay clear of the "Sedd!" toast.
+      this.app.toast.keepClear($("wpDone"));
     } else {
       this.syncPick();
       this.watchedNotice(f, res);
@@ -578,15 +645,18 @@ export class Stage {
     );
     if (allWatched(this.store.p, this.app.catalog)) this.displayFinale({ focus: false });
   }
-  /** The watched/unwatched tick anywhere in the app. */
-  toggleSeen(id) {
+  /** The watched/unwatched tick anywhere in the app. before: seen before Kuvert, so it goes in undated. */
+  toggleSeen(id, { before = false } = {}) {
     const f = this.app.catalog.byId.get(id);
     const on = !this.store.p.seen.has(id);
-    const res = this.store.markSeen(id, on);
+    const res = this.store.markSeen(id, on, on && before ? { date: null } : {});
     if (res.earned.length) this.app.horse.gallop();
     if (res.wasCurrent || (!on && this.finale)) this.syncPick();
     if (!on && this.shown?.id === id && this.mode === "watched") this.close({ focus: false });
-    if (on) this.watchedNotice(f, res);
+    if (on && before) {
+      this.app.toast.show(t("{title} marked as seen before.", { title: f.t }), res.undo);
+      if (allWatched(this.store.p, this.app.catalog)) this.displayFinale({ focus: false });
+    } else if (on) this.watchedNotice(f, res);
     else this.app.toast.show(t("{title} marked unwatched.", { title: f.t }), res.undo);
   }
   setMode(mode) {
@@ -608,6 +678,7 @@ export class Stage {
     const wasOpen = this.open;
     if (!fresh || !wasOpen) this.showInfo(film);
     this.setMode("watched");
+    this.showExtras(!fresh);
     this.renderWatched();
     if (!wasOpen) await this.openStage({ animate: true, year: film.y });
     else this.nixie.show(film.y);
@@ -620,6 +691,12 @@ export class Stage {
     this.ticket.focus({ preventScroll: true });
     if (!fresh) this.app.announce(t("Your ticket for {title}.", { title: film.t }));
     this.app.renderSoon();
+  }
+  /** The stub's extras (ranking, verdict, note, share): folded away on the night itself. */
+  showExtras(open) {
+    $("wpExtras").hidden = !open;
+    $("wpMore").setAttribute("aria-expanded", String(open));
+    $("wpMore").classList.toggle("open", open);
   }
   finishWatched() {
     const wasFresh = this.fresh;
@@ -669,7 +746,9 @@ export class Stage {
     const rank = p.rankings.filter((x) => p.seen.has(x)),
       at = rank.indexOf(id);
     $("wpRank").hidden = false;
-    $("wpRank").replaceChildren(
+    // Stars put a film in your ranking (js/state/store.js); a film without them waits for its stars.
+    if (at < 0 && r === null) $("wpRank").replaceChildren(t("Stars put it in your ranking."));
+    else $("wpRank").replaceChildren(
       at >= 0 ? t("#{n} of {total} in your ranking · ", { n: at + 1, total: rank.length }) : t("Not in your ranking yet · "),
       h("button", {
         class: "link",
@@ -803,7 +882,7 @@ export class Stage {
     this.infoController?.abort();
     this.infoController = new AbortController();
     const signal = this.infoController.signal;
-    for (const id of ["poster", "backdropBtn", "pickTag", "pickFacts", "pickCredits", "pickMoney", "pickProv", "lbxBtn", "changeMatch", "retryInfo", "matchChoices"]) $(id).hidden = true;
+    for (const id of ["poster", "backdropBtn", "pickTag", "pickFacts", "pickCredits", "pickMoney", "pickProv", "lbxBtn", "changeMatch", "retryInfo", "matchChoices", "tmdbHint"]) $(id).hidden = true;
     $("matchChoices").replaceChildren();
     $("infoStatus").textContent = "";
     this.ticket.classList.remove("loading", "no-details");
@@ -827,11 +906,11 @@ export class Stage {
       setText("pickFacts", [runtime ? runtime + " min" : null, basic?.director ? t("dir. {names}", { names: basic.director }) : null].filter(Boolean).join(" · "));
     }
     if (!details.connected) {
-      // The list's own poster still shows; the rest needs a TMDB key.
+      // The list's own poster still shows; the rest needs a TMDB key, which Film details mentions quietly.
       const poster = this.store.posterPath(f.id);
       if (poster) this.image($("poster"), poster, "w342", t("{title} poster", { title: f.t }));
       else this.ticket.classList.add("no-details");
-      $("infoStatus").textContent = t(poster ? "Connect TMDB in Settings for the runtime, cast and where to stream it." : "Connect TMDB in Settings for the poster and details.");
+      $("tmdbHint").hidden = false;
       return;
     }
     $("infoStatus").textContent = seagal ? ["Consulting ponytail…", "Calibrating aikido…", "Decrypting case file…", "Waking the body double…"][Math.floor(Math.random() * 4)] : t("Loading movie details…");
@@ -960,7 +1039,10 @@ export class Stage {
     draw.hidden = open;
     const saved = this.saved();
     draw.disabled = !saved && p.seen.size < catalog.films.length && (!units.length || (!!cur && !other));
-    draw.textContent = all ? this.sg("Se slutbiljetten", "Final debrief") : this.sg("Öppna kuvertet", "Deploy");
+    $("drawMain").textContent = all ? this.sg("Se slutbiljetten", "Final debrief") : this.sg("Öppna kuvertet", "Deploy");
+    $("drawMain").lang = seagal ? "en" : "sv";
+    $("drawSub").textContent = seagal ? "" : t(all ? "Your final ticket" : saved ? "Your saved ticket is inside" : "Open the envelope");
+    $("drawSub").hidden = !$("drawSub").textContent;
     $("envelopeOpen").disabled = draw.disabled;
     $("envelopeOpen").setAttribute(
       "aria-label",
@@ -975,6 +1057,9 @@ export class Stage {
     skip.disabled = p.skipped.size > 0;
     skip.textContent = cur && p.skipped.has(cur.id) ? this.sg("Set aside", "Cowardice") : p.skipped.size ? this.sg("Watch skipped film first", "Finish your last act of cowardice") : this.sg("Set aside", "Cowardice");
     skip.title = p.skipped.size ? t("Finish your skipped film before skipping another.") : "";
+    const onTicket = !!cur && this.shown?.id === cur.id && this.mode === "tonight" && !this.finale && !p.seen.has(cur.id);
+    $("seenBefore").hidden = !onTicket || cur.kind === "album";
+    $("watchLink").hidden = !onTicket || cur.kind === "album";
     // Moods on the ticket.
     const f = this.shown,
       tags = f ? store.moodsFor(f.id) : [];

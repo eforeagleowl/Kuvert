@@ -198,6 +198,12 @@
     padding: var(--s-5) var(--gutter) var(--s-8);
     outline: none;
   }
+  /* Coming back to Tonight on a phone, the page starts closer to the app bar (see css/tonight.css). */
+  @media (max-width: 700px) {
+    :root[data-returning][data-page="tonight"] main {
+      padding-top: var(--s-3);
+    }
+  }
   .page:not([hidden]) {
     view-transition-name: page;
   }
@@ -274,6 +280,35 @@
   .toolbar .search {
     flex: 1 1 220px;
   }
+  .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2) var(--s-3);
+  }
+  /* "Seen some before Kuvert?": the way in, and the bar while you tick them off. */
+  .backfill-start {
+    margin-top: var(--s-2);
+    font-size: var(--fs-2);
+  }
+  .backfill {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-2) var(--s-4);
+    margin-bottom: var(--s-3);
+    padding: var(--s-3) var(--s-4);
+    border-color: color-mix(in oklab, var(--brass) 45%, var(--line));
+    background: color-mix(in oklab, var(--surface) 94%, transparent);
+  }
+  .backfill p {
+    flex: 1 1 26ch;
+    color: var(--muted);
+    font-size: var(--fs-2);
+  }
+  .backfill b {
+    color: var(--paper);
+  }
   .decades {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
@@ -284,6 +319,32 @@
   @media (max-width: 600px) {
     .toolbar {
       position: static;
+    }
+    /* The search first, then every filter in one row that swipes sideways. */
+    .toolbar .search {
+      order: -1;
+      flex-basis: 100%;
+    }
+    .filter-row {
+      flex-wrap: nowrap;
+      min-width: 0;
+      margin-inline: calc(-1 * var(--gutter));
+      padding: 2px var(--gutter);
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+    }
+    .filter-row .seg {
+      flex: none;
+      flex-wrap: nowrap;
+    }
+    /* The toolbar scrolls away here, so the bar stays in view while you tick. */
+    .backfill {
+      position: sticky;
+      top: calc(70px + env(safe-area-inset-top, 0px));
+      z-index: 21;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
     .decades {
       grid-template-columns: none;
@@ -299,6 +360,10 @@
     }
     .dec {
       scroll-snap-align: start;
+      padding: 6px 4px 5px;
+    }
+    .dec .bar {
+      height: 20px;
     }
   }
   .dec {
@@ -817,6 +882,24 @@
     grid-template-columns: auto auto minmax(0, 1fr) auto auto auto;
   }
   /* Films still to place: a compact grid of cards rather than a second long list. */
+  .unranked-head {
+    gap: var(--s-2) var(--s-4);
+    margin-bottom: var(--s-2);
+  }
+  .unranked-head .fine {
+    flex: 1 1 28ch;
+  }
+  .unranked-more > summary {
+    display: flex;
+    align-items: center;
+    min-height: 32px;
+    color: var(--brass);
+    font-size: var(--fs-2);
+    cursor: pointer;
+  }
+  .unranked-more[open] > summary {
+    margin-bottom: var(--s-2);
+  }
   .ranks.unranked {
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
   }

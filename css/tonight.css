@@ -43,6 +43,28 @@
     color: var(--muted);
     font-size: var(--fs-3);
   }
+  /* Coming back (js/views/evening.js sets data-returning): on a phone the masthead steps back, so the
+     envelope and its button fit the first screen. */
+  @media (max-width: 700px) {
+    :root[data-returning] .marquee {
+      padding-top: 0;
+    }
+    :root[data-returning] .marquee-title {
+      --marquee-size: 2.6rem;
+    }
+    :root[data-returning] .hast {
+      width: 48px;
+    }
+    :root[data-returning] .marquee-sub {
+      display: none;
+    }
+    :root[data-returning] .nixie {
+      margin-bottom: var(--s-4);
+    }
+    :root[data-returning] .draw-bar {
+      margin-top: 0;
+    }
+  }
 
   /* ---------------------------------------------------------------- the dala horse
      Carved in bare wood, painted as you watch (see js/ui/horse.js). */
@@ -1170,6 +1192,18 @@
     border-color: var(--paper-line);
     color: var(--ink);
   }
+  .wp-extras {
+    display: grid;
+    gap: 10px;
+  }
+  #wpMore .icon {
+    width: 16px;
+    height: 16px;
+    transition: rotate var(--t-1);
+  }
+  #wpMore.open .icon {
+    rotate: 180deg;
+  }
   .wp-note {
     margin: 0;
     padding: 4px 0 4px 12px;
@@ -1195,6 +1229,22 @@
   }
   .ticket.watched .t-actions {
     display: none;
+  }
+  /* Under the buttons: Seen it before, Where to watch, Letterboxd. */
+  .t-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 18px;
+    width: 100%;
+    margin-top: 2px;
+    font-size: var(--fs-2);
+  }
+  .t-links .t-link {
+    margin-left: 0;
+  }
+  .t-links :is(.link, .t-link) {
+    min-height: 32px;
   }
   .t-details {
     margin-top: 12px;
@@ -1372,6 +1422,14 @@
   .btn-draw.busy {
     pointer-events: none;
   }
+  /* The English under the Swedish (js/views/stage.js; empty in Swedish mode). */
+  .btn-draw small {
+    display: block;
+    margin-top: 4px;
+    color: color-mix(in oklab, var(--ink) 74%, transparent);
+    font: 600 var(--fs-1) / 1 var(--font-ui);
+    letter-spacing: 0.04em;
+  }
   .eligible {
     color: var(--faint);
     font: 500 var(--fs-1) / 1.4 var(--font-mono);
@@ -1399,10 +1457,19 @@
     justify-content: center;
     gap: var(--s-2);
   }
-  #openGroup.on {
+  #openGroup.on,
+  .chip-group {
     border-color: color-mix(in oklab, var(--brass) 55%, var(--line));
     background: var(--brass-wash);
     color: var(--paper);
+  }
+  .pref-group {
+    gap: var(--s-3);
+    padding-top: var(--s-3);
+    border-top: 1px solid var(--line-soft);
+  }
+  .pref-group .fine {
+    flex: 1 1 22ch;
   }
   /* Group night: you and your friends, and the form to add one. */
   .group-dialog {

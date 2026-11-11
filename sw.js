@@ -2,11 +2,13 @@
 //
 // Every file is precached under one version. tools/stamp.mjs writes VERSION and FILES from the
 // files' contents, so any change to the app changes this file, and browsers pick up the update.
-// Pages are fetched fresh when online and stored under their own URL. The file is small on
-// purpose: no libraries, and nothing but the app and its posters is ever cached.
+// The page and its scripts and styles always come from that one version: a release never pairs a
+// new page with old scripts. The new version is fetched in the background and takes over once it
+// is complete; the page then reloads itself or offers to (js/main.js, js/update.js). The file is
+// small on purpose: no libraries, and nothing but the app and its posters is ever cached.
 
 // <stamp> written by tools/stamp.mjs (npm run stamp); do not edit by hand.
-const VERSION = "a7a7bcf9ff04";
+const VERSION = "4d66299c7374";
 const FILES = [
   "./",
   "./manifest.webmanifest",
@@ -71,6 +73,7 @@ const FILES = [
   "./js/ui/sounds.js",
   "./js/ui/stars.js",
   "./js/ui/toast.js",
+  "./js/update.js",
   "./js/vendor/QRCODE-LICENSE.txt",
   "./js/vendor/qrcode.js",
   "./js/views/club.js",
@@ -145,7 +148,7 @@ self.addEventListener("fetch", (e) => {
   if (url.origin === location.origin) {
     if (ELSEWHERE.some((p) => url.pathname.startsWith(p))) return;
     if (req.mode === "navigate") e.respondWith(page(req, url));
-    else e.respondWith(caches.match(req, { ignoreSearch: true }).then((hit) => hit || fetch(req)));
+    else e.respondWith(own(req).then((hit) => hit || fetch(req)));
     return;
   }
   // Posters and stills from TMDB: kept once seen, so the poster wall survives offline.
@@ -153,18 +156,30 @@ self.addEventListener("fetch", (e) => {
   // Everything else (the TMDB API, GitHub sync) always goes to the network.
 });
 
-// Network first; offline, the stored copy of this page (or the app's main page).
+// This version's copy of a file, whatever its query string.
+const own = (req) =>
+  caches
+    .open(CACHE)
+    .then((c) => c.match(req, { ignoreSearch: true }))
+    .catch(() => undefined);
+const SHELL = new URL("./", self.registration.scope).href;
+
+// The app's page comes from this version's cache, like its scripts. Any other page (the site's 404
+// page) is fetched fresh and kept under its own address; offline, the stored copy or the app's page.
 async function page(req, url) {
   const key = url.origin + url.pathname;
+  const app = key === SHELL || key === SHELL + "index.html";
+  const shell = app ? await own(SHELL) : null;
+  if (shell) return shell;
   try {
     const res = await fetch(req);
-    if (res.ok) {
+    if (res.ok && !app) {
       const copy = res.clone();
       caches.open(CACHE).then((c) => c.put(key, copy));
     }
     return res;
   } catch (err) {
-    const hit = (await caches.match(key)) || (await caches.match(new URL("./", self.registration.scope).href)) || (await caches.match(new URL("./index.html", self.registration.scope).href));
+    const hit = (await own(key)) || (await own(SHELL));
     if (hit) return hit;
     throw err;
   }

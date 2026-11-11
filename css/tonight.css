@@ -65,6 +65,28 @@
       margin-top: 0;
     }
   }
+  /* The same on a laptop: wide, but too short for the full masthead. The name, the year dial, the
+     envelope and its button share the first screen, and the envelope gives up the height that's missing. */
+  @media (min-width: 701px) and (max-height: 899px) {
+    :root[data-returning] .marquee {
+      padding-top: 0;
+    }
+    :root[data-returning] .marquee-title {
+      --marquee-size: 4.2rem;
+    }
+    :root[data-returning] .hast {
+      width: 64px;
+    }
+    :root[data-returning] .marquee-sub {
+      display: none;
+    }
+    :root[data-returning] .nixie {
+      margin-bottom: var(--s-4);
+    }
+    :root[data-returning] .stage[data-state="closed"] .envelope {
+      --w: min(560px, 100vw - 32px, max(320px, (100vh - 432px) * 1.62));
+    }
+  }
 
   /* ---------------------------------------------------------------- the dala horse
      Carved in bare wood, painted as you watch (see js/ui/horse.js). */
@@ -1503,9 +1525,24 @@
     background: color-mix(in oklab, var(--surface) 80%, transparent);
   }
   .group-people li.group-me {
-    grid-template-columns: minmax(0, 1fr) auto;
-    padding-right: 12px;
     border-style: dashed;
+  }
+  /* Narrow screens: your own count goes under your name, so the copy button keeps its words. */
+  @media (max-width: 460px) {
+    .group-people li.group-me {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+    .group-people li.group-me .group-count {
+      grid-row: 2;
+      padding: 0 8px 4px;
+    }
+    .group-people li.group-me .btn {
+      grid-row: 1 / span 2;
+      grid-column: 2;
+    }
+  }
+  .group-mine input {
+    font: 500 var(--fs-1) var(--font-mono);
   }
   .group-people .group-name {
     min-width: 0;

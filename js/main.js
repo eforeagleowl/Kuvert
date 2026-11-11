@@ -375,16 +375,28 @@ if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
         return url;
       },
     });
-    // Check for a new version every time Kuvert opens, not only when the browser gets round to it.
-    navigator.serviceWorker
-      .register(policy ? policy.createScriptURL("sw.js") : "sw.js")
-      .then((reg) => reg.update())
-      .catch(() => {});
-    // A new version took over: say so once, with a reload at hand.
+    // Check for a new version every time Kuvert opens, and when it comes back after an hour away
+    // (an installed app can stay open for days), not only when the browser gets round to it.
+    const registered = navigator.serviceWorker.register(policy ? policy.createScriptURL("sw.js") : "sw.js");
+    let checked = Date.now();
+    const check = () => registered.then((reg) => reg.update()).catch(() => {});
+    check();
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState !== "visible" || Date.now() - checked < 3600e3) return;
+      checked = Date.now();
+      check();
+    });
+    // A new version took over (sw.js fetched it in the background while this page ran on the one
+    // before). Nothing touched yet and nothing to lose: start again on it straight away. Otherwise
+    // say so once, with a reload at hand. js/update.js covers a page whose app never started.
+    let touched = false;
+    for (const type of ["pointerdown", "keydown"]) addEventListener(type, () => (touched = true), { capture: true, once: true, passive: true });
     let hadController = !!navigator.serviceWorker.controller;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       if (!hadController) return (hadController = true);
-      app.toast.show(t("A new version of Kuvert is ready."), null, { action: { label: t("Reload"), run: () => location.reload() }, duration: 12000 });
+      const idle = !touched && !store.dirty && !app.files.pending && !app.stage.open && !app.stage.busy && !document.querySelector("dialog[open]");
+      if (idle) location.reload();
+      else app.toast.show(t("A new version of Kuvert is ready."), null, { action: { label: t("Reload"), run: () => location.reload() }, duration: 12000 });
     });
   } catch {}
 }

@@ -546,7 +546,7 @@ export class Stage {
       // Nothing left that fits tonight's filters: the envelope closes on the count instead.
       if (!this.store.currentFilm) this.close({ focus: false });
     }
-    this.app.toast.show(t("{title} marked as seen before. It won't count toward your pace.", { title: f.t }), res.undo);
+    this.app.toast.show(this.app.seagal ? f.t + ": already neutralized. Off the clock." : t("{title} marked as seen before. It won't count toward your pace.", { title: f.t }), res.undo);
   }
   /**
    * The next day's "Watched it": a ticket drawn on an earlier evening and watched that evening. It opens
@@ -654,7 +654,7 @@ export class Stage {
     if (res.wasCurrent || (!on && this.finale)) this.syncPick();
     if (!on && this.shown?.id === id && this.mode === "watched") this.close({ focus: false });
     if (on && before) {
-      this.app.toast.show(t("{title} marked as seen before.", { title: f.t }), res.undo);
+      this.app.toast.show(this.app.seagal ? f.t + ": already neutralized." : t("{title} marked as seen before.", { title: f.t }), res.undo);
       if (allWatched(this.store.p, this.app.catalog)) this.displayFinale({ focus: false });
     } else if (on) this.watchedNotice(f, res);
     else this.app.toast.show(t("{title} marked unwatched.", { title: f.t }), res.undo);

@@ -29,6 +29,7 @@
 <link rel="preload" href="assets/fonts/geist-400-700-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/cormorant-600-700-latin.woff2" as="font" type="font/woff2" crossorigin>
 <script src="js/boot.js"></script>
+<script src="js/update.js"></script>
 <link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/base.css">
@@ -38,6 +39,69 @@
 <link rel="stylesheet" href="css/station.css">
 <link rel="stylesheet" href="css/seagal.css">
 <link rel="stylesheet" href="css/journeys.css">
+<!-- <preload> written by tools/stamp.mjs (npm run stamp); do not edit by hand. -->
+<link rel="modulepreload" href="js/ui/dom.js">
+<link rel="modulepreload" href="js/ui/toast.js">
+<link rel="modulepreload" href="js/ui/dialogs.js">
+<link rel="modulepreload" href="js/ui/stars.js">
+<link rel="modulepreload" href="js/i18n/index.js">
+<link rel="modulepreload" href="js/i18n/sv.js">
+<link rel="modulepreload" href="js/i18n/journeys.js">
+<link rel="modulepreload" href="js/data/catalogue.js">
+<link rel="modulepreload" href="js/compat/keys.js">
+<link rel="modulepreload" href="js/compat/legacy-ids.js">
+<link rel="modulepreload" href="js/compat/validate.js">
+<link rel="modulepreload" href="js/compat/legacy-code.js">
+<link rel="modulepreload" href="js/compat/codes.js">
+<link rel="modulepreload" href="js/data/lists.js">
+<link rel="modulepreload" href="js/storage/files.js">
+<link rel="modulepreload" href="js/state/dates.js">
+<link rel="modulepreload" href="js/i18n/titles.js">
+<link rel="modulepreload" href="js/i18n/titles-sv.js">
+<link rel="modulepreload" href="js/ui/horse.js">
+<link rel="modulepreload" href="js/state/stats.js">
+<link rel="modulepreload" href="js/state/catalog.js">
+<link rel="modulepreload" href="js/ui/sounds.js">
+<link rel="modulepreload" href="js/state/store.js">
+<link rel="modulepreload" href="js/compat/serialize.js">
+<link rel="modulepreload" href="js/state/draw.js">
+<link rel="modulepreload" href="js/state/merge.js">
+<link rel="modulepreload" href="js/storage/sync.js">
+<link rel="modulepreload" href="js/storage/safekeeping.js">
+<link rel="modulepreload" href="js/tmdb/client.js">
+<link rel="modulepreload" href="js/views/stage.js">
+<link rel="modulepreload" href="js/views/nixie.js">
+<link rel="modulepreload" href="js/views/journeys.js">
+<link rel="modulepreload" href="js/data/curated.js">
+<link rel="modulepreload" href="js/data/basics.js">
+<link rel="modulepreload" href="js/journeys/invitations.js">
+<link rel="modulepreload" href="js/journeys/qr.js">
+<link rel="modulepreload" href="js/vendor/qrcode.js">
+<link rel="modulepreload" href="js/storage/library-backup.js">
+<link rel="modulepreload" href="js/journeys/passport.js">
+<link rel="modulepreload" href="js/fun/gala.js">
+<link rel="modulepreload" href="js/data/ceremonies.js">
+<link rel="modulepreload" href="js/data/posters.js">
+<link rel="modulepreload" href="js/views/evening.js">
+<link rel="modulepreload" href="js/ui/install.js">
+<link rel="modulepreload" href="js/views/library.js">
+<link rel="modulepreload" href="js/views/stats.js">
+<link rel="modulepreload" href="js/views/settings.js">
+<link rel="modulepreload" href="js/import/importers.js">
+<link rel="modulepreload" href="js/views/rails.js">
+<link rel="modulepreload" href="js/views/group.js">
+<link rel="modulepreload" href="js/state/group.js">
+<link rel="modulepreload" href="js/views/station.js">
+<link rel="modulepreload" href="js/station/flaps.js">
+<link rel="modulepreload" href="js/station/timetable.js">
+<link rel="modulepreload" href="js/station/audio.js">
+<link rel="modulepreload" href="js/station/stations.js">
+<link rel="modulepreload" href="js/share/images.js">
+<link rel="modulepreload" href="js/fun/seagal.js">
+<link rel="modulepreload" href="js/views/club.js">
+<link rel="modulepreload" href="js/club/client.js">
+<link rel="modulepreload" href="js/club/service.js">
+<!-- </preload> -->
 <script type="module" src="js/main.js"></script>
 </head>
 <body>
@@ -150,9 +214,9 @@
     <div class="resume card stale" id="resumePick" hidden>
       <p class="kicker" id="resumeLabel"></p>
       <div class="row" id="staleActions">
-        <button class="btn btn-primary btn-sm" id="watchedIt" type="button">Watched it</button>
-        <button class="btn btn-sm" id="keepTicket" type="button">Keep it for tonight</button>
-        <button class="btn btn-sm" id="putBack" type="button">Put it back</button>
+        <button class="btn btn-primary btn-sm" id="watchedIt" type="button" data-sg="Neutralized">Watched it</button>
+        <button class="btn btn-sm" id="keepTicket" type="button" data-sg="Still a go">Keep it for tonight</button>
+        <button class="btn btn-sm" id="putBack" type="button" data-sg="Return the file">Put it back</button>
       </div>
     </div>
     <div class="stage" id="stage" data-state="closed">
@@ -246,7 +310,7 @@
             <p class="wp-line"><span id="wpWhen"></span> <button class="link" id="wpDate" type="button">Change date</button></p>
             <div class="row wp-actions">
               <button class="btn btn-ink" id="wpDone" type="button">Done</button>
-              <button class="btn btn-paper" id="wpMore" type="button" aria-expanded="false" aria-controls="wpExtras"><span id="wpMoreLabel">Note and more</span><svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+              <button class="btn btn-paper" id="wpMore" type="button" aria-expanded="false" aria-controls="wpExtras"><span id="wpMoreLabel" data-sg="Field notes and more">Note and more</span><svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg></button>
             </div>
             <!-- The extras: open when you come back to a stub, folded away on the night itself. -->
             <div class="wp-extras" id="wpExtras" hidden>
@@ -338,7 +402,7 @@
     <div class="draw-bar">
       <button class="btn-draw" id="drawBtn" type="button" aria-controls="ticket" aria-expanded="false"><span id="drawMain" lang="sv">Öppna kuvertet</span><small id="drawSub"></small></button>
       <p class="eligible" id="eligibleCount" role="status"></p>
-      <button class="link put-back" id="putBackTonight" type="button" hidden>Put it back in the draw</button>
+      <button class="link put-back" id="putBackTonight" type="button" data-sg="Return the file to the folder" hidden>Put it back in the draw</button>
       <p class="sleepy-note" id="sleepyNote" hidden><span lang="sv">Dags att sova?</span> Time for bed? One more is fine too.</p>
       <a class="to-station" id="toStation" href="#station" data-route="station"><svg class="icon" aria-hidden="true"><use href="#i-train"/></svg><span lang="sv">Gå till stationen</span> Go to the station</a>
     </div>
@@ -716,6 +780,7 @@
               <dt>Version</dt><dd id="aboutVersion"></dd>
               <dt>Type</dt><dd>Cormorant Garamond, Geist and Geist Mono</dd>
               <dt>Icons</dt><dd><a href="https://lucide.dev/" target="_blank" rel="noopener">Lucide</a> (ISC license)</dd>
+              <dt>Feedback</dt><dd><a id="reportLink" href="https://github.com/eforeagleowl/Kuvert/issues" target="_blank" rel="noopener">Report a problem or suggest something</a> on GitHub</dd>
             </dl>
             <div class="tmdb-credit">
               <a class="tmdb-logo" href="https://www.themoviedb.org/" target="_blank" rel="noopener"><img src="assets/tmdb.svg" alt="TMDB" width="92" height="39"></a>
@@ -830,13 +895,14 @@
 </dialog>
 <dialog class="group-dialog" id="groupDialog" aria-labelledby="groupTitle">
   <h2 id="groupTitle"><span lang="sv" data-sg="Squad deployment">Filmkväll med vänner</span></h2>
-  <p class="fine" id="groupIntro">Group night. Add your friends’ progress codes, and tonight’s draw only picks films none of you has seen. Their code is in their Kuvert under Settings, then Progress code and reset. Only their name and which films they’ve watched are kept, on this device.</p>
+  <p class="fine" id="groupIntro">Group night. Add your friends’ friend codes, and tonight’s draw only picks films none of you has seen. Everyone finds their own code here, in their Kuvert: it is short, and only says which films they’ve watched. Only their name and those films are kept, on this device.</p>
   <ul class="group-people" id="groupPeople" aria-label="Your group"></ul>
+  <label class="field group-mine" id="groupMineRow" hidden><span>Your friend code</span><input id="groupMine" readonly spellcheck="false" autocomplete="off"></label>
   <form class="group-add" id="groupForm">
     <label class="field" for="groupName"><span>Name</span></label>
     <input id="groupName" autocomplete="off" maxlength="40" placeholder="Friend 1">
-    <label class="field" for="groupCode"><span>Their progress code</span></label>
-    <textarea id="groupCode" rows="3" spellcheck="false" autocomplete="off" placeholder="KU7.…"></textarea>
+    <label class="field" for="groupCode"><span>Their friend code</span></label>
+    <textarea id="groupCode" rows="2" spellcheck="false" autocomplete="off" placeholder="KF1.…"></textarea>
     <p class="error" id="groupError" role="alert"></p>
     <div class="row">
       <button class="btn btn-primary" id="groupAdd" type="submit">Add to the group</button>

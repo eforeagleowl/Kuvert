@@ -46,6 +46,7 @@ js/ui/            DOM helpers, toast, dialogs, stars, sounds, the horse
 js/share/         ticket and ranking images, drawn on a canvas
 js/fun/           SEAGAL
 sw.js             offline: precaches every file under a version stamped from their contents
+js/update.js      restarts a page whose scripts couldn't run it, once the new version has taken over
 404.html          the page for addresses that don't exist (GitHub Pages serves it at any depth)
 classic/, next/   old addresses: each forwards to the root and removes its old worker
 tests/classic/    Kuvert Classic itself, kept for the tests only (never published: see _config.yml)
@@ -110,7 +111,16 @@ The site's own address appears in a few places: the link-preview tags and canoni
 `index.html`. The 404 page works it out for itself. Change them if the site moves.
 
 After changing any file of the app, run `npm run stamp` so browsers pick up the new version. CI fails
-when the stamp is stale.
+when the stamp is stale. The stamp also writes the page's preload list (every module `js/main.js`
+starts with), so a first visit fetches them together.
+
+How a release reaches a device: the worker serves the page and its scripts from one version, so a
+visit opens on the version the device has. The new one is fetched in the background and takes over
+when it is complete. A page nobody has touched then restarts on it; a page in use says "A new version
+of Kuvert is ready" with Reload (`js/main.js`). Workers from before this fetched the page fresh and
+took scripts from their cache, which could pair a new page with old scripts: `js/update.js`, a file
+no older cache holds, restarts such a page once the new version is in. `tests/e2e/offline.test.mjs`
+plays all three as real releases.
 
 ## Kuvert 5 additions
 

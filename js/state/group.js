@@ -1,25 +1,28 @@
-// Group night: friends add their progress codes, and the draw only picks films none of you has seen.
-// Only each friend's name and watched films are kept, on this device, per list; their notes, stars and
-// everything else in the code are left out. Nothing here goes into your own progress, backups or sync.
+// Group night: friends add their friend codes, and the draw only picks films none of you has seen.
+// A friend code says which films someone has watched and nothing else (js/compat/codes.js); a progress
+// code or a backup file works too, and then their notes, stars and everything else in it are left out.
+// Only each friend's name and watched films are kept, on this device, per list. Nothing here goes into
+// your own progress, backups or sync.
 import { KEYS } from "../compat/keys.js";
-import { parseCode } from "../compat/codes.js";
+import { encodeFriendCode, isFriendCode, parseCode, parseFriendCode } from "../compat/codes.js";
 import { validateProgress } from "../compat/validate.js";
 import { LOCAL_LEGACY_IDS } from "../compat/legacy-ids.js";
 import { t } from "../i18n/index.js";
 
 const MAX_PEOPLE = 12;
 
-/** A friend's watched films, from a progress code or a backup file's text. */
+/** A friend's watched films, from a friend code, a progress code or a backup file's text. */
 export function readFriend(text, ctx) {
   const v = String(text || "").trim();
-  if (!v) throw Error(t("Paste their progress code first."));
+  if (!v) throw Error(t("Paste their friend code first."));
+  if (isFriendCode(v)) return parseFriendCode(v, [...ctx.ids]);
   let d;
   if (v.startsWith("{")) {
     let obj;
     try {
       obj = JSON.parse(v);
     } catch {
-      throw Error(t("That isn't a Kuvert progress code or backup file."));
+      throw Error(t("That isn't a Kuvert code or backup file."));
     }
     d = validateProgress(obj, ctx, { legacyIds: LOCAL_LEGACY_IDS });
   } else d = parseCode(v, ctx, LOCAL_LEGACY_IDS); // an old code: read as the updated list
@@ -64,6 +67,10 @@ export class Group extends EventTarget {
   }
   exclude() {
     return new Set(this.people.flatMap((x) => x.seen));
+  }
+  /** Your own friend code, for this list: what you send to a friend for their group night. */
+  code() {
+    return encodeFriendCode(this.store.p.seen, [...this.store.catalog.ctx.ids]);
   }
   /** Who in the group has seen a film. */
   seenBy(id) {

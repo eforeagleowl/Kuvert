@@ -137,7 +137,12 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
   (75%), gold details (100%), "Nymålad!" when a coat lands. Tap: knock, hop and a word ("Hej!", "Fika?",
   "En film till?", "Gnägg!", "Popcorn?", "Tjena!"); five taps in two seconds: it runs off and trots back
   ("Tillbaka!"). Four stars or more: hop ("Ja!", "Bravo!"); one or less: droop ("Usch…").
-- Offline service worker, install as an app.
+- Offline service worker, install as an app. New versions arrive in the background: an untouched page
+  restarts on the new one, a page in use offers Reload. About shows the release a device is running, and
+  links to the issue page for reports.
+- Group night (Tonight, Adjust): friends' friend codes (KF1, one bit per film of the list, under 64
+  characters, copied from the "You" row), progress codes and backup files; the draw leaves out every
+  film anyone has seen.
 
 ## SEAGAL mode
 

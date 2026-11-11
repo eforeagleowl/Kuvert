@@ -10,7 +10,7 @@ import { ApiError, fail, object } from "./validation.mjs";
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const BODY_LIMIT = 768 * 1024;
 const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json", ".webmanifest": "application/manifest+json", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".woff2": "font/woff2", ".md": "text/plain; charset=utf-8", ".txt": "text/plain; charset=utf-8" };
-const ROOT_FILES = new Set(["index.html", "404.html", "favicon.svg", "manifest.webmanifest", "manifest.json", "sw.js", "LICENSE", "apple-touch-icon.png", "icon-180.png", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "og-image.png"]);
+const ROOT_FILES = new Set(["index.html", "404.html", "favicon.svg", "manifest.webmanifest", "sw.js", "LICENSE", "apple-touch-icon.png", "icon-180.png", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "og-image.png"]);
 // The same files GitHub Pages publishes (_config.yml): the app, not its notes, tests or tools.
 const DIRECTORIES = new Set(["assets", "css", "js", "classic", "next"]);
 const SECURITY = {

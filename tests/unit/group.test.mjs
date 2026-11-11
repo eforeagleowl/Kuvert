@@ -6,6 +6,7 @@ import { resolveList } from "../../js/data/lists.js";
 import { makeCatalog } from "../../js/state/catalog.js";
 import { Store } from "../../js/state/store.js";
 import { Group, readFriend } from "../../js/state/group.js";
+import { encodeFriendCode } from "../../js/compat/codes.js";
 import { encodeLegacy } from "../../js/compat/legacy-code.js";
 import { LOCAL_LEGACY_IDS } from "../../js/compat/legacy-ids.js";
 import { MemoryStorage } from "./helpers.mjs";
@@ -35,8 +36,38 @@ test("reads a friend's KU7 code, an older code and a backup file", () => {
   assert.equal(readFriend(golden.builtin.full.code, store.catalog.ctx).length, golden.builtin.full.data.seen.length);
   const legacy = encodeLegacy(new Set(LOCAL_LEGACY_IDS.slice(0, 4)), LOCAL_LEGACY_IDS);
   assert.equal(readFriend(legacy, store.catalog.ctx).length, 4, "old base-36 codes read as the updated list");
-  assert.throws(() => readFriend("", store.catalog.ctx), /Paste their progress code/);
+  assert.throws(() => readFriend("", store.catalog.ctx), /Paste their friend code/);
   assert.throws(() => readFriend("KU7.garbage.00000000", store.catalog.ctx));
+});
+
+test("a friend code: which films someone has watched, in a line short enough to send", () => {
+  const { store, group } = setup();
+  const films = store.catalog.films;
+  const ids = [films[0], films[7], films[8], films[64], films.at(-1)].map((f) => f.id);
+  for (const id of ids) store.markSeen(id, true, { date: null });
+  store.rate(ids[0], 4.5);
+  store.saveReview(ids[1], { note: "Nobody else's business.", rating: 2 });
+  const code = group.code();
+  assert.match(code, /^KF1\.[0-9a-z]+\.[A-Za-z0-9_-]+\.[0-9a-f]{4}$/);
+  assert.ok(code.length <= 64, "all " + films.length + " films fit in " + code.length + " characters");
+  assert.ok(!/Nobody|4\.5/.test(atob(code.split(".")[2].replaceAll("-", "+").replaceAll("_", "/"))), "no notes, no stars");
+  assert.deepEqual(readFriend(code, store.catalog.ctx).sort(), [...ids].sort());
+  assert.deepEqual(readFriend("  " + code + "\n", store.catalog.ctx).length, ids.length, "pasted with spaces around it");
+  // Everything watched, and nothing watched.
+  const all = encodeFriendCode(films.map((f) => f.id), [...store.catalog.ctx.ids]);
+  assert.ok(all.length <= 64);
+  assert.equal(readFriend(all, store.catalog.ctx).length, films.length);
+  assert.deepEqual(readFriend(setup().group.code(), store.catalog.ctx), []);
+  // Cut short, mistyped, or made for another list: said plainly, never read as fewer films.
+  assert.throws(() => readFriend(code.slice(0, -9), store.catalog.ctx), /incomplete or has a typo/);
+  assert.throws(() => readFriend(code.replace(/\.(.)/, (m, c) => "." + (c === "1" ? "2" : "1")), store.catalog.ctx), /incomplete|another list|newer Kuvert/);
+  const other = encodeFriendCode(ids, [...store.catalog.ctx.ids].reverse());
+  assert.throws(() => readFriend(other, store.catalog.ctx), /another list, or another version/);
+  assert.throws(() => readFriend("KF2.abc.def.0000", store.catalog.ctx), /newer Kuvert/);
+  // It goes into a group like any other code.
+  const mine = setup();
+  assert.deepEqual(mine.group.add("Anna", code), { name: "Anna", count: ids.length, refreshed: false });
+  assert.ok(!mine.store.units().some((u) => ids.includes(u.film.id)));
 });
 
 test("the draw leaves out every film anyone in the group has seen, only while it's on", () => {

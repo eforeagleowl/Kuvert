@@ -219,7 +219,10 @@ export class Evening {
       stale = resume && !!p.drawnOn && p.drawnOn < defaultWatchDate();
     $("resumePick").hidden = !stale;
     $("putBackTonight").hidden = !resume || stale;
-    if (stale) $("resumeLabel").textContent = t("A ticket drawn {day} is still sealed · watched it, or still on for tonight?", { day: drawnDayLabel(p.drawnOn) });
+    if (stale) {
+      const day = drawnDayLabel(p.drawnOn);
+      $("resumeLabel").textContent = seagal ? "A mission assigned " + day + " is still open · neutralized, or still a go tonight?" : t("A ticket drawn {day} is still sealed · watched it, or still on for tonight?", { day });
+    }
     $("sleepyNote").hidden = seagal || !isLateNight() || stage.open || allWatched(p, catalog);
   }
 

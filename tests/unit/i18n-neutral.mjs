@@ -23,7 +23,7 @@ export const UNTRANSLATED = new Set([
   "ratings.csv",
   "diary.csv",
   "ghp_…",
-  "KU7.…",
+  "KF1.…",
   "Film",
   "OK",
   "English",

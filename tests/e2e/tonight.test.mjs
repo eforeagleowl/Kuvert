@@ -6,6 +6,21 @@ import { devices } from "playwright";
 import { env, newContext, openPage, problems } from "./helpers.mjs";
 
 const opened = (page) => page.waitForFunction(() => !window.kuvert.app.stage.busy && window.kuvert.app.stage.open);
+// Tonight at rest: under reduced motion every change is a transition of a hundredth of a millisecond, and
+// a box measured in the frame of the change still has its old size. No transition running, and the
+// draw button in the same place two frames in a row.
+const settled = (page) =>
+  page.waitForFunction(
+    () => {
+      const idle = document.getAnimations().every((a) => a.constructor.name !== "CSSTransition" || a.playState !== "running");
+      const top = document.getElementById("drawBtn").getBoundingClientRect().top;
+      const same = window.__drawTop === top;
+      window.__drawTop = top;
+      return idle && same;
+    },
+    null,
+    { polling: "raf", timeout: 5000 },
+  );
 
 async function phone({ welcomed = true } = {}) {
   const context = await env.browser.newContext({ ...devices["iPhone 13"], serviceWorkers: "block", reducedMotion: "reduce" });
@@ -21,6 +36,7 @@ async function phone({ welcomed = true } = {}) {
 test("on a phone, a returning visitor sees the envelope and its button, and the draw lands the title on screen", async () => {
   const context = await phone();
   const page = await openPage(context, "/");
+  await settled(page);
   const box = (sel) => page.evaluate((s) => document.querySelector(s).getBoundingClientRect().toJSON(), sel);
   const tabs = await box(".tabbar");
   assert.ok((await box("#drawBtn")).bottom <= tabs.top, "the draw button clears the tab bar");
@@ -32,6 +48,28 @@ test("on a phone, a returning visitor sees the envelope and its button, and the 
   assert.ok(title.top >= (await box(".appbar")).bottom && title.bottom <= tabs.top, "the film's title is on screen");
   assert.deepEqual(await problems(page), []);
   await context.close();
+});
+
+test("on a laptop, a returning visitor sees the envelope and its button without scrolling", async () => {
+  // What's left of common laptop screens under the browser's own bars.
+  for (const viewport of [{ width: 1366, height: 657 }, { width: 1280, height: 720 }, { width: 1440, height: 789 }]) {
+    const context = await newContext({ viewport });
+    const page = await openPage(context, "/");
+    await settled(page);
+    const size = viewport.width + "x" + viewport.height;
+    const box = (sel) => page.evaluate((s) => document.querySelector(s).getBoundingClientRect().toJSON(), sel);
+    const env = await box("#envelope");
+    assert.ok(env.top >= (await box(".appbar")).bottom && env.width >= 320, "the envelope, whole, under the app bar (" + size + ")");
+    assert.ok((await box("#drawBtn")).bottom <= viewport.height, "the draw button (" + size + ")");
+    assert.ok((await box("#eligibleCount")).bottom <= viewport.height, "and the count under it (" + size + ")");
+    assert.equal(await page.evaluate(() => scrollY), 0);
+    await page.click("#drawBtn");
+    await opened(page);
+    const title = await box("#pickTitle");
+    assert.ok(title.top >= (await box(".appbar")).bottom && title.bottom <= viewport.height, "the film's title is on screen (" + size + ")");
+    assert.deepEqual(await problems(page), []);
+    await context.close();
+  }
 });
 
 test("the next day: Watched it dates the film the night it was drawn, and opens on its stars", async () => {

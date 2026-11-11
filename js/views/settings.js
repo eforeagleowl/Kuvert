@@ -22,7 +22,6 @@ const regionName = (code) => {
 };
 
 export const APP_VERSION = "5.0";
-export const BUILT = "2026-10-16";
 
 export class Settings {
   constructor(app) {
@@ -250,7 +249,16 @@ export class Settings {
       },
       "change",
     );
-    $("aboutVersion").textContent = APP_VERSION + t(" · built ") + new Date(BUILT + "T12:00:00").toLocaleDateString(LOCALE, { day: "numeric", month: "short", year: "numeric" });
+    // With the release this device is running, for anyone reporting a problem: the worker names its
+    // cache after it (sw.js). The first visit has no cache yet, and shows the version alone.
+    $("aboutVersion").textContent = APP_VERSION;
+    globalThis.caches
+      ?.keys()
+      .then((keys) => {
+        const release = keys.find((k) => /^kvapp-[0-9a-f]{12}$/.test(k));
+        if (release) $("aboutVersion").textContent = APP_VERSION + t(" · release ") + release.slice(6, 14);
+      })
+      .catch(() => {});
     on("aboutLink", () => this.open("aboutSection"));
     this.renderLists();
     this.renderTmdb();

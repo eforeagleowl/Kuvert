@@ -549,7 +549,10 @@ export class Store extends EventTarget {
       if (verdict === "no" && snub) this.p.snubs[id] = snub;
       else if (verdict !== "no") delete this.p.snubs[id];
     }
-    this.touch(id);
+    // Stars given here count like stars given on the stub: they place the film in your ranking.
+    const place = !!rating && this.p.seen.has(id) && !this.p.rankings.includes(id);
+    if (place) this.p.rankings = insertByStars(this.p, this.p.rankings.filter((x) => this.p.seen.has(x)), id);
+    this.touch(id, place && "$ranking");
     this.save("progress");
     return undo;
   }

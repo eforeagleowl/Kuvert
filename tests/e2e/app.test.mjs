@@ -234,6 +234,52 @@ test("Tonight reminds you to keep a copy, and one tap makes it", async () => {
   await context.close();
 });
 
+test("group night: your own friend code is one tap away, short, and goes into a friend's group", async () => {
+  const context = await newContext();
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  const page = await openPage(context, "/");
+  const mine = await page.evaluate(() => {
+    const { store, catalog } = window.kuvert.app;
+    const ids = catalog.films.slice(3, 40).map((f) => f.id);
+    for (const id of ids) store.markSeen(id, true, { date: null });
+    return ids;
+  });
+  await page.click("#adjustPreferences");
+  await page.click("#openGroup");
+  assert.equal(await page.isHidden("#groupMineRow"), true);
+  await page.getByRole("button", { name: "Copy my friend code" }).click();
+  await page.waitForFunction(() => document.getElementById("toastText").textContent === "Friend code copied. Send it to your friends.");
+  const code = await page.evaluate(() => navigator.clipboard.readText());
+  assert.match(code, /^KF1\.[0-9a-z]+\.[A-Za-z0-9_-]+\.[0-9a-f]{4}$/);
+  assert.ok(code.length <= 64, code.length + " characters");
+  // Where copying isn't allowed, the code is shown, selected, to copy by hand.
+  await page.evaluate(() => (navigator.clipboard.writeText = () => Promise.reject(new Error("no"))));
+  await page.getByRole("button", { name: "Copy my friend code" }).click();
+  await page.waitForSelector("#groupMineRow:not([hidden])");
+  assert.equal(await page.inputValue("#groupMine"), code);
+  assert.equal(await page.evaluate(() => document.activeElement.id), "groupMine", "selected, ready to copy");
+  await page.click("#groupDone");
+  await context.close();
+
+  // On a friend's device: pasted in, it says which films you've seen, and nothing else arrives.
+  const theirs = await newContext();
+  const friend = await openPage(theirs, "/");
+  await friend.click("#adjustPreferences");
+  await friend.click("#openGroup");
+  await friend.fill("#groupName", "Enzo");
+  await friend.fill("#groupCode", code);
+  await friend.click("#groupAdd");
+  await friend.waitForSelector(".group-people li:nth-child(2)");
+  assert.match(await friend.textContent(".group-people li:nth-child(2) .group-count"), /^37 films watched$/);
+  assert.deepEqual(await friend.evaluate(() => JSON.parse(localStorage.getItem("kuvert:group:builtin")).people[0].seen.sort()), [...mine].sort());
+  // A code cut short in a message is refused, not read as fewer films.
+  await friend.fill("#groupCode", code.slice(0, -6));
+  await friend.click("#groupAdd");
+  assert.equal(await friend.textContent("#groupError"), "This code is incomplete or has a typo.");
+  assert.deepEqual(await problems(friend), []);
+  await theirs.close();
+});
+
 test("group night: add a friend's code, and the draw only picks films neither of you has seen", async () => {
   const context = await newContext();
   const page = await openPage(context, "/");

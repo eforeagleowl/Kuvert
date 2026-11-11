@@ -254,3 +254,20 @@ test("a watched film's first stars put it in the ranking, by those stars", () =>
   assert.deepEqual(store.p.rankings, [a.id, b.id, e.id, d.id, c.id], "4.5 after the 5; the 4 after the other 4");
   assert.ok(undo);
 });
+
+test("stars given in the note dialog place the film in the ranking too", () => {
+  const store = makeStore();
+  const [a, b, c] = store.catalog.films;
+  for (const f of [a, b, c]) store.markSeen(f.id, true);
+  store.rate(a.id, 3);
+  const undo = store.saveReview(b.id, { note: "The ending.", rating: 4.5 });
+  assert.deepEqual(store.p.rankings, [b.id, a.id]);
+  // A note alone doesn't; nor does a second save move a film you've placed yourself.
+  store.saveReview(c.id, { note: "Hm.", rating: null });
+  store.moveRank(b.id, 1);
+  store.saveReview(b.id, { note: "The ending!", rating: 5 });
+  assert.deepEqual(store.p.rankings, [a.id, b.id]);
+  // Undo takes the stars and the place back together.
+  store.restore(undo);
+  assert.deepEqual(store.p.rankings, [a.id, b.id].filter((id) => id !== b.id));
+});

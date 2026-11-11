@@ -1,6 +1,6 @@
 // Group night on Tonight: the dialog where friends' codes go in, the chip while it's on, and the line
 // on the ticket that says whether anyone in the group has seen tonight's film.
-import { $, h, icon } from "../ui/dom.js";
+import { $, copyText, h, icon } from "../ui/dom.js";
 import { plural } from "../state/stats.js";
 import { Group } from "../state/group.js";
 import { t, listOf } from "../i18n/index.js";
@@ -37,6 +37,7 @@ export class GroupNight {
   open() {
     this.opener = document.activeElement;
     $("groupError").textContent = "";
+    $("groupMineRow").hidden = true;
     $("groupName").placeholder = this.group.nextName();
     this.renderDialog();
     $("groupDialog").showModal();
@@ -56,6 +57,18 @@ export class GroupNight {
       $("groupError").textContent = t(e.message || "That code couldn't be read.");
     }
   }
+  // Your own code, for a friend's group night: copied, or shown to select where copying isn't allowed.
+  async copyMine() {
+    const code = this.group.code();
+    const ok = await copyText(code, null);
+    $("groupMineRow").hidden = ok;
+    if (!ok) {
+      $("groupMine").value = code;
+      $("groupMine").focus();
+      $("groupMine").select();
+    }
+    this.app.toast.show(t(ok ? "Friend code copied. Send it to your friends." : "Select and copy your friend code."));
+  }
   // How many films are left for everyone, with tonight's filters.
   summary() {
     const { store } = this.app;
@@ -68,7 +81,13 @@ export class GroupNight {
   renderDialog() {
     const g = this.group;
     $("groupPeople").replaceChildren(
-      h("li", { class: "group-me" }, h("span", { class: "group-name", text: t("You") }), h("span", { class: "group-count", text: t("{films} watched", { films: plural(this.app.store.p.seen.size, "film") }) })),
+      h(
+        "li",
+        { class: "group-me" },
+        h("span", { class: "group-name", text: t("You") }),
+        h("span", { class: "group-count", text: t("{films} watched", { films: plural(this.app.store.p.seen.size, "film") }) }),
+        h("button", { class: "btn btn-sm", type: "button", dataset: { key: "group-copy" }, on: { click: () => this.copyMine() } }, icon("copy"), t("Copy my friend code")),
+      ),
       ...g.people.map((x, i) =>
         h(
           "li",

@@ -22,7 +22,8 @@ to your home screen, and it works offline after your first visit.
   film in the ranking, and you fine-tune it. The Library holds the whole list and a poster wall, and lets
   you tick off films you'd seen before Kuvert without a date, so they never skew your pace. Stats show
   your pace, streaks and milestones. The dala horse gets painted as you go.
-- **Group night.** Add your friends' codes, and the draw only picks films none of you has seen.
+- **Group night.** Add your friends' friend codes (one short line each, saying only which films they've
+  watched), and the draw only picks films none of you has seen.
 - **Your own lists.** Import any film list, or bring your history in from Letterboxd.
 - **Envelopes.** Small curated collections (seven nights of noir, a Swedish winter, first steps into
   silent cinema, a Hitchcock week), each with its own progress, context cards and a printable keepsake

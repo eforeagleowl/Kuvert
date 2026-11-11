@@ -198,8 +198,9 @@
     padding: var(--s-5) var(--gutter) var(--s-8);
     outline: none;
   }
-  /* Coming back to Tonight on a phone, the page starts closer to the app bar (see css/tonight.css). */
-  @media (max-width: 700px) {
+  /* Coming back to Tonight on a phone or a short laptop screen, the page starts closer to the app bar
+     (see css/tonight.css). */
+  @media (max-width: 700px), (max-height: 899px) {
     :root[data-returning][data-page="tonight"] main {
       padding-top: var(--s-3);
     }

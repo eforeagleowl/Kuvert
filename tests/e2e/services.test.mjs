@@ -4,7 +4,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { newContext, openPage } from "./helpers.mjs";
+import { newContext, openPage, withoutShippedPosters } from "./helpers.mjs";
 import { FILMS } from "../../js/data/catalogue.js";
 
 const golden = JSON.parse(readFileSync(new URL("../fixtures/golden.json", import.meta.url), "utf8"));
@@ -126,6 +126,8 @@ function githubServer() {
 
 async function run(path, server, host, act) {
   const context = await newContext();
+  // Kuvert Classic never had posters of its own: the two are compared as they both look films up.
+  await withoutShippedPosters(context);
   await context.addInitScript(() => localStorage.setItem("kuvert:welcomed", "1"));
   await context.route(host, (r) => server.handle(r));
   await context.route("https://image.tmdb.org/**", (r) => r.abort());

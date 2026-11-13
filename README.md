@@ -57,10 +57,12 @@ can:
 
 Offline film facts include a source-linked runtime, director, suggested moods and a one-line premise (in English and Swedish) for every film in every list Kuvert ships (684 films). Posters, cast and current streaming offers come from [TMDB](https://www.themoviedb.org/). Connect a personal TMDB key in Settings, or let the optional Kuvert service supply them using its operator token. Sources and edition notes are documented in [EDITORIAL.md](docs/EDITORIAL.md).
 
-Kuvert can also carry posters of its own for all of those films, so visitors see them without a key, in
-every list. They're off until a repository secret named `TMDB_TOKEN` holds a TMDB API read access token.
-From then on, the "Refresh posters" workflow (`.github/workflows/posters.yml`) fetches them every month. TMDB's terms
-allow keeping its data for six months, so Kuvert stops using posters older than that.
+Kuvert carries posters of its own for all of those films (`js/data/posters.js`, last fetched on
+13 November 2026), so visitors see them without a key, in every list. TMDB's terms allow keeping its
+data for six months, so Kuvert stops using posters older than that. To keep them fresh, the "Refresh
+posters" workflow (`.github/workflows/posters.yml`) fetches them again every month once a repository
+secret named `TMDB_TOKEN` holds a TMDB API read access token; until then, run
+`TMDB_TOKEN=… node tools/posters.mjs` by hand before the six months are up.
 
 ## Running it yourself
 

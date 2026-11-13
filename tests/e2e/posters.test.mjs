@@ -2,7 +2,7 @@
 // it, against a stand-in TMDB. Nothing leaves the machine.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { newContext, openPage, problems } from "./helpers.mjs";
+import { newContext, openPage, problems, withoutShippedPosters } from "./helpers.mjs";
 
 const CORS = { "access-control-allow-origin": "*", "access-control-allow-headers": "*" };
 // A 2×3 PNG, served for every poster.
@@ -47,6 +47,7 @@ async function standInTmdb(context, { busy = 0 } = {}) {
 test("watched films get their posters in the Library, and a film that needs a match says so", async () => {
   for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 }]) {
     const context = await newContext({ viewport });
+    await withoutShippedPosters(context); // the films have to be looked up
     const images = await standInTmdb(context);
     const page = await openPage(context, "/");
     await page.evaluate(() => {
@@ -104,6 +105,7 @@ test("watched films get their posters in the Library, and a film that needs a ma
 
 test("when TMDB turns lookups away, the poster wall says so, and carries on by itself afterwards", async () => {
   const context = await newContext();
+  await withoutShippedPosters(context); // the films have to be looked up
   await standInTmdb(context, { busy: 6 });
   const page = await openPage(context, "/");
   await page.evaluate(() => {

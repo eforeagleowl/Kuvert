@@ -147,13 +147,16 @@ test("Kuvert is set in Playfair Display, Familjen Grotesk and Courier Prime, fro
       faces: [first("#pickTitle"), first(".marquee-title"), first("body"), first("#drawSub"), first(".t-head"), first("#pickFacts")],
       loaded: ['600 20px "Playfair Display"', 'italic 500 20px "Playfair Display"', '16px "Familjen Grotesk"', '600 16px "Familjen Grotesk"', '12px "Courier Prime"'].filter((f) => !document.fonts.check(f, "Åäö 1917")),
       files: performance.getEntriesByType("resource").filter((r) => r.name.endsWith(".woff2")).map((r) => new URL(r.name).pathname.split("/").pop()),
+      fontOrigins: [...new Set(performance.getEntriesByType("resource").filter((r) => r.name.endsWith(".woff2")).map((r) => new URL(r.name).origin))],
       origins: [...new Set(performance.getEntriesByType("resource").map((r) => new URL(r.name).origin))],
     };
   });
   assert.deepEqual(seen.faces, ["Playfair Display", "Playfair Display", "Familjen Grotesk", "Familjen Grotesk", "Courier Prime", "Courier Prime"]);
   assert.deepEqual(seen.loaded, [], "every face the page asks for is there");
   assert.ok(seen.files.length >= 3 && seen.files.every((f) => /^(playfair|familjen|courier-prime|geist-arrows|noto-symbols)/.test(f)), seen.files.join(", "));
-  assert.deepEqual(seen.origins, [env.url], "and nothing is fetched from anywhere else");
+  assert.deepEqual(seen.fontOrigins, [env.url], "every font file is Kuvert's own");
+  // The only thing Kuvert fetches from elsewhere is a film's poster, from TMDB's image server.
+  assert.deepEqual(seen.origins.filter((o) => o !== "https://image.tmdb.org"), [env.url], "and nothing else is fetched from anywhere else");
   // The envelope's name still fits beside the horse, and a long title still fits the ticket.
   const fits = await page.evaluate(() => {
     const within = (sel) => { const e = document.querySelector(sel), r = e.getBoundingClientRect(), p = e.parentElement.getBoundingClientRect(); return r.left >= p.left - 1 && r.right <= p.right + 1; };

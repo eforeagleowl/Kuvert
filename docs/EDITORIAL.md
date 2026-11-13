@@ -11,7 +11,7 @@ Prepared 13 October 2026; film table and ballot-film facts added 11 November 202
 - Curated film cards: all 33 have a director, a named presentation duration, a spoiler-safe introduction and two discussion questions in both languages. Discussion questions are intended to appear after a film is watched.
 - Academy ballots: all 98 complete official Best Picture fields, containing 621 nominations including each winner. Together they make Galan, the extra mode switched on from "for the completists." in About. The main 275-film catalog remains a selection of nominees and honorable mentions. The 368 films that are only on a ballot have had their facts since 11 November 2026 (below).
 - British Academy Film Awards: every winner of Best Film, 80 films over 79 ceremonies, as a list of its own (`js/data/bafta.js`, below). 63 of them were already Kuvert films; 17 are new.
-- Posters: no artwork was invented or copied into these new files. Existing licensed artwork/provider plumbing remains separate.
+- Posters: no artwork was invented or copied into these files. `js/data/posters.js` holds a TMDB entry and poster path for each of the 684 films, fetched on 13 November 2026 by `tools/posters.mjs`; the images themselves stay on TMDB's image server. Every entry is the one the film table names, and each was checked to be released within a year of Kuvert's year for the film, which is what tells a film from a remake of the same title.
 
 ## Source and edition policy
 

@@ -30,6 +30,14 @@ export async function newContext({ serviceWorkers = "block", viewport = { width:
   return context;
 }
 
+/**
+ * Kuvert as it is with no posters of its own (js/data/posters.js empty). The poster job rewrites that file
+ * every month, so a test about looking films up on TMDB, or about what a film without a poster shows,
+ * starts from here rather than from whatever the file holds today.
+ */
+export const withoutShippedPosters = (context) =>
+  context.route("**/js/data/posters.js", (route) => route.fulfill({ status: 200, contentType: "text/javascript", body: "export const POSTERS_AT = null;\nexport const POSTERS = {};\n" }));
+
 /** Opens a page and collects everything that went wrong on it. */
 export async function openPage(context, path) {
   const page = await context.newPage();

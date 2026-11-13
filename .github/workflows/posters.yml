@@ -1,6 +1,6 @@
-# Keeps the built-in list's posters (js/data/posters.js) fresh, so everyone sees posters without a TMDB
-# key of their own. TMDB's terms allow keeping its data for six months: this refreshes them every month,
-# and Kuvert stops using any that are older than six months.
+# Keeps the posters of every film Kuvert ships (js/data/posters.js) fresh, so everyone sees posters
+# without a TMDB key of their own. TMDB's terms allow keeping its data for six months: this refreshes
+# them every month, and Kuvert stops using any that are older than six months.
 # Needs a repository secret named TMDB_TOKEN: a TMDB "API Read Access Token".
 name: Refresh posters
 

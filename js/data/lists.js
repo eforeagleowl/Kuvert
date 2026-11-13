@@ -25,7 +25,7 @@ export function writeCustomLists(storage, all) {
 }
 
 // Turns loose rows ({title, year, shelf, series, part}) into a checked list definition.
-export function buildListDefinition({ name, subtitle, palette, films, series = {}, shelves = null, id = null }) {
+export function buildListDefinition({ name, subtitle, palette, films, series = {}, shelves = null, id = null, award = null }) {
   if (!Array.isArray(films) || !films.length) throw Error("The list has no films.");
   if (films.length > 2000) throw Error("Lists can hold up to 2,000 films.");
   const shelfWord = (v) => {
@@ -76,12 +76,14 @@ export function buildListDefinition({ name, subtitle, palette, films, series = {
     series: seriesNames,
     films: clean,
     catalogue: "custom:" + listId + ":" + clean.length,
+    // The award the list follows, by its key in js/data/awards.js (Kuvert's own award lists set it).
+    ...(typeof award === "string" && /^[a-z]{1,20}$/.test(award) ? { award } : {}),
   };
 }
 
 /**
  * Which list this page shows. The built-in list uses the original storage key.
- * @returns {{ custom: boolean, id: string, name: string, subtitle: string, palette: string, shelves: object|null,
+ * @returns {{ custom: boolean, id: string, name: string, subtitle: string, palette: string, shelves: object|null, award: string|null,
  *   series: Record<string,string>, catalogue: string, olderCatalogues: string[], retired: string[],
  *   storageKey: string, definition: object|null, films: object[] }}
  */
@@ -99,6 +101,7 @@ export function resolveList(storage) {
     retired: KUVERT.retired,
     storageKey: KUVERT.storageKey,
     definition: null,
+    award: "oscars",
     films: FILMS.map((f) => ({ ...f })),
   };
   let active = null;
@@ -120,6 +123,7 @@ export function resolveList(storage) {
     retired: [],
     storageKey: KEYS.list(def.id),
     definition: def,
+    award: typeof def.award === "string" ? def.award : null,
     films: def.films.map((f) => ({ ...f })),
   };
 }

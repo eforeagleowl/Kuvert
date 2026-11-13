@@ -771,6 +771,7 @@ export class Stage {
     const winner = catalog.isWinner(f);
     $("wpVerdict").hidden = !winner;
     if (winner) {
+      $("wpVerdictLabel").textContent = catalog.prize ? t("Deserved {prize}?", { prize: catalog.prize }) : t("Deserved the win?");
       $("wpVerdictGroup").replaceChildren(
         ...VERDICTS.map(([value, label]) =>
           h("button", {

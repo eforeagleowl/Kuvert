@@ -29,7 +29,8 @@ import { GroupNight } from "./views/group.js";
 import { Station } from "./views/station.js";
 import { Share } from "./share/images.js";
 import { enterSeagal, installSeagal, makeStandDown } from "./fun/seagal.js";
-import { GALA, GALA_LIST_ID, enterGala, leaveGala, installGala, carryWatched } from "./fun/gala.js";
+import { GALA, GALA_LIST_ID, enterGala, leaveGala, installGala } from "./fun/gala.js";
+import { carryWatched } from "./state/shared.js";
 import { PALETTES } from "./data/catalogue.js";
 import { t, translatePage } from "./i18n/index.js";
 import { POSTERS, POSTERS_AT } from "./data/posters.js";
@@ -357,7 +358,7 @@ app.stage.syncPick();
 render();
 if (loadError && !store.writeLocked) app.toast.show(loadError);
 app.safekeeping.check().then(() => app.renderSoon());
-carryWatched(app); // Galan and the regular list share their films (js/fun/gala.js)
+carryWatched(app); // a film watched in one list is watched in every list that has it (js/state/shared.js)
 app.dialogs.resumePendingRestore();
 if (arrivalHash.startsWith("#invite=")) app.journeys.receive(arrivalHash.slice(8));
 if (arrivalHash.startsWith("#club=")) app.club.receive(location.href.replace(location.hash, arrivalHash));

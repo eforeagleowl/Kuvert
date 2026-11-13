@@ -27,15 +27,17 @@ to your home screen, and it works offline after your first visit.
 - **Your own lists.** Import any film list, or bring your history in from Letterboxd.
 - **Envelopes.** Small curated collections (seven nights of noir, a Swedish winter, first steps into
   silent cinema, a Hitchcock week), each with its own progress, context cards and a printable keepsake
-  when it's done. Galan, every Best Picture nominee from all 98 ceremonies, is there too.
+  when it's done. Galan, every Best Picture nominee from all 98 ceremonies, is there too. A film you've
+  watched in one list is watched in every list that has it.
 - **Sealed invitations.** Send a friend tonight's film as a link or QR code; they break the seal to see it.
 - **Cinema passport.** A printable journal of the films you've watched, for all time or one year.
 - **Film club.** Friends agree on a film together and reveal their stars at the same moment. It needs
   the small Kuvert service in `server/` running somewhere. It's ready for Railway
   ([step by step](docs/HOSTING.md#railway-step-by-step)); until it runs, the club stays out of sight on GitHub Pages.
 - **Galan.** For the completists: every film ever nominated for Best Picture, all 98 ceremonies, 621
-  films and no honorable mentions. Switch it on from its card on the Envelopes page (or "for the completists." in About). The regular list
-  of 275 stays as it is, and films watched in one count in the other.
+  films and no honorable mentions, each with its runtime, director and moods, so the filters work there
+  too. Switch it on from its card on the Envelopes page (or "for the completists." in About). The
+  regular list of 275 stays as it is.
 - **På svenska.** Switch the whole app to Swedish under Settings → Language. Films get their Swedish
   titles (*Gudfadern*, *Borta med vinden*), with the original in small type beneath.
 
@@ -48,11 +50,11 @@ can:
 - copy a short progress code, or
 - turn on sync through a private GitHub Gist.
 
-Offline film facts now include source-linked runtimes and suggested moods for every core film. Posters, cast and current streaming offers come from [TMDB](https://www.themoviedb.org/). Connect a personal TMDB key in Settings, or let the optional Kuvert service supply them using its operator token. Sources and edition notes are documented in [EDITORIAL.md](docs/EDITORIAL.md).
+Offline film facts include a source-linked runtime, director and suggested moods for every film in every list Kuvert ships (664 films). Posters, cast and current streaming offers come from [TMDB](https://www.themoviedb.org/). Connect a personal TMDB key in Settings, or let the optional Kuvert service supply them using its operator token. Sources and edition notes are documented in [EDITORIAL.md](docs/EDITORIAL.md).
 
-The built-in list can also carry posters of its own, so visitors see them without a key. They're off
-until a repository secret named `TMDB_TOKEN` holds a TMDB API read access token. From then on, the
-"Refresh posters" workflow (`.github/workflows/posters.yml`) fetches them every month. TMDB's terms
+Kuvert can also carry posters of its own for all of those films, so visitors see them without a key, in
+every list. They're off until a repository secret named `TMDB_TOKEN` holds a TMDB API read access token.
+From then on, the "Refresh posters" workflow (`.github/workflows/posters.yml`) fetches them every month. TMDB's terms
 allow keeping its data for six months, so Kuvert stops using posters older than that.
 
 ## Running it yourself

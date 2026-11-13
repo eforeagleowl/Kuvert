@@ -192,8 +192,8 @@ export function computeMilestones(p, catalog) {
     add(
       "winners",
       t("Winner’s circle"),
-      catalog.shelfOf(winners[0]).label === "Best Picture winner" && winnerGoal === 10
-        ? t("Watch ten Best Picture winners.")
+      catalog.prize && winnerGoal === 10
+        ? t("Watch ten {prize} winners.", { prize: catalog.prize })
         : "Watch " + (winnerGoal === 10 ? "ten" : winnerGoal) + " " + catalog.shelfOf(winners[0]).label.toLowerCase() + "s.",
       winners.filter((f) => p.seen.has(f.id)).length,
       winnerGoal,

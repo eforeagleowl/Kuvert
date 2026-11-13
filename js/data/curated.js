@@ -1,7 +1,7 @@
 // Original Kuvert editorial drafts. Film facts are linked to primary presentation records.
-// Titles and years define permanent IDs, just as buildListDefinition does.
-const slug = (s) => String(s).normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-const film = (t, y) => ({ t, y, id: `${y}-${slug(t)}`, s: "" });
+// An envelope picks its films from the film table (js/data/films.js) by id; its notes are keyed the same way.
+import { listed } from "./films.js";
+const pick = (...ids) => ids.map((id) => listed(id, { s: "" }));
 const source = (label, url, checked = "2026-10-13") => ({ label, url, checked, fields: ["title", "year", "director", "runtime"] });
 const note = (runtime, director, moods, sources, context, discussion, runtimeNote = null) => ({
   runtime, director, moods, sources, context, discussion, ...(runtimeNote ? { runtimeNote } : {}),
@@ -20,7 +20,7 @@ export const CURATED_COLLECTIONS = [
       sv: "Sätt på vattenkokaren och dämpa ljuset. Sju filmer tar oss från privatdetektivens kontor till tidningsredaktionen, med en avstickare längs floden. Se dem i valfri ordning och lägg märke till vem som berättar, vem som har makten och var skuggorna faller.",
     },
     motif: "rain", seal: "NOIR · 7", completion: { en: "The Night Tram · seven journeys through the shadows", sv: "Nattspårvagnen · sju resor genom skuggorna" },
-    films: [film("The Maltese Falcon", 1941), film("Double Indemnity", 1944), film("Detour", 1945), film("The Third Man", 1949), film("In a Lonely Place", 1950), film("The Night of the Hunter", 1955), film("Sweet Smell of Success", 1957)],
+    films: pick("1941-the-maltese-falcon", "1944-double-indemnity", "1945-detour", "1949-the-third-man", "1950-in-a-lonely-place", "1955-the-night-of-the-hunter", "1957-sweet-smell-of-success"),
     editorial: { status: "draft-for-review", theme: "A broad introduction to noir, including its gothic and satirical edges." },
   },
   {
@@ -34,7 +34,7 @@ export const CURATED_COLLECTIONS = [
       sv: "En liten svensk filmsäsong för långa kvällar: tvivel, minnen, familjevärme, en stad som stått still och en oväntad vänskap i snön. Det är en vinterritual, inte sex berättelser som alla utspelar sig på vintern. Börja var du vill, ta en fika och låt filmerna tala med varandra.",
     },
     motif: "snow", seal: "VINTER · 6", completion: { en: "The Winter Lantern · six lights in the long night", sv: "Vinterlyktan · sex ljus i den långa natten" },
-    films: [film("The Seventh Seal", 1957), film("Wild Strawberries", 1957), film("Winter Light", 1963), film("Fanny and Alexander", 1982), film("Songs from the Second Floor", 2000), film("Let the Right One In", 2008)],
+    films: pick("1957-the-seventh-seal", "1957-wild-strawberries", "1963-winter-light", "1982-fanny-and-alexander", "2000-songs-from-the-second-floor", "2008-let-the-right-one-in"),
     editorial: { status: "draft-for-review", theme: "An introductory season, not a representative survey of every Swedish filmmaker." },
   },
   {
@@ -47,7 +47,7 @@ export const CURATED_COLLECTIONS = [
       sv: "Börja med ett skratt och följ sedan bilden till mer främmande platser. Sex tillgängliga milstolpar rör sig genom komedi, romantik, övernaturliga berättelser och en djupt mänsklig rättegång. Stumfilm visas ofta med musik; olika partiturer och visningshastigheter kan förändra rytmen. Välj gärna en restaurerad utgåva.",
     },
     motif: "frames", seal: "STUMFILM · 6", completion: { en: "The First Reel · six discoveries beyond dialogue", sv: "Den första filmrullen · sex upptäckter bortom dialogen" },
-    films: [film("Sherlock Jr.", 1924), film("Safety Last!", 1923), film("The Gold Rush", 1925), film("The Phantom Carriage", 1921), film("Sunrise: A Song of Two Humans", 1927), film("The Passion of Joan of Arc", 1928)],
+    films: pick("1924-sherlock-jr", "1923-safety-last", "1925-the-gold-rush", "1921-the-phantom-carriage", "1927-sunrise-a-song-of-two-humans", "1928-the-passion-of-joan-of-arc"),
     editorial: { status: "draft-for-review", theme: "An entry point, not a complete history of silent cinema." },
   },
   {
@@ -60,7 +60,7 @@ export const CURATED_COLLECTIONS = [
       sv: "Sju filmer från Hitchcocks år i Hollywood, från ett dystert engelskt gods 1940 till en liten bukt i Kalifornien 1963, däribland den enda av hans filmer som vann Oscar för bästa film. Var och en bygger spänning av det vi får se och det som hålls undan: en blick, en nyckel, ett fönster på andra sidan gården. Se dem i valfri ordning, lägg märke till hur ofta kameran gör dig till vittne, och håll utkik efter regissören själv: han smyger in i varenda en.",
     },
     motif: "spiral", seal: "HITCHCOCK · 7", completion: { en: "The MacGuffin · seven nights of suspense", sv: "MacGuffin · sju kvällar av spänning" },
-    films: [film("Rebecca", 1940), film("Notorious", 1946), film("Rear Window", 1954), film("Vertigo", 1958), film("North by Northwest", 1959), film("Psycho", 1960), film("The Birds", 1963)],
+    films: pick("1940-rebecca", "1946-notorious", "1954-rear-window", "1958-vertigo", "1959-north-by-northwest", "1960-psycho", "1963-the-birds"),
     editorial: { status: "draft-for-review", theme: "One director across his Hollywood years, chosen for range rather than as a ranking of his best." },
   },
 ];

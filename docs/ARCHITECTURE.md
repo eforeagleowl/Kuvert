@@ -35,7 +35,8 @@ No build step and no dependencies at runtime: plain ES modules and CSS served as
 index.html        the page: every screen's markup, the icon sprite and a strict CSP
 css/              tokens → base → components → tonight → pages → station → seagal, as @layer
 js/compat/        the save formats, frozen: the same as Kuvert Classic's, byte for byte
-js/data/          the built-in list (edit it in catalogue.js) and imported lists
+js/data/          the film table (films.js: every film once), the lists that pick from it (the built-in
+                  list in catalogue.js, the ballots, the envelopes), awards, and imported lists
 js/state/         one Store (an EventTarget) and pure rules: draw, stats, dates, merge
 js/storage/       backup files (File System Access or download) and GitHub Gist sync
 js/tmdb/          posters, runtimes and streaming from TMDB (optional)
@@ -122,6 +123,27 @@ took scripts from their cache, which could pair a new page with old scripts: `js
 no older cache holds, restarts such a page once the new version is in. `tests/e2e/offline.test.mjs`
 plays all three as real releases.
 
+## Films, lists and awards
+
+`js/data/films.js` is the film table: every film Kuvert ships, once, with its title, year, series,
+Wikidata item, TMDB entry and source-linked facts. Lists don't repeat any of that. The built-in list
+(`catalogue.js`) is rows of id, shelf and ceremony; a ballot (`ceremonies.js`) is one line with its
+films' ids, winner first; an envelope (`curated.js`) picks ids and keeps its own notes. `basics.js`
+turns a table row into the record the ticket and the filters read. `tools/catalogue-check.mjs` checks
+all of them against the table, and `tools/film-facts.mjs` prints the line for a new film.
+
+Because every list names a film by the same id, a film watched in one list is watched in each list
+that has it (`js/state/shared.js`). Every list still keeps its own save, so backups, codes and sync
+stay per list: the film comes along when the other list opens, and until then the Envelopes page
+counts it already. A film un-marked or set aside in a list stays as that list left it.
+
+`js/data/awards.js` says what an award calls its prize, its ceremony and its trophy. A list follows an
+award by naming it; the built-in list and Galan follow the Oscars, and a list that follows none gets
+plain words. The catalog hands the views `award` and `prize`, so no view names an award itself.
+
+Swedish titles (`js/i18n/titles-sv.js`) and posters (`js/data/posters.js`, written by
+`tools/posters.mjs`) are keyed by the same ids, so they too reach every list with the film.
+
 ## Kuvert 5 additions
 
-`js/data/curated.js`, `ceremonies.js` and `basics.js` supply editorial collections, every Best Picture ballot and sourced offline facts (runtimes and mood suggestions for every film, so the time and mood filters work without TMDB). `js/views/journeys.js`, `js/journeys/` and `js/views/club.js` add the Envelopes page, sealed invitation links, QR codes, the cinema passport and film clubs. `js/fun/gala.js` is Galan, an extra mode like SEAGAL: a list made from all 98 ballots (621 films, no honorable mentions) that shares film ids with the regular list, so watched films carry between the two. `js/storage/library-backup.js` defines a separate validated whole-library format without changing legacy version 7. `server/` is an optional Node service (built-ins only) for private clubs and an operator-configured movie-data proxy. It serves the same files GitHub Pages publishes and needs one persistent writer; it can be left out for static hosting. See [HOSTING.md](HOSTING.md).
+`js/data/curated.js`, `ceremonies.js` and `basics.js` supply editorial collections, every Best Picture ballot and sourced offline facts (runtimes and mood suggestions for every film, so the time and mood filters work without TMDB). `js/views/journeys.js`, `js/journeys/` and `js/views/club.js` add the Envelopes page, sealed invitation links, QR codes, the cinema passport and film clubs. `js/fun/gala.js` is Galan, an extra mode like SEAGAL: a list made from all 98 ballots (621 films, no honorable mentions). `js/storage/library-backup.js` defines a separate validated whole-library format without changing legacy version 7. `server/` is an optional Node service (built-ins only) for private clubs and an operator-configured movie-data proxy. It serves the same files GitHub Pages publishes and needs one persistent writer; it can be left out for static hosting. See [HOSTING.md](HOSTING.md).

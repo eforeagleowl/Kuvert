@@ -9,6 +9,7 @@
 // mode). The depot is SEAGAL's, and SEAGAL is English only.
 import { t, swedish } from "../i18n/index.js";
 import * as T from "./timetable.js";
+import { AWARDS } from "../data/awards.js";
 import { britishVoice, swedishVoice, americanVoice } from "./audio.js";
 
 const reader = () => (swedish ? "sv" : "en");
@@ -58,7 +59,9 @@ export const KUVERT_C = {
 };
 
 // ---------------------------------------------------------------- Union Station, Los Angeles (Galan)
-const shelfEn = (f) => (Number.isInteger(f.c) ? { W: `Best Picture winner, ${T.ordEn(f.c)} Academy Awards`, N: `Best Picture nominee, ${T.ordEn(f.c)} Academy Awards` }[f.s] : "") || "";
+// Union Station is Galan's, and Galan follows the Oscars: its boards use the award's own names.
+const { prize: PRIZE, event: EVENT } = AWARDS.oscars;
+const shelfEn = (f) => (Number.isInteger(f.c) ? { W: `${PRIZE} winner, ${T.ordEn(f.c)} ${EVENT}`, N: `${PRIZE} nominee, ${T.ordEn(f.c)} ${EVENT}` }[f.s] : "") || "";
 export const UNION_STATION = {
   id: "union",
   local: "en",
@@ -109,10 +112,10 @@ export const UNION_STATION = {
       tr = T.track(f, catalog),
       c = Number.isInteger(f.c) ? f.c : null;
     if (swedish) {
-      const shelf = c ? { W: `Vinnare av Bästa film vid den ${T.ordSv(c)} galan. `, N: `Nominerad till Bästa film vid den ${T.ordSv(c)} galan. ` }[f.s] || "" : "";
+      const shelf = c ? { W: `Vinnare av ${t(PRIZE)} vid den ${T.ordSv(c)} galan. `, N: `Nominerad till ${t(PRIZE)} vid den ${T.ordSv(c)} galan. ` }[f.s] || "" : "";
       return `Mina damer och herrar, kvällens film: ${f.t}, från ${f.y}. ${shelf}Hollywood Limited klockan ${T.hhmm(row.time).replace(":", ".")} avgår från spår ${tr}. Välkommen ombord, och njut av filmen!`;
     }
-    const shelf = c ? { W: `Winner of Best Picture at the ${T.ordEn(c)} Academy Awards. `, N: `Nominated for Best Picture at the ${T.ordEn(c)} Academy Awards. ` }[f.s] || "" : "";
+    const shelf = c ? { W: `Winner of ${PRIZE} at the ${T.ordEn(c)} ${EVENT}. `, N: `Nominated for ${PRIZE} at the ${T.ordEn(c)} ${EVENT}. ` }[f.s] || "" : "";
     return `Ladies and gentlemen, tonight's feature: ${f.t}, from ${f.y}. ${shelf}The ${T.time12(row.time)} Hollywood Limited is now boarding on track ${tr}. All aboard, and enjoy the picture!`;
   },
   chip: (f, catalog) => (f.tri && f.ord > 1 ? "Next part" : catalog.isWinner(f) ? "Tonight’s winner" : "Tonight’s picture"),

@@ -1,6 +1,6 @@
 // Everything derived from the list itself: lookups, shelves, ticket numbers, search and the Oscar line.
 // Counts on every page come from here, never from a fixed number.
-import { BEST_PICTURE_FIELD } from "../data/catalogue.js";
+import { awardFor } from "../data/awards.js";
 import { listContext } from "../compat/validate.js";
 
 export const byYear = (a, b) => a.y - b.y || (a.ord || 0) - (b.ord || 0) || a.t.localeCompare(b.t);
@@ -46,7 +46,7 @@ export function freshPosters(posters, at, now = new Date()) {
 
 /**
  * @param {ReturnType<import("../data/lists.js").resolveList>} list
- * @param {{ posters?: Record<string, [number, string]> }} [o] the built-in list's posters (js/data/posters.js)
+ * @param {{ posters?: Record<string, [number, string]> }} [o] Kuvert's own posters (js/data/posters.js)
  */
 export function makeCatalog(list, { posters = {} } = {}) {
   // In Swedish mode the catalog's own copies carry the Swedish title, the original in `orig`
@@ -92,11 +92,11 @@ export function makeCatalog(list, { posters = {} } = {}) {
     return false;
   }
 
-  // Oscar night: what each film was up against, from the `c` (ceremony) field.
-  // The built-in list and Galan (every Best Picture ballot, js/fun/gala.js) are the Academy's own fields.
-  const academy = !list.custom || list.id === "gala";
-  const ceremonyName = t(academy ? "Academy Awards" : "ceremony");
-  const fieldSize = (c) => (academy ? BEST_PICTURE_FIELD[c - 1] || null : null);
+  // Award night: what each film was up against, from the `c` (ceremony) field. The list's award
+  // (js/data/awards.js) names the ceremony and knows how many films competed; a list without one has neither.
+  const award = awardFor(list);
+  const ceremonyName = t(award ? award.event : "ceremony");
+  const fieldSize = (c) => award?.field?.(c) ?? null;
   const ceremonyFilms = (c) => films.filter((f) => f.c === c && (f.s === "W" || f.s === "N"));
   const ceremonyWinner = (c) => ceremonyFilms(c).find(isWinner) || null;
   // "Lost to Rocky at the 49th Academy Awards." / "Beat Taxi Driver, All the President's Men and 2 more at …"
@@ -125,16 +125,22 @@ export function makeCatalog(list, { posters = {} } = {}) {
     ctx: listContext(list),
     shelves,
     hasShelves,
+    award,
+    // The prize by name, in the page's language ("Best Picture", "Bästa film"), or null.
+    prize: award ? t(award.prize) : null,
     usedShelves,
     shelfOf,
     isWinner,
     series: localSeries(list.series || {}),
     seriesParts: (key) => films.filter((f) => f.tri === key).sort((a, b) => a.ord - b.ord),
     ticketNumber: (f) => String(ticketOrder.get(f.id)).padStart(width, "0"),
-    // The list's own TMDB match and poster for a film, if it has them (the built-in list only).
-    hasPosters: list.id === "builtin" && Object.keys(posters).length > 0,
-    tmdbId: (id) => (list.id === "builtin" && Object.hasOwn(posters, id) ? posters[id][0] : null),
-    poster: (id) => (list.id === "builtin" && Object.hasOwn(posters, id) ? posters[id][1] : null),
+    // A film's TMDB entry and poster, where Kuvert has them: the monthly poster job writes both
+    // (js/data/posters.js), starting from the entry the film table names and checking it is the film.
+    // They are keyed by film id, like Swedish titles, so every list with the film has them. Your own
+    // match and poster still come first (js/state/store.js, js/tmdb/client.js).
+    hasPosters: films.some((f) => Object.hasOwn(posters, f.id)),
+    tmdbId: (id) => (Object.hasOwn(posters, id) ? posters[id][0] : null),
+    poster: (id) => (Object.hasOwn(posters, id) ? posters[id][1] : null),
     matchesSearch,
     oscarLine,
     ceremonyFilms,

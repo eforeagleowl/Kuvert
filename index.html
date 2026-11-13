@@ -48,6 +48,7 @@
 <link rel="modulepreload" href="js/i18n/sv.js">
 <link rel="modulepreload" href="js/i18n/journeys.js">
 <link rel="modulepreload" href="js/data/catalogue.js">
+<link rel="modulepreload" href="js/data/films.js">
 <link rel="modulepreload" href="js/compat/keys.js">
 <link rel="modulepreload" href="js/compat/legacy-ids.js">
 <link rel="modulepreload" href="js/compat/validate.js">
@@ -61,6 +62,7 @@
 <link rel="modulepreload" href="js/ui/horse.js">
 <link rel="modulepreload" href="js/state/stats.js">
 <link rel="modulepreload" href="js/state/catalog.js">
+<link rel="modulepreload" href="js/data/awards.js">
 <link rel="modulepreload" href="js/ui/sounds.js">
 <link rel="modulepreload" href="js/state/store.js">
 <link rel="modulepreload" href="js/compat/serialize.js">
@@ -82,6 +84,7 @@
 <link rel="modulepreload" href="js/fun/gala.js">
 <link rel="modulepreload" href="js/data/ceremonies.js">
 <link rel="modulepreload" href="js/data/posters.js">
+<link rel="modulepreload" href="js/state/shared.js">
 <link rel="modulepreload" href="js/views/evening.js">
 <link rel="modulepreload" href="js/ui/install.js">
 <link rel="modulepreload" href="js/views/library.js">
@@ -316,7 +319,7 @@
             <div class="wp-extras" id="wpExtras" hidden>
               <p class="wp-line" id="wpRank" hidden></p>
               <div class="wp-verdict" id="wpVerdict" hidden>
-                <span class="wp-label" id="wpVerdictLabel">Deserved Best Picture?</span>
+                <span class="wp-label" id="wpVerdictLabel">Deserved the win?</span>
                 <span class="verdicts" id="wpVerdictGroup" role="group" aria-labelledby="wpVerdictLabel"></span>
                 <label class="should-won" id="wpShouldWrap" hidden>Should have won <select id="wpShould"></select></label>
               </div>
@@ -880,7 +883,7 @@
   <label class="field" for="reviewNote"><span data-sg="Field notes (optional)">Your thoughts (optional)</span></label>
   <textarea id="reviewNote" maxlength="500" rows="4" placeholder="What stayed with you?"></textarea>
   <fieldset id="reviewVerdict" class="verdict-field" hidden>
-    <legend>Deserved Best Picture?</legend>
+    <legend id="reviewVerdictLegend">Deserved the win?</legend>
     <label><input type="radio" name="reviewVerdict" value="yes"> Yes</label>
     <label><input type="radio" name="reviewVerdict" value="unsure"> Unsure</label>
     <label><input type="radio" name="reviewVerdict" value="no"> No</label>

@@ -230,10 +230,10 @@ export function announcement(row, catalog) {
     time = hhmm(row.time),
     tr = track(f, catalog);
   if (swedish) {
-    const shelf = catalog.hasShelves ? { W: "Vinnare av Bästa film. ", N: "Nominerad till Bästa film. ", H: "Ett hedersomnämnande. " }[f.s] || "" : "";
+    const shelf = !catalog.hasShelves ? "" : f.s === "H" ? "Ett hedersomnämnande. " : catalog.prize ? { W: `Vinnare av ${catalog.prize}. `, N: `Nominerad till ${catalog.prize}. ` }[f.s] || "" : "";
     return `Kvällens film: ${f.t}, från ${f.y}. ${shelf}Tåget klockan ${time.replace(":", ".")} avgår från spår ${tr}. Ta din biljett, och njut av filmen.`;
   }
-  const shelf = catalog.hasShelves ? { W: "A Best Picture winner. ", N: "A Best Picture nominee. ", H: "An honorable mention. " }[f.s] || "" : "";
+  const shelf = !catalog.hasShelves ? "" : f.s === "H" ? "An honorable mention. " : catalog.prize ? { W: `A ${catalog.prize} winner. `, N: `A ${catalog.prize} nominee. ` }[f.s] || "" : "";
   return `Tonight's film: ${f.t}, from ${f.y}. ${shelf}The ${time} service will depart from platform ${tr}. Please take your ticket, and enjoy the film.`;
 }
 

@@ -8,7 +8,8 @@ import { resolveList } from "../../js/data/lists.js";
 import { makeCatalog } from "../../js/state/catalog.js";
 import { Store } from "../../js/state/store.js";
 import { KEYS } from "../../js/compat/keys.js";
-import { GALA_LIST_ID, galaFilms, installGalaList, carryWatched } from "../../js/fun/gala.js";
+import { GALA_LIST_ID, galaFilms, installGalaList } from "../../js/fun/gala.js";
+import { carryWatched } from "../../js/state/shared.js";
 
 const open = (storage) => {
   const list = resolveList(storage);

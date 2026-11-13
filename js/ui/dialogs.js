@@ -103,6 +103,7 @@ export class Dialogs {
     // A rating imported from Letterboxd pre-fills the note until you save your own.
     this.setReviewStars(p.reviews[id]?.rating ?? p.lbx[id]?.rating ?? null);
     $("reviewVerdict").hidden = !(catalog.isWinner(f) && p.seen.has(id));
+    $("reviewVerdictLegend").textContent = catalog.prize ? t("Deserved {prize}?", { prize: catalog.prize }) : t("Deserved the win?");
     for (const r of document.querySelectorAll('input[name="reviewVerdict"]')) r.checked = r.value === (p.verdicts[id] || "");
     this.syncReviewShould();
     $("reviewNote").value = p.reviews[id]?.note || "";

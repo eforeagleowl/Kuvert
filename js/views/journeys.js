@@ -14,6 +14,7 @@ import { GALA, GALA_LIST_ID, galaFilms, enterGala, leaveGala } from "../fun/gala
 import { CEREMONIES } from "../data/ceremonies.js";
 import { POSTERS, POSTERS_AT } from "../data/posters.js";
 import { freshPosters } from "../state/catalog.js";
+import { listRecords, watchedAcross } from "../state/shared.js";
 import { imageUrl } from "../tmdb/client.js";
 
 // The built-in list's posters, for the envelopes' films that are on it too.
@@ -79,9 +80,15 @@ export class Journeys {
     $("journeyContent").replaceChildren(...children);
     if (!this.dialog.open) this.dialog.showModal();
   }
+  // What a list counts as watched: its own films, and those watched in any other list (js/state/shared.js).
   progress(id) {
-    if (this.app.list.id === id) return this.app.store.p.seen;
-    try { return new Set(JSON.parse(this.app.storage?.getItem(KEYS.list(id)) || "{}").seen || []); } catch { return new Set(); }
+    this.records ??= listRecords(this.app.storage, { id: this.app.list.id, p: this.app.store.p });
+    return watchedAcross(this.records, id);
+  }
+  // Whether anything has been watched in the list itself: its button says Continue, not Start.
+  begun(id) {
+    this.records ??= listRecords(this.app.storage, { id: this.app.list.id, p: this.app.store.p });
+    return (this.records.get(id)?.seen.size || 0) > 0;
   }
   start(definition, pickId = null) {
     const storage = this.app.storage;
@@ -99,6 +106,7 @@ export class Journeys {
   }
   render() {
     if (this.app.seagal) return;
+    this.records = null; // read afresh: another list's save may have changed
     keepFocus(() => {
       $("curatedGrid").replaceChildren(...CURATED_COLLECTIONS.map((pack, index) => {
         const seen = this.progress(pack.id), count = pack.films.filter(f => seen.has(f.id)).length;
@@ -110,7 +118,7 @@ export class Journeys {
             h("p",{class:"fine",text:t("{n} films · {seen} watched",{n:pack.films.length,seen:count})}),
             h("progress",{max:pack.films.length,value:count,attrs:{"aria-label":t("Collection progress")}}),
             count === pack.films.length ? h("p",{class:"completion-stamp",text:localized(pack.completion)}) : null,
-            h("div",{class:"row"},button(count ? "Continue this envelope" : "Start this envelope",()=>this.start(pack),"btn btn-primary"),button("Look inside",()=>this.preview(pack))),
+            h("div",{class:"row"},button(this.begun(pack.id) ? "Continue this envelope" : "Start this envelope",()=>this.start(pack),"btn btn-primary"),button("Look inside",()=>this.preview(pack))),
             count === pack.films.length ? button("Print your keepsake",()=>this.passport.show({listId:pack.id})) : null));
       }), this.galaCard());
       $("clubTeaser").hidden = !this.app.club?.available;
@@ -128,8 +136,8 @@ export class Journeys {
   }
   // Galan, every Best Picture nominee: a list of its own beside the envelopes (js/fun/gala.js).
   galaCard() {
-    const here=this.app.list.id===GALA_LIST_ID, total=this.galaTotal??=galaFilms().length;
-    const seen=here?this.app.store.p.seen.size:this.progress(GALA_LIST_ID).size, years=CEREMONIES[0].year+" – "+CEREMONIES.at(-1).year;
+    const here=this.app.list.id===GALA_LIST_ID, ids=this.galaIds??=galaFilms().map(f=>f.id), total=ids.length;
+    const across=this.progress(GALA_LIST_ID), seen=ids.filter(id=>across.has(id)).length, years=CEREMONIES[0].year+" – "+CEREMONIES.at(-1).year;
     const go=(fn)=>()=>this.app.storage && fn(this.app.storage);
     return h("article",{class:"collection-card gala-card",dataset:{theme:"gala"}},
       h("div",{class:"collection-art"},h("span",{class:"collection-number",attrs:{"aria-hidden":"true"},text:String(CEREMONIES.length)}),h("p",{class:"gala-years",attrs:{"aria-hidden":"true"},text:years}),h("span",{class:"collection-seal",attrs:{"aria-hidden":"true"},text:"GALA"})),
@@ -137,7 +145,7 @@ export class Journeys {
         h("p",{text:localized(GALA.subtitle)}),
         h("p",{class:"fine",text:t("{n} films · {seen} watched",{n:total,seen})}),
         h("progress",{max:total,value:seen,attrs:{"aria-label":t("Collection progress")}}),
-        h("div",{class:"row"},here?button("Leave the gala",go(leaveGala),"btn btn-primary"):button(seen?"Back to the gala":"Enter the gala",go(enterGala),"btn btn-primary"))));
+        h("div",{class:"row"},here?button("Leave the gala",go(leaveGala),"btn btn-primary"):button(this.begun(GALA_LIST_ID)?"Back to the gala":"Enter the gala",go(enterGala),"btn btn-primary"))));
   }
   preview(pack) {
     this.open(localized(pack.title || pack.name),h("p",{text:localized(pack.curatorNote || pack.introduction || pack.subtitle)}),

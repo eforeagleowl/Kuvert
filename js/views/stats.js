@@ -364,14 +364,14 @@ export class Stats {
     $("verdictSummary").textContent = !winners.length
       ? ""
       : decided.length
-        ? t("Winners you'd keep: {n} of {total}", { n: keep, total: decided.length }) + (handed ? t(" · you'd hand {oscars} to another film", { oscars: plural(handed, "Oscar") }) : "") + (toJudge ? t(" · {n} to judge", { n: toJudge }) : "")
+        ? t("Winners you'd keep: {n} of {total}", { n: keep, total: decided.length }) + (handed ? t(" · you'd hand {trophies} to another film", { trophies: plural(handed, catalog.award?.trophy || "award") }) : "") + (toJudge ? t(" · {n} to judge", { n: toJudge }) : "")
         : t("{winners} to judge", { winners: plural(toJudge, "winner") });
-    if (!winners.length) return $("verdictList").replaceChildren(emptyState(t("No winners watched yet"), t("Watch a Best Picture winner to judge it here.")));
+    if (!winners.length) return $("verdictList").replaceChildren(emptyState(t("No winners watched yet"), catalog.prize ? t("Watch a {prize} winner to judge it here.", { prize: catalog.prize }) : t("Watch a winner to judge it here.")));
     $("verdictList").replaceChildren(
       ...winners.map((f) => {
         const group = h(
           "span",
-          { class: "verdicts", attrs: { role: "group", "aria-label": t("Did {title} deserve Best Picture?", { title: f.t }) } },
+          { class: "verdicts", attrs: { role: "group", "aria-label": catalog.prize ? t("Did {title} deserve {prize}?", { title: f.t, prize: catalog.prize }) : t("Did {title} deserve the win?", { title: f.t }) } },
           VERDICTS.map(([value, label]) =>
             h("button", {
               class: "verdict-btn v-" + value,

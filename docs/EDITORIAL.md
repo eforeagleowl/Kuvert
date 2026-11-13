@@ -1,13 +1,14 @@
 # Kuvert editorial review
 
-Prepared 13 October 2026. The collection introductions, context cards and questions are original Kuvert drafts for review in English and Swedish. Film titles, directors and durations are source-linked facts. Mood tags are editorial suggestions, not content ratings.
+Prepared 13 October 2026; film table and ballot-film facts added 11 November 2026. The collection introductions, context cards and questions are original Kuvert drafts for review in English and Swedish. Film titles, directors and durations are source-linked facts. Mood tags are editorial suggestions, not content ratings.
 
 ## Coverage
 
+- The film table (`js/data/films.js`): every film Kuvert ships, once. 664 films, each with its Wikidata item and TMDB entry; every one has a source-linked runtime, a director and mood suggestions.
 - Main Kuvert catalog: 275 films; source-linked offline runtime and mood suggestions for all 275.
 - Curated envelopes: 4 finite collections of 7, 6, 6 and 7 films, 26 different films in all.
 - Curated film cards: all 26 have a director, a named presentation duration, a spoiler-safe introduction and two discussion questions in both languages. Discussion questions are intended to appear after a film is watched.
-- Academy ballots: all 98 complete official Best Picture fields, containing 621 nominations including each winner. Together they make Galan, the extra mode switched on from "for the completists." in About. The main 275-film catalog remains a selection of nominees and honorable mentions.
+- Academy ballots: all 98 complete official Best Picture fields, containing 621 nominations including each winner. Together they make Galan, the extra mode switched on from "for the completists." in About. The main 275-film catalog remains a selection of nominees and honorable mentions. The 368 films that are only on a ballot have had their facts since 11 November 2026 (below).
 - Posters: no artwork was invented or copied into these new files. Existing licensed artwork/provider plumbing remains separate.
 
 ## Source and edition policy
@@ -16,7 +17,13 @@ The initial general film facts come from Wikidata structured statements under [C
 
 The remaining 38 core duration records were resolved through named BFI, film-institution, studio or distributor presentations. The curated films use source-linked presentations from Criterion, BFI, Janus Films, Kino Lorber, Festival de Cannes and Film at Lincoln Center; Songs from the Second Floor and the seven Hitchcock films cite their Wikidata durations. Differences between theatrical, extended, narrated, restored, regional and differently projected editions are real: durations must not be presented as universal for every copy. Kuvert leaves the source and edition note accessible and allows user/provider details to take precedence.
 
-The first runtime snapshot contains 275 of 275 core films. Film facts need no personal API key. Extra films appearing only in historical ballots may need further runtime enrichment.
+The first runtime snapshot contains 275 of 275 core films. Film facts need no personal API key.
+
+The second snapshot, read on 11 November 2026, covers the 368 films that appear only on a ballot, under the same rule. Each film was matched to its Wikidata item by title and release year, first among the items Wikidata lists under the award, then by English label, then through the film's English Wikipedia page; every match was checked to be a film released within a year of Kuvert's year, and no two films share an item. For 344 films the non-deprecated duration statements agreed on one duration. For the other 24 they disagreed, usually by a few minutes: those use the running time in the film's English Wikipedia infobox, which most often cites the BBFC or the AFI catalog. Each of those records links the article, says which fields came from it, and carries the note that other editions may differ. Two films had no director statement and take the director from the same infobox. Directors are listed as Wikidata lists them, which can include uncredited ones. Like the first snapshot, these are source-linked community-maintained facts, not checks against a film print.
+
+Every film's TMDB entry in the table is Wikidata's own statement (P4947). The poster job checks that the entry looks like the film before using its poster, and reports any that don't.
+
+To add a film: `node tools/film-facts.mjs "Title" 1999` (or its Wikidata item) prints its line for the table under these rules, and says what a person has to settle. `npm run check:catalogue` then checks every list against the table.
 
 General mood suggestions interpret source genres: comedy/satire suggests Funny; romance suggests Romantic; action/adventure/western/fantasy suggests Adventurous; thriller/crime/horror suggests Tense; horror/noir suggests Dark; epic suggests Epic; drama/biography/documentary or an otherwise unclassified title suggests Reflective. Ambiguous presentation records and curated films have manually selected tags. These are an editable starting point for choosing an evening, not a factual or exhaustive classification.
 

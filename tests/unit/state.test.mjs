@@ -2,7 +2,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { resolveList } from "../../js/data/lists.js";
+import { buildListDefinition, resolveList } from "../../js/data/lists.js";
+import { computeMilestones } from "../../js/state/stats.js";
 import { makeCatalog } from "../../js/state/catalog.js";
 import { Store } from "../../js/state/store.js";
 import { bySync, keepLocal, emptyProgress } from "../../js/state/merge.js";
@@ -120,6 +121,27 @@ test("the Oscar line names who a film beat or lost to", () => {
   assert.match(catalog.oscarLine(catalog.byId.get("1976-rocky")), /^Beat .*Taxi Driver.* at the 49th Academy Awards\.$/);
 });
 
+test("a list's award names the prize, the ceremony and the trophy; a list without one gets plain words", () => {
+  const store = makeStore(),
+    { catalog } = store;
+  assert.equal(catalog.prize, "Best Picture");
+  assert.equal(catalog.award.trophy, "Oscar");
+  assert.equal(catalog.award.field(49), 5);
+  assert.equal(computeMilestones(store.p, catalog).find((m) => m.id === "winners").description, "Watch ten Best Picture winners.");
+  // An imported list with winners and ceremonies of its own follows no award.
+  const rows = [{ title: "Alpha", year: 2001, shelf: "W", ceremony: 3 }, { title: "Beta", year: 2001, shelf: "N", ceremony: 3 }];
+  const own = makeCatalog({ ...resolveList(new MemoryStorage()), ...buildListDefinition({ name: "Mine", films: rows, id: "mine" }), custom: true, award: null });
+  assert.equal(own.award, null);
+  assert.equal(own.prize, null);
+  assert.equal(own.oscarLine(own.byId.get("2001-beta")), "Lost to Alpha at the 3rd ceremony.");
+  assert.equal(own.oscarLine(own.byId.get("2001-alpha")), "Beat Beta at the 3rd ceremony.");
+  // A list that names its award gets that award's words; the definition carries the name, and only a known shape.
+  assert.equal(buildListDefinition({ name: "Ballots", films: rows, id: "b", award: "oscars" }).award, "oscars");
+  assert.equal("award" in buildListDefinition({ name: "Ballots", films: rows, id: "b", award: "<script>" }), false);
+  const followed = makeCatalog({ ...resolveList(new MemoryStorage()), ...buildListDefinition({ name: "Ballots", films: rows, id: "b", award: "oscars" }), custom: true });
+  assert.equal(followed.oscarLine(followed.byId.get("2001-beta")), "Lost to Alpha at the 3rd Academy Awards.");
+});
+
 test("forgiving search finds nicknames, numerals and initials", () => {
   const { catalog } = makeStore();
   const find = (q) => catalog.films.filter((f) => catalog.matchesSearch(f, q)).map((f) => f.id);
@@ -191,7 +213,7 @@ test("sync: tonight's ticket and the ranking follow the newest change", () => {
   assert.deepEqual(out.rankings, ["a", "b"]);
 });
 
-test("the list's own posters: used while fresh, only for the built-in list, and your own match first", async () => {
+test("Kuvert's own posters: used while fresh, in every list that has the film, and your own match first", async () => {
   const { freshPosters } = await import("../../js/state/catalog.js");
   const posters = { "1959-ben-hur": [665, "/benhur.jpg"] };
   const now = new Date("2026-10-01T12:00:00Z");
@@ -209,9 +231,17 @@ test("the list's own posters: used while fresh, only for the built-in list, and 
   assert.equal(store.posterPath("1972-the-godfather"), undefined);
   store.recordDetails("1959-ben-hur", { posterPath: "/mine.jpg" });
   assert.equal(store.posterPath("1959-ben-hur"), "/mine.jpg", "your own lookup wins");
-  const custom = makeCatalog({ id: "mine", custom: true, name: "Mine", films: [{ t: "Ben-Hur", y: 1959, id: "1959-ben-hur" }] }, { posters });
-  assert.equal(custom.poster("1959-ben-hur"), null, "imported lists don't borrow the built-in list's posters");
-  assert.equal(custom.hasPosters, false);
+  // Posters and TMDB entries go by film id, like Swedish titles: any list with the film has them.
+  const custom = makeCatalog({ id: "mine", custom: true, name: "Mine", films: [{ t: "Ben-Hur", y: 1959, id: "1959-ben-hur" }, { t: "My Home Movie", y: 2020, id: "2020-my-home-movie" }] }, { posters });
+  assert.equal(custom.poster("1959-ben-hur"), "/benhur.jpg");
+  assert.equal(custom.hasPosters, true);
+  assert.equal(custom.poster("2020-my-home-movie"), null);
+  assert.equal(custom.tmdbId("2020-my-home-movie"), null, "a film Kuvert doesn't ship has no entry to offer");
+  // Before the poster job has run there is nothing to offer: the film table's TMDB entries are the job's
+  // starting point, and only an entry it has checked reaches the app.
+  const bare = makeCatalog(list);
+  assert.equal(bare.hasPosters, false);
+  assert.equal(bare.tmdbId("1972-the-godfather"), null);
 });
 
 test("watched on a given evening, or seen before Kuvert with no date", async () => {

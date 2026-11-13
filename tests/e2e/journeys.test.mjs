@@ -31,7 +31,9 @@ test('Galan: every Best Picture nominee as an extra mode, with watched films car
  await page.evaluate(()=>{const{store}=window.kuvert.app;for(const id of ['1942-casablanca','1976-rocky','1995-heat'])store.markSeen(id,true);});
  // In from its card on Envelopes.
  await page.evaluate(()=>window.kuvert.app.router.show('journeys'));
- assert.match(await page.textContent('.gala-card'),/621 films · 0 watched/);
+ // Its card already counts what's been watched in the main list (Heat is an honorable mention: not on a ballot).
+ assert.match(await page.textContent('.gala-card'),/621 films · 2 watched/);
+ assert.match(await page.textContent('.gala-card'),/Enter the gala/,'nothing watched in Galan itself yet');
  await Promise.all([page.waitForEvent('load'),page.locator('.gala-card').getByRole('button',{name:'Enter the gala',exact:true}).click()]);await page.waitForFunction(()=>window.kuvert?.app);
  const gala=await page.evaluate(()=>{const{list,catalog,store}=window.kuvert.app;return{list:list.id,films:catalog.films.length,hm:catalog.films.filter(f=>f.s==='H').length,seen:[...store.p.seen].sort(),palette:document.documentElement.dataset.palette,name:document.querySelector('[data-name]').textContent};});
  assert.deepEqual(gala,{list:'gala',films:621,hm:0,seen:['1942-casablanca','1976-rocky'],palette:'gala',name:'Galan'},'Heat is an honorable mention, so it stays behind');
@@ -45,5 +47,37 @@ test('Galan: every Best Picture nominee as an extra mode, with watched films car
  await Promise.all([page.waitForEvent('load'),page.click('#galaLeaveFooter')]);await page.waitForFunction(()=>window.kuvert?.app);
  const back=await page.evaluate(()=>({list:window.kuvert.app.list.id,films:window.kuvert.app.catalog.films.length,wings:window.kuvert.app.store.p.seen.has('1927-wings')}));
  assert.deepEqual(back,{list:'builtin',films:275,wings:true});
+ assert.deepEqual(await problems(page),[]);await context.close();
+});
+test('a film watched in one list is watched in every list that has it, and Galan filters like the main list',async()=>{
+ const context=await newContext();const page=await openPage(context,'/');
+ await page.evaluate(()=>{const{store}=window.kuvert.app;store.markSeen('1940-rebecca',true,{date:'2026-03-01'});store.rate('1940-rebecca',4.5);store.markSeen('1954-rear-window',true,{date:null});});
+ // Hitchcock Week has both: its card counts them before the envelope has ever been opened.
+ await page.evaluate(()=>window.kuvert.app.router.show('journeys'));
+ const card=page.locator('.collection-card',{hasText:'Hitchcock Week'});
+ assert.match(await card.textContent(),/7 films · 2 watched/);
+ assert.equal(await card.locator('.collection-films li.seen').count(),2);
+ await Promise.all([page.waitForEvent('load'),card.getByRole('button',{name:'Start this envelope',exact:true}).click()]);
+ await page.waitForFunction(()=>window.kuvert?.app?.list.id==='curated-hitchcock');
+ // Opening it brings them in, with the date and the stars.
+ await page.waitForFunction(()=>document.getElementById('toastText').textContent==='2 films came along from Kuvert.');
+ const there=await page.evaluate(()=>{const p=window.kuvert.app.store.p;return{seen:[...p.seen].sort(),date:p.dates['1940-rebecca'],stars:p.reviews['1940-rebecca'].rating,undated:!('1954-rear-window' in p.dates)};});
+ assert.deepEqual(there,{seen:['1940-rebecca','1954-rear-window'],date:'2026-03-01',stars:4.5,undated:true});
+ // Vertigo, watched in the envelope, and Rebecca go on to Galan (Rear Window was never on a ballot).
+ await page.evaluate(()=>window.kuvert.app.store.markSeen('1958-vertigo',true));
+ await page.evaluate(()=>window.kuvert.app.router.show('journeys'));
+ await Promise.all([page.waitForEvent('load'),page.locator('.gala-card').getByRole('button',{name:'Enter the gala',exact:true}).click()]);
+ await page.waitForFunction(()=>window.kuvert?.app?.list.id==='gala');
+ assert.deepEqual(await page.evaluate(()=>[...window.kuvert.app.store.p.seen]),['1940-rebecca']);
+ // Every film in Galan has a runtime, a director and moods, so no filter sets any aside for want of details.
+ const facts=await page.evaluate(()=>{const{store,catalog}=window.kuvert.app;return{films:catalog.films.length,runtimes:catalog.films.filter(f=>store.p.runtimes[f.id]).length,moods:catalog.films.filter(f=>store.moodsFor(f.id).length).length};});
+ assert.deepEqual(facts,{films:621,runtimes:621,moods:621});
+ await page.evaluate(()=>window.kuvert.app.store.setTimeMode('120'));
+ await page.waitForFunction(()=>/films fit tonight’s filters/.test(document.getElementById('eligibleCount').textContent));
+ assert.ok(Number((await page.textContent('#eligibleCount')).match(/^\d+/)[0])>250,await page.textContent('#eligibleCount'));
+ assert.equal(await page.isHidden('#metadataTools'),true,'no films waiting for details');
+ await page.evaluate(()=>{const{store,stage}=window.kuvert.app;store.setTimeMode('0');store.pick('1929-alibi');stage.syncPick();});
+ await page.click('#drawBtn');await page.waitForFunction(()=>!window.kuvert.app.stage.busy&&window.kuvert.app.stage.open);
+ assert.match(await page.textContent('#pickFacts'),/90 min · Dir\. Roland West/i);
  assert.deepEqual(await problems(page),[]);await context.close();
 });

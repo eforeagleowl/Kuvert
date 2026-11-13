@@ -3,11 +3,12 @@ import { FILMS, KUVERT, MOODS, PALETTES, BEST_PICTURE_FIELD } from "../js/data/c
 import { CURATED_COLLECTIONS, CURATED_METADATA } from "../js/data/curated.js";
 import { BASIC_METADATA } from "../js/data/basics.js";
 import { CEREMONIES } from "../js/data/ceremonies.js";
+import { FILM_TABLE } from "../js/data/films.js";
 
 const slug = (s) => String(s).normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const https = (url) => { try { return new URL(url).protocol === "https:"; } catch { return false; } };
 
-export function validateCatalogue({ films = FILMS, collections = CURATED_COLLECTIONS, metadata = BASIC_METADATA, editorial = CURATED_METADATA, ceremonies = CEREMONIES } = {}) {
+export function validateCatalogue({ films = FILMS, collections = CURATED_COLLECTIONS, metadata = BASIC_METADATA, editorial = CURATED_METADATA, ceremonies = CEREMONIES, table = FILM_TABLE } = {}) {
   const errors = [], fail = (condition, message) => { if (!condition) errors.push(message); };
   function checkFilms(rows, label) {
     const ids = new Set();
@@ -73,7 +74,31 @@ export function validateCatalogue({ films = FILMS, collections = CURATED_COLLECT
     }
   }
   fail(numbers.size === 98 && Array.from({ length: 98 }, (_, i) => i + 1).every(n => numbers.has(n)), "Ceremonies: historical coverage must contain all 98 fields");
-  return { ok: !errors.length, errors, summary: { builtInFilms: films.length, collections: collections.length, curatedUniqueFilms: new Set(collections.flatMap(c => c.films.map(f => f.id))).size, runtimeCoverage, ceremonies: ceremonies.length, ballotEntries: ceremonies.reduce((n, c) => n + c.films.length, 0) } };
+  // The built-in list's shelves say what the ballots say.
+  for (const f of films.filter(f => f.s === "W" || f.s === "N")) {
+    const ballot = ceremonies.find(c => c.number === f.c);
+    fail(!!ballot && ballot.films.some(x => x.id === f.id) && (f.s === "W") === (ballot.winnerId === f.id), `Built-in: ${f.id} disagrees with the ballot of ceremony ${f.c}`);
+  }
+  // The film table: every row sound, every film in some list, and every listed film with its facts.
+  const listedIds = new Set([...films, ...collections.flatMap(c => c.films || []), ...ceremonies.flatMap(c => c.films)].map(f => f.id));
+  const day = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v || "") && Number.isFinite(Date.parse(v));
+  const items = new Set(), tmdbIds = new Set();
+  for (const [id, f] of Object.entries(table)) {
+    fail(/^\d{4}-[a-z0-9-]+$/.test(id) && id.startsWith(f.y + "-") && typeof f.t === "string" && !!f.t.trim(), `Film table: ${id} needs a title, and the year its id starts with`);
+    fail(listedIds.has(id), `Film table: ${id} is in no list`);
+    fail(/^Q\d+$/.test(f.wd || "") && !items.has(f.wd), `Film table: ${id} needs a Wikidata item of its own`); items.add(f.wd);
+    if (f.tmdb !== undefined) { fail(Number.isInteger(f.tmdb) && f.tmdb > 0 && !tmdbIds.has(f.tmdb), `Film table: ${id} has an invalid or repeated TMDB id`); tmdbIds.add(f.tmdb); }
+    if (f.rt !== undefined) fail(Number.isInteger(f.rt) && f.rt > 0 && f.rt < 1500 && typeof f.dir === "string" && !!f.dir.trim() && (Array.isArray(f.g) ? f.g.length > 0 && day(f.at) : Array.isArray(f.moods) && !!f.via), `Film table: ${id} has incomplete facts`);
+    if (f.via) fail(https(f.via.url) && typeof f.via.label === "string" && !!f.via.label && day(f.via.at), `Film table: ${id} has an incomplete named source`);
+    if (f.moods) fail(f.moods.length > 0 && f.moods.every(tag => MOODS.includes(tag)), `Film table: ${id} has an unknown mood`);
+    if (f.tri) fail(Number.isInteger(f.ord) && f.ord > 0, `Film table: ${id} has no part number in its series`);
+  }
+  for (const id of listedIds) {
+    fail(!!table[id], `${id}: listed, but not in the film table`);
+    const m = metadata[id];
+    fail(Number.isFinite(m?.runtime) && m.runtime > 0 && https(m?.source) && Array.isArray(m?.moods) && m.moods.length > 0, `${id}: no runtime, source or mood`);
+  }
+  return { ok: !errors.length, errors, summary: { films: Object.keys(table).length, filmsWithFacts: [...listedIds].filter(id => metadata[id]?.runtime > 0).length, builtInFilms: films.length, collections: collections.length, curatedUniqueFilms: new Set(collections.flatMap(c => c.films.map(f => f.id))).size, runtimeCoverage, ceremonies: ceremonies.length, ballotEntries: ceremonies.reduce((n, c) => n + c.films.length, 0) } };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

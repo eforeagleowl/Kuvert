@@ -8,16 +8,17 @@ import { CURATED_COLLECTIONS, CURATED_METADATA } from "../../js/data/curated.js"
 import { CEREMONIES, ceremonyFor } from "../../js/data/ceremonies.js";
 import { FILM_TABLE } from "../../js/data/films.js";
 import { galaFilms } from "../../js/fun/gala.js";
+import { AWARD_LISTS } from "../../js/data/award-lists.js";
 
 test("editorial release is complete, sourced and internally consistent", () => {
   const result = validateCatalogue();
   assert.deepEqual(result.errors, []);
-  assert.deepEqual(result.summary, { films: 664, filmsWithFacts: 664, builtInFilms: 275, collections: 4, curatedUniqueFilms: 26, runtimeCoverage: 275, ceremonies: 98, ballotEntries: 621 });
+  assert.deepEqual(result.summary, { films: 684, filmsWithFacts: 684, filmsWithPremise: 684, awardLists: 1, awardListFilms: 80, builtInFilms: 275, collections: 5, curatedUniqueFilms: 33, runtimeCoverage: 275, ceremonies: 98, ballotEntries: 621 });
   assert.equal(METADATA_PROVENANCE.coreRuntimeCoverage, FILMS.length);
 });
 
-test("four finite journeys install through the normal list format with stable film IDs", () => {
-  assert.deepEqual(CURATED_COLLECTIONS.map(c => c.films.length), [7, 6, 6, 7]);
+test("five finite journeys install through the normal list format with stable film IDs", () => {
+  assert.deepEqual(CURATED_COLLECTIONS.map(c => c.films.length), [7, 6, 6, 7, 7]);
   for (const collection of CURATED_COLLECTIONS) {
     const installed = buildListDefinition(collection);
     assert.equal(installed.id, collection.id);
@@ -60,7 +61,7 @@ test("validation rejects partial ballots, duplicate IDs, missing translations an
 });
 
 test("the film table holds every film once, and every list's films have their facts", () => {
-  const ids = new Set([...FILMS, ...galaFilms(), ...CURATED_COLLECTIONS.flatMap(c => c.films)].map(f => f.id));
+  const ids = new Set([...FILMS, ...galaFilms(), ...CURATED_COLLECTIONS.flatMap(c => c.films), ...AWARD_LISTS.flatMap(l => l.films)].map(f => f.id));
   assert.deepEqual([...ids].sort(), Object.keys(FILM_TABLE).sort(), "the table is exactly the films the lists name");
   // Galan's films used to come without details: every one now has a runtime, a director and a mood to filter by.
   for (const f of galaFilms()) {

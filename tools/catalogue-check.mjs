@@ -4,11 +4,15 @@ import { CURATED_COLLECTIONS, CURATED_METADATA } from "../js/data/curated.js";
 import { BASIC_METADATA } from "../js/data/basics.js";
 import { CEREMONIES } from "../js/data/ceremonies.js";
 import { FILM_TABLE } from "../js/data/films.js";
+import { AWARD_LISTS } from "../js/data/award-lists.js";
+import { AWARDS } from "../js/data/awards.js";
+import { PREMISES as PREMISES_EN } from "../js/data/premises-en.js";
+import { PREMISES as PREMISES_SV } from "../js/data/premises-sv.js";
 
 const slug = (s) => String(s).normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const https = (url) => { try { return new URL(url).protocol === "https:"; } catch { return false; } };
 
-export function validateCatalogue({ films = FILMS, collections = CURATED_COLLECTIONS, metadata = BASIC_METADATA, editorial = CURATED_METADATA, ceremonies = CEREMONIES, table = FILM_TABLE } = {}) {
+export function validateCatalogue({ films = FILMS, collections = CURATED_COLLECTIONS, metadata = BASIC_METADATA, editorial = CURATED_METADATA, ceremonies = CEREMONIES, table = FILM_TABLE, awardLists = AWARD_LISTS, premises = { en: PREMISES_EN, sv: PREMISES_SV } } = {}) {
   const errors = [], fail = (condition, message) => { if (!condition) errors.push(message); };
   function checkFilms(rows, label) {
     const ids = new Set();
@@ -18,7 +22,7 @@ export function validateCatalogue({ films = FILMS, collections = CURATED_COLLECT
       fail(typeof f.id === "string" && f.id.length > 0 && f.id.length <= 120, `${label}: invalid ID`);
       fail(!ids.has(f.id), `${label}: duplicate ID ${f.id}`); ids.add(f.id);
       fail(["", "W", "N", "H"].includes(f.s || ""), `${label}: unknown shelf for ${f.id}`);
-      if (f.c !== undefined) fail(Number.isInteger(f.c) && f.c >= 1 && f.c <= 98, `${label}: invalid ceremony for ${f.id}`);
+      if (f.c !== undefined) fail(Number.isInteger(f.c) && f.c >= 1 && f.c <= 999, `${label}: invalid ceremony for ${f.id}`);
       if (f.tri) fail(Number.isInteger(f.ord) && f.ord > 0, `${label}: invalid series part for ${f.id}`);
     }
   }
@@ -79,9 +83,29 @@ export function validateCatalogue({ films = FILMS, collections = CURATED_COLLECT
     const ballot = ceremonies.find(c => c.number === f.c);
     fail(!!ballot && ballot.films.some(x => x.id === f.id) && (f.s === "W") === (ballot.winnerId === f.id), `Built-in: ${f.id} disagrees with the ballot of ceremony ${f.c}`);
   }
-  // The film table: every row sound, every film in some list, and every listed film with its facts.
-  const listedIds = new Set([...films, ...collections.flatMap(c => c.films || []), ...ceremonies.flatMap(c => c.films)].map(f => f.id));
   const day = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v || "") && Number.isFinite(Date.parse(v));
+  // Award lists: winners only, one or more at every ceremony from the first to the last, each named in the film table.
+  const listIds = new Set([...collectionIds, "builtin", "gala", "seagal"]);
+  for (const list of awardLists) {
+    fail(/^[a-z]{1,20}$/.test(list.id || "") && !listIds.has(list.id), `Award lists: ${list.id} needs an id of its own`); listIds.add(list.id);
+    fail(!!AWARDS[list.award] && !!PALETTES[list.palette], `${list.id}: unknown award or palette`);
+    fail(typeof list.name === "string" && !!list.name && list.name.length <= 40, `${list.id}: needs a name of at most 40 characters`);
+    for (const lang of ["en", "sv"]) fail(typeof list.title?.[lang] === "string" && typeof list.subtitle?.[lang] === "string", `${list.id}: missing ${lang} title or subtitle`);
+    fail(https(list.source?.url) && day(list.source?.at), `${list.id}: missing source`);
+    checkFilms(list.films || [], list.id);
+    const numbers = new Set((list.films || []).map(f => f.c));
+    fail(list.ceremonies === numbers.size && Array.from({ length: numbers.size }, (_, i) => i + 1).every(n => numbers.has(n)), `${list.id}: ceremonies must run from the 1st to the ${list.ceremonies}th, none missing`);
+    fail(list.lastYear - list.firstYear + 1 === list.ceremonies, `${list.id}: its years and its ceremonies disagree`);
+    for (const f of list.films || []) {
+      fail(f.s === "W", `${list.id}: ${f.id} is not marked as a winner`);
+      fail(!f.tri, `${list.id}: ${f.id} carries a series, which an award list leaves out`);
+      const row = table[f.id];
+      // A winner's own year is the year before the ceremony's, give or take one (premieres abroad, late releases).
+      if (row) fail(Math.abs(row.y - (list.firstYear + f.c - 1)) <= 2, `${list.id}: ${f.id} is from ${row.y}, far from ceremony ${f.c}`);
+    }
+  }
+  // The film table: every row sound, every film in some list, and every listed film with its facts.
+  const listedIds = new Set([...films, ...collections.flatMap(c => c.films || []), ...ceremonies.flatMap(c => c.films), ...awardLists.flatMap(l => l.films || [])].map(f => f.id));
   const items = new Set(), tmdbIds = new Set();
   for (const [id, f] of Object.entries(table)) {
     fail(/^\d{4}-[a-z0-9-]+$/.test(id) && id.startsWith(f.y + "-") && typeof f.t === "string" && !!f.t.trim(), `Film table: ${id} needs a title, and the year its id starts with`);
@@ -93,12 +117,21 @@ export function validateCatalogue({ films = FILMS, collections = CURATED_COLLECT
     if (f.moods) fail(f.moods.length > 0 && f.moods.every(tag => MOODS.includes(tag)), `Film table: ${id} has an unknown mood`);
     if (f.tri) fail(Number.isInteger(f.ord) && f.ord > 0, `Film table: ${id} has no part number in its series`);
   }
+  // The premise lines: one for every film in the table, in both languages, and none left over.
+  for (const lang of ["en", "sv"]) {
+    for (const id of Object.keys(table)) {
+      const line = premises[lang]?.[id];
+      fail(typeof line === "string" && line.length >= 40 && line.length <= 160 && /[.?!]$/.test(line) && !/\s\s|^\s|\s$/.test(line), `Premises (${lang}): ${id} needs one line of 40 to 160 characters, ending in a full stop`);
+    }
+    for (const id of Object.keys(premises[lang] || {})) fail(!!table[id], `Premises (${lang}): ${id} is not in the film table`);
+  }
+  for (const id of Object.keys(table)) fail(premises.en?.[id] !== premises.sv?.[id], `Premises: ${id} reads the same in both languages`);
   for (const id of listedIds) {
     fail(!!table[id], `${id}: listed, but not in the film table`);
     const m = metadata[id];
     fail(Number.isFinite(m?.runtime) && m.runtime > 0 && https(m?.source) && Array.isArray(m?.moods) && m.moods.length > 0, `${id}: no runtime, source or mood`);
   }
-  return { ok: !errors.length, errors, summary: { films: Object.keys(table).length, filmsWithFacts: [...listedIds].filter(id => metadata[id]?.runtime > 0).length, builtInFilms: films.length, collections: collections.length, curatedUniqueFilms: new Set(collections.flatMap(c => c.films.map(f => f.id))).size, runtimeCoverage, ceremonies: ceremonies.length, ballotEntries: ceremonies.reduce((n, c) => n + c.films.length, 0) } };
+  return { ok: !errors.length, errors, summary: { films: Object.keys(table).length, filmsWithFacts: [...listedIds].filter(id => metadata[id]?.runtime > 0).length, filmsWithPremise: Object.keys(table).filter(id => premises.en?.[id] && premises.sv?.[id]).length, awardLists: awardLists.length, awardListFilms: awardLists.reduce((n, l) => n + (l.films?.length || 0), 0), builtInFilms: films.length, collections: collections.length, curatedUniqueFilms: new Set(collections.flatMap(c => c.films.map(f => f.id))).size, runtimeCoverage, ceremonies: ceremonies.length, ballotEntries: ceremonies.reduce((n, c) => n + c.films.length, 0) } };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

@@ -9,7 +9,8 @@
 // and a named source goes in by hand as `via`. Needs network access to wikidata.org.
 import { pathToFileURL } from "node:url";
 
-const AGENT = { "User-Agent": "kuvert-film-facts/1.0 (static film list; github.com/eforeagleowl/Kuvert)" };
+// A plain client name: the tool says what it is, and nothing about who runs it.
+const AGENT = { "User-Agent": "film-facts/1.0 (film list tool; a few requests at a time)" };
 const API = "https://www.wikidata.org/w/api.php?format=json&";
 const UNIT = { Q7727: 1, Q11574: 1 / 60, Q25235: 60 }; // minute, second, hour
 export const slug = (s) => String(s).normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -86,10 +87,17 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   if (!items.length) console.error(`No film called "${title}" from about ${year} on Wikidata. Look it up there and pass its item (Q…).`);
   if (items.length > 1) console.error(`${items.length} films match: the first is shown; pass the item (Q…) to choose.`, items.join(" "));
   if (items.length) {
-    const facts = await filmFacts(items[0], { title, year });
-    console.log(tableLine(facts));
-    if (title && slug(facts.label || "") !== slug(title)) console.error(`  Wikidata calls it "${facts.label}" (${facts.years.join(", ")}).`);
-    for (const p of facts.problems) console.error("  ! " + p);
+    try {
+      const facts = await filmFacts(items[0], { title, year });
+      console.log(tableLine(facts));
+      if (title && slug(facts.label || "") !== slug(title)) console.error(`  Wikidata calls it "${facts.label}" (${facts.years.join(", ")}).`);
+      for (const p of facts.problems) console.error("  ! " + p);
+      console.error(`  The film also needs its premise line, under ${JSON.stringify(facts.id)} in js/data/premises-en.js and premises-sv.js (docs/EDITORIAL.md has the rules).`);
+    } catch (e) {
+      // Wikidata didn't answer, or the item has no English title or year to make an id from.
+      console.error(e.message);
+      process.exit(1);
+    }
   }
   process.exitCode = items.length ? 0 : 1;
 }

@@ -989,6 +989,15 @@
       background-position: -200% 0;
     }
   }
+  /* What the film is about: one line across the ticket, under its facts. */
+  .t-premise {
+    max-width: 64ch;
+    margin-top: 16px;
+    color: var(--ink);
+    font-size: var(--fs-3);
+    line-height: 1.45;
+    text-wrap: pretty;
+  }
   /* The stub on the right, torn off at the door. */
   .t-stub {
     display: flex;
@@ -1307,7 +1316,7 @@
     padding: 24px 8px 8px;
     text-align: center;
   }
-  .ticket.finale-ticket :is(.t-body, .t-actions, .t-details, .watched, .t-close) {
+  .ticket.finale-ticket :is(.t-body, .t-premise, .t-actions, .t-details, .watched, .t-close) {
     display: none;
   }
   .finale-crowns {

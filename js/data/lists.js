@@ -82,6 +82,27 @@ export function buildListDefinition({ name, subtitle, palette, films, series = {
 }
 
 /**
+ * A list rebuilt in place of the copy installed earlier (an envelope's new version, an award list's new
+ * ceremony). A list's catalogue name counts its films, and a save is read only by the list it names. So
+ * the rebuilt list remembers the names it had before: its own save, and backups and sync files made
+ * before the change, are still its own.
+ * @returns the rebuilt definition, with the earlier names added
+ */
+export function supersede(old, fresh) {
+  const earlier = [...(Array.isArray(old?.olderCatalogues) ? old.olderCatalogues : []), old?.catalogue].filter((c) => typeof c === "string" && c.startsWith("custom:" + fresh.id + ":") && c !== fresh.catalogue);
+  return earlier.length ? { ...fresh, olderCatalogues: [...new Set(earlier)].slice(-12) } : fresh;
+}
+/** After a rebuilt list is stored: its save takes the list's new catalogue name (it is read under the old one meanwhile). */
+export function renameSave(storage, old, fresh) {
+  if (!old?.catalogue || old.catalogue === fresh.catalogue) return;
+  try {
+    const key = KEYS.list(fresh.id),
+      save = JSON.parse(storage.getItem(key) || "null");
+    if (save && typeof save === "object" && save.catalogue === old.catalogue) storage.setItem(key, JSON.stringify({ ...save, catalogue: fresh.catalogue, ...(save.list ? { list: fresh } : {}) }));
+  } catch {}
+}
+
+/**
  * Which list this page shows. The built-in list uses the original storage key.
  * @returns {{ custom: boolean, id: string, name: string, subtitle: string, palette: string, shelves: object|null, award: string|null,
  *   series: Record<string,string>, catalogue: string, olderCatalogues: string[], retired: string[],
@@ -119,7 +140,8 @@ export function resolveList(storage) {
     shelves: def.shelves,
     series: def.series || {},
     catalogue: def.catalogue,
-    olderCatalogues: [],
+    // The names an earlier, shorter or longer copy of this list went by (supersede, above).
+    olderCatalogues: Array.isArray(def.olderCatalogues) ? def.olderCatalogues.filter((c) => typeof c === "string") : [],
     retired: [],
     storageKey: KEYS.list(def.id),
     definition: def,
@@ -176,6 +198,8 @@ export function installSeagalList(storage) {
     })),
   });
   def.version = SEAGAL_LIST_VERSION;
-  lists[def.id] = def;
+  const old = lists[def.id];
+  lists[def.id] = supersede(old, def);
   writeCustomLists(storage, lists);
+  renameSave(storage, old, lists[def.id]);
 }

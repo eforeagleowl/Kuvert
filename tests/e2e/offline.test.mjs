@@ -89,6 +89,9 @@ test("Kuvert starts offline after one visit", async () => {
     assert.equal(await page.evaluate(() => document.fonts.check('16px "Familjen Grotesk"')), true, "fonts come from the cache");
     await page.click("#drawBtn");
     await page.waitForSelector("#ticket:not([hidden])");
+    // The premise lines are fetched when a ticket asks for them: offline, from the worker's cache.
+    await page.waitForSelector("#pickPremise:not([hidden])");
+    assert.match(await page.textContent("#pickPremise"), /^\p{Lu}.{40,160}\.$/u);
     assert.deepEqual(errors, []);
   } finally {
     await close();

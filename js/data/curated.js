@@ -63,6 +63,21 @@ export const CURATED_COLLECTIONS = [
     films: pick("1940-rebecca", "1946-notorious", "1954-rear-window", "1958-vertigo", "1959-north-by-northwest", "1960-psycho", "1963-the-birds"),
     editorial: { status: "draft-for-review", theme: "One director across his Hollywood years, chosen for range rather than as a ranking of his best." },
   },
+  {
+    // In season (1 November to 6 January) this envelope moves to the front of the shelf (js/views/journeys.js).
+    id: "curated-christmas", version: 1, name: "The Christmas Envelope", palette: "falu", art: "jul", series: {}, shelves: null, badge: "JUL",
+    season: { from: [11, 1], to: [1, 6] },
+    subtitle: { en: "Seven films for the darkest week of the year", sv: "Sju filmer för årets mörkaste vecka" },
+    title: { en: "The Christmas Envelope", sv: "Julkuvertet" },
+    tagline: { en: "Snow outside. A light in the window. Seven films to open.", sv: "Snö utanför. Ljus i fönstret. Sju filmer att öppna." },
+    introduction: {
+      en: "Seven films for the days around Christmas, from a Budapest gift shop in 1940 to a snowed-in boarding school in 1970. Not all of them are Christmas films from start to finish, but each has Christmas at its heart: as a deadline, a party, or a night when someone needs company. Watch in any order, though the two oldest make a good start and The Holdovers a good last evening.",
+      sv: "Sju filmer för dagarna kring jul, från en presentbutik i Budapest 1940 till en insnöad internatskola 1970. Alla är inte julfilmer från början till slut, men var och en har julen i sitt hjärta: som en tidsgräns, en fest eller en natt då någon behöver sällskap. Se dem i valfri ordning, även om de två äldsta är en bra början och The Holdovers en bra sista kväll.",
+    },
+    motif: "star", seal: "JUL · 7", completion: { en: "The Christmas Star · seven lights in the window", sv: "Julstjärnan · sju ljus i fönstret" },
+    films: pick("1940-the-shop-around-the-corner", "1944-meet-me-in-st-louis", "1946-it-s-a-wonderful-life", "1947-miracle-on-34th-street", "1960-the-apartment", "2015-carol", "2023-the-holdovers"),
+    editorial: { status: "draft-for-review", theme: "Christmas as a setting and a deadline across eight decades; a seasonal ritual, not a ranking of Christmas films." },
+  },
 ];
 
 export const CURATED_METADATA = {
@@ -247,6 +262,55 @@ export const CURATED_METADATA = {
   }, {
     en: ["How did the absence of music change the way you listened?", "What do you think the birds stand for, if anything?"],
     sv: ["Hur förändrade frånvaron av musik ditt sätt att lyssna?", "Vad tror du att fåglarna står för, om något?"],
+  }),
+  "1940-the-shop-around-the-corner": note(99, "Ernst Lubitsch", ["Romantic", "Funny"], [source("Wikidata", "https://www.wikidata.org/wiki/Q782751", "2026-11-13")], {
+    en: "Two clerks in a Budapest shop quarrel all day and, without knowing it, write to each other every night. Lubitsch keeps almost the whole film inside the shop in the weeks before Christmas, and lets small things carry the feeling: a cigarette box that plays a tune, a wallet, a seat at a café table. Notice how gently it treats everyone who works there, including the ones who behave badly.",
+    sv: "Två expediter i en butik i Budapest grälar hela dagarna och skriver, utan att veta om det, till varandra varje kväll. Lubitsch håller nästan hela filmen inne i butiken veckorna före jul och låter småsaker bära känslan: en cigarettask som spelar en melodi, en plånbok, en plats vid ett kafébord. Lägg märke till hur varsamt filmen behandlar alla som arbetar där, även dem som beter sig illa.",
+  }, {
+    en: ["When did you first feel the two of them were right for each other, and what told you?", "What does the shop itself, with its routines and its worries about money, add to the love story?"],
+    sv: ["När kände du först att de två passade ihop, och vad fick dig att känna det?", "Vad tillför själva butiken, med sina rutiner och sin oro för pengar, till kärlekshistorien?"],
+  }),
+  "1944-meet-me-in-st-louis": note(113, "Vincente Minnelli", ["Uplifting", "Romantic"], [source("Wikidata", "https://www.wikidata.org/wiki/Q1066873", "2026-11-13")], {
+    en: "A year in the life of a St. Louis family, told season by season as the 1904 World's Fair approaches. Minnelli's first great colour musical is remembered for its Christmas, when Judy Garland sings to her little sister on the night the family's future is being decided. Listen to how the songs grow out of ordinary moments: a trolley ride, a party, a window in winter.",
+    sv: "Ett år i en familjs liv i St. Louis, berättat årstid för årstid medan världsutställningen 1904 närmar sig. Minnellis första stora färgmusikal är ihågkommen för sin jul, när Judy Garland sjunger för sin lillasyster den kväll då familjens framtid avgörs. Lyssna på hur sångerna växer fram ur vardagliga stunder: en spårvagnsfärd, en fest, ett fönster om vintern.",
+  }, {
+    en: ["Which of the film's seasons stayed with you most, and why?", "The song at the heart of the Christmas scene is a sad one. What does the film gain from that?"],
+    sv: ["Vilken av filmens årstider stannade kvar hos dig, och varför?", "Sången mitt i julscenen är sorgsen. Vad vinner filmen på det?"],
+  }),
+  "1946-it-s-a-wonderful-life": note(131, "Frank Capra", ["Uplifting", "Reflective"], [source("Wikipedia · film infobox", "https://en.wikipedia.org/wiki/It%27s_a_Wonderful_Life", "2026-11-13")], {
+    en: "On Christmas Eve, a man who has spent his life helping a small town believes it would be better off without him. Capra takes his time getting there: most of the film is the life itself, with its postponed plans and small loyalties, so that the last half-hour lands with its full weight. Watch James Stewart's face in the scenes where George is at his angriest; the film is darker than its reputation.",
+    sv: "På julafton tror en man som ägnat sitt liv åt att hjälpa en småstad att den skulle klara sig bättre utan honom. Capra tar god tid på sig: större delen av filmen är själva livet, med sina uppskjutna planer och små lojaliteter, så att den sista halvtimmen får sin fulla tyngd. Se på James Stewarts ansikte i scenerna där George är som argast; filmen är mörkare än sitt rykte.",
+  }, {
+    en: ["What did George give up, and did the film persuade you it was worth it?", "Why do you think this became a Christmas tradition, when so much of it is about disappointment?"],
+    sv: ["Vad gav George upp, och övertygade filmen dig om att det var värt det?", "Varför tror du att den blev en jultradition, när så mycket av den handlar om besvikelse?"],
+  }, { en: "Listed at 131 minutes; some records give a few minutes less.", sv: "Anges till 131 minuter; vissa källor uppger några minuter mindre." }),
+  "1947-miracle-on-34th-street": note(96, "George Seaton", ["Uplifting", "Funny"], [source("Wikidata", "https://www.wikidata.org/wiki/Q1467214", "2026-11-13")], {
+    en: "The man hired to play Santa Claus at Macy's insists that he is the real one, and New York has to decide what to do about it. Much of the film was shot in the real store and at the real Thanksgiving parade of 1946, which gives its fairy tale a crowded, practical city to live in. Notice how the film lets the adults' doubts be reasonable, and settles the argument in a courtroom.",
+    sv: "Mannen som anställts för att spela jultomte på varuhuset Macy's hävdar att han är den riktige, och New York måste bestämma sig för vad man ska göra åt saken. Mycket av filmen spelades in i det verkliga varuhuset och under den verkliga Thanksgivingparaden 1946, vilket ger sagan en trång och praktisk stad att leva i. Lägg märke till att filmen låter de vuxnas tvivel vara rimliga, och avgör saken i en rättssal.",
+  }, {
+    en: ["Who changes most in the film: the child, her mother or the lawyer?", "What does the film suggest that believing in something is good for?"],
+    sv: ["Vem förändras mest i filmen: barnet, hennes mamma eller advokaten?", "Vad menar filmen att det är bra för, att tro på något?"],
+  }),
+  "1960-the-apartment": note(125, "Billy Wilder", ["Romantic", "Reflective"], [source("Wikidata", "https://www.wikidata.org/wiki/Q270510", "2026-11-13")], {
+    en: "An office clerk lends his flat to his bosses for their affairs, and the film takes him through an office Christmas party to New Year's Eve. Wilder's comedy is set among paper cups and party hats, but its holidays are lonely ones, and it is honest about what people put up with to get ahead. Watch the vast office in the opening minutes, and how small one desk looks in it.",
+    sv: "En kontorist lånar ut sin lägenhet till chefernas snedsprång, och filmen följer honom genom en julfest på kontoret fram till nyårsafton. Wilders komedi utspelar sig bland pappersmuggar och partyhattar, men dess helger är ensamma, och den är ärlig med vad människor står ut med för att komma sig upp. Se det väldiga kontoret i de första minuterna, och hur litet ett skrivbord ser ut där.",
+  }, {
+    en: ["How does the film make you like a man who, at the start, is doing something shabby?", "Why set this story between Christmas and New Year rather than at any other time?"],
+    sv: ["Hur får filmen dig att tycka om en man som i början gör något ganska ynkligt?", "Varför utspelar sig berättelsen mellan jul och nyår och inte vid någon annan tid?"],
+  }),
+  "2015-carol": note(118, "Todd Haynes", ["Romantic", "Reflective"], [source("Wikidata", "https://www.wikidata.org/wiki/Q15963780", "2026-11-13")], {
+    en: "A young shop assistant sells a train set to a woman in a fur coat in the Christmas rush of 1952, and the two cannot stop thinking about each other. Todd Haynes shot the film on Super 16, which gives New York a soft, grainy winter light, and much of it is seen through glass: shop windows, car windows, a rainy windscreen. Notice how much is said by a hand on a shoulder.",
+    sv: "Ett ungt butiksbiträde säljer en tågbana till en kvinna i päls i julruschen 1952, och de två kan inte sluta tänka på varandra. Todd Haynes filmade på Super 16, vilket ger New York ett mjukt och kornigt vinterljus, och mycket ses genom glas: skyltfönster, bilrutor, en regnig vindruta. Lägg märke till hur mycket som sägs med en hand på en axel.",
+  }, {
+    en: ["The film begins and ends with the same meeting. What had changed for you the second time?", "What do the windows and reflections tell us about what these two can and cannot show?"],
+    sv: ["Filmen börjar och slutar med samma möte. Vad hade förändrats för dig den andra gången?", "Vad säger fönstren och speglingarna om vad de två kan och inte kan visa?"],
+  }),
+  "2023-the-holdovers": note(133, "Alexander Payne", ["Funny", "Reflective"], [source("Wikidata", "https://www.wikidata.org/wiki/Q112114745", "2026-11-13")], {
+    en: "A teacher nobody likes, a pupil with nowhere to go and the school's cook are left behind at a New England boarding school over Christmas 1970. Alexander Payne made the film look and sound as if it had been found in a 1970s film can, down to the old studio logos, and gives its three lonely people time to surprise each other. A good last evening for this envelope.",
+    sv: "En lärare som ingen tycker om, en elev som inte har någonstans att ta vägen och skolans kokerska blir kvar på en internatskola i New England över julen 1970. Alexander Payne fick filmen att se ut och låta som om den hittats i en filmburk från 1970-talet, ända ner till de gamla bolagslogotyperna, och ger sina tre ensamma människor tid att överraska varandra. En bra sista kväll för det här kuvertet.",
+  }, {
+    en: ["Which of the three did you understand best by the end, and when did that change?", "What does the 1970s look add to a story that could be told in any decade?"],
+    sv: ["Vem av de tre förstod du bäst mot slutet, och när ändrades det?", "Vad tillför 1970-talsstilen till en berättelse som kunde utspela sig när som helst?"],
   }),
 };
 

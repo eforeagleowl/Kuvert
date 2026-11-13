@@ -8,6 +8,7 @@ const { swedish } = await import("../../js/i18n/index.js");
 const { SV_TITLES } = await import("../../js/i18n/titles-sv.js");
 const { localFilm } = await import("../../js/i18n/titles.js");
 const { FILMS, KUVERT } = await import("../../js/data/catalogue.js");
+const { FILM_TABLE } = await import("../../js/data/films.js");
 const { CURATED_COLLECTIONS } = await import("../../js/data/curated.js");
 const { galaFilms } = await import("../../js/fun/gala.js");
 const { resolveList, exportableList } = await import("../../js/data/lists.js");
@@ -22,7 +23,7 @@ const godfather = catalog.byId.get("1972-the-godfather");
 
 test("every Swedish title belongs to a film Kuvert has, and reads like a title", () => {
   assert.equal(swedish, true);
-  const known = new Set([...FILMS, ...galaFilms(), ...CURATED_COLLECTIONS.flatMap((c) => c.films)].map((f) => f.id));
+  const known = new Set(Object.keys(FILM_TABLE));
   const entries = Object.entries(SV_TITLES);
   assert.ok(entries.length > 300, entries.length + " titles");
   for (const [id, sv] of entries) {
@@ -32,6 +33,15 @@ test("every Swedish title belongs to a film Kuvert has, and reads like a title",
   assert.equal(SV_TITLES["1939-gone-with-the-wind"], "Borta med vinden");
   assert.equal(SV_TITLES["1957-the-seventh-seal"], "Det sjunde inseglet");
   assert.equal(SV_TITLES["2023-oppenheimer"], undefined, "a film that kept its title in Sweden isn't listed");
+  assert.equal(SV_TITLES["1950-la-ronde"], "Kärlekens hus", "the BAFTA winners have theirs too");
+});
+
+test("in Swedish the premise lines are the Swedish ones", async () => {
+  const { premises } = await import("../../js/i18n/premises.js");
+  const { PREMISES } = await import("../../js/data/premises-sv.js");
+  const lines = await premises();
+  assert.equal(lines, PREMISES);
+  assert.match(lines["1957-wild-strawberries"], /^En gammal professor bilar till Lund/);
 });
 
 test("in Swedish the catalog shows Swedish titles and keeps the original; the list itself never changes", () => {

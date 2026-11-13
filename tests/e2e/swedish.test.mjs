@@ -46,6 +46,10 @@ test("in Swedish: every page, the ticket and both boards, and back to English fr
   await page.click("#drawBtn");
   await page.waitForFunction(() => window.kuvert.app.stage.open && !window.kuvert.app.stage.busy);
   assert.match(await page.textContent("#page-tonight"), /Kvällens (film|vinnare)|Nästa del/);
+  // What the film is about, in Swedish.
+  await page.waitForSelector("#pickPremise:not([hidden])");
+  const { PREMISES } = await import("../../js/data/premises-sv.js");
+  assert.equal(await page.textContent("#pickPremise"), PREMISES[await page.evaluate(() => window.kuvert.app.stage.shown.id)]);
   assert.deepEqual(await leftovers(page), [], "the ticket");
 
   await page.evaluate(() => window.kuvert.app.router.show("station"));
@@ -59,7 +63,7 @@ test("in Swedish: every page, the ticket and both boards, and back to English fr
   assert.deepEqual(await page.$$eval("#stHead th", (th) => th.map((x) => x.textContent)), ["Datum", "Film", "År", "Betyg"]);
   assert.deepEqual(await leftovers(page), [], "the arrivals board");
 
-  for (const name of ["library", "stats", "settings"]) {
+  for (const name of ["journeys", "library", "stats", "settings"]) {
     await page.evaluate((n) => window.kuvert.app.router.show(n), name);
     await page.waitForFunction((n) => document.documentElement.dataset.page === n, name);
     assert.deepEqual(await leftovers(page), [], name);

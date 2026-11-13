@@ -19,7 +19,7 @@ before(async()=>{
 });
 after(()=>dom.window.close());
 test('new controller IDs exist, collections render, and without a club service the club stays out of sight',()=>{
- app.journeys.render();assert.equal(document.querySelectorAll('.collection-card:not(.gala-card)').length,4);assert.equal(document.querySelectorAll('.gala-card').length,1,'Galan has a card of its own');assert.equal(document.querySelector('#ceremonySelect'),null,'re-running the Oscars became Galan (js/fun/gala.js)');
+ app.journeys.render();assert.equal(document.querySelectorAll('.collection-card:not(.gala-card,.award-card)').length,5);assert.equal(document.querySelectorAll('.award-card').length,1,'the BAFTA winners have a card of their own');assert.equal(document.querySelectorAll('.gala-card').length,1,'Galan has a card of its own');assert.equal(document.querySelector('#ceremonySelect'),null,'re-running the Oscars became Galan (js/fun/gala.js)');
  assert.equal(document.querySelector('#clubTeaser').hidden,true);
  const ids=[...document.querySelectorAll('[id]')].map(el=>el.id);assert.equal(ids.length,new Set(ids).size,'IDs unique');
 });

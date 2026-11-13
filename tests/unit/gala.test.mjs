@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { MemoryStorage } from "./helpers.mjs";
 import { FILMS, PALETTES } from "../../js/data/catalogue.js";
 import { CEREMONIES } from "../../js/data/ceremonies.js";
-import { resolveList } from "../../js/data/lists.js";
+import { resolveList, buildListDefinition, writeCustomLists } from "../../js/data/lists.js";
 import { makeCatalog } from "../../js/state/catalog.js";
 import { Store } from "../../js/state/store.js";
 import { KEYS } from "../../js/compat/keys.js";
@@ -45,6 +45,29 @@ test("entering installs the list once, in its own palette", () => {
   const stored = storage.getItem(KEYS.lists);
   assert.deepEqual(installGalaList(storage), def);
   assert.equal(storage.getItem(KEYS.lists), stored, "already installed: nothing rewritten");
+});
+
+test("a copy installed before a ceremony was added is rebuilt, and its progress is still read", () => {
+  const storage = new MemoryStorage();
+  // As it was a year ago: the same list without the latest ceremony's ten films, at an earlier version.
+  const full = installGalaList(storage);
+  const last = Math.max(...full.films.map((f) => f.c));
+  const shorter = { ...buildListDefinition({ ...full, films: full.films.filter((f) => f.c !== last) }), version: 1 };
+  writeCustomLists(storage, { [GALA_LIST_ID]: shorter });
+  storage.setItem(KEYS.activeList, GALA_LIST_ID);
+  let app = open(storage);
+  assert.equal(app.store.catalog.films.length, full.films.length - 10);
+  app.store.markSeen("1942-casablanca", true);
+  assert.equal(JSON.parse(storage.getItem(KEYS.list(GALA_LIST_ID))).catalogue, shorter.catalogue);
+  // Kuvert starts with the new ceremony in it.
+  const def = installGalaList(storage);
+  assert.equal(def.films.length, full.films.length);
+  assert.deepEqual(def.olderCatalogues, [shorter.catalogue], "the list remembers the name it had");
+  assert.equal(JSON.parse(storage.getItem(KEYS.list(GALA_LIST_ID))).catalogue, def.catalogue, "and its save has the new one");
+  app = open(storage);
+  assert.equal(app.store.writeLocked, false, "the save is read, not set aside as unreadable");
+  assert.equal(app.store.p.seen.has("1942-casablanca"), true);
+  assert.equal(app.store.catalog.films.length, full.films.length);
 });
 
 test("films watched in either list count in the other; a film un-marked or set aside stays as it is", () => {

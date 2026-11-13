@@ -75,6 +75,8 @@
 <link rel="modulepreload" href="js/views/nixie.js">
 <link rel="modulepreload" href="js/views/journeys.js">
 <link rel="modulepreload" href="js/data/curated.js">
+<link rel="modulepreload" href="js/data/award-lists.js">
+<link rel="modulepreload" href="js/data/bafta.js">
 <link rel="modulepreload" href="js/data/basics.js">
 <link rel="modulepreload" href="js/journeys/invitations.js">
 <link rel="modulepreload" href="js/journeys/qr.js">
@@ -85,6 +87,7 @@
 <link rel="modulepreload" href="js/data/ceremonies.js">
 <link rel="modulepreload" href="js/data/posters.js">
 <link rel="modulepreload" href="js/state/shared.js">
+<link rel="modulepreload" href="js/i18n/premises.js">
 <link rel="modulepreload" href="js/views/evening.js">
 <link rel="modulepreload" href="js/ui/install.js">
 <link rel="modulepreload" href="js/views/library.js">
@@ -298,6 +301,8 @@
             </div>
             <aside class="t-stub" aria-hidden="true"><span lang="sv" data-sg="Eyes only">Gäller en person</span><b id="stubNo"></b></aside>
           </div>
+          <!-- What the film is about, in one line (js/i18n/premises.js). -->
+          <p class="t-premise" id="pickPremise" hidden></p>
 
           <section class="watched" id="watchedPanel" aria-labelledby="wpHeading" hidden>
             <div class="wp-head">

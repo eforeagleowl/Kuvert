@@ -38,6 +38,7 @@ import { POSTERS, POSTERS_AT } from "./data/posters.js";
 import { Journeys, seedBasics, localized, upgradeCurated } from "./views/journeys.js";
 import { Club } from "./views/club.js";
 import { CURATED_COLLECTIONS } from "./data/curated.js";
+import { AWARD_LISTS } from "./data/award-lists.js";
 const arrivalHash = location.hash;
 const PAGES = ["tonight", "station", "journeys", "club", "library", "stats", "settings"];
 
@@ -115,7 +116,8 @@ app.fillShouldHaveWon = (select, wrap, f, verdict = store.p.verdicts[f.id]) => {
   const show = catalog.isWinner(f) && verdict === "no";
   wrap.hidden = !show;
   if (!show) return;
-  const rivals = catalog.ceremonyFilms(f.c).filter((x) => x !== f);
+  // The films it beat: in a tied year, not the one it shared the prize with.
+  const rivals = catalog.ceremonyFilms(f.c).filter((x) => x !== f && !catalog.isWinner(x));
   select.replaceChildren(new Option(t("Pick a film…"), ""), ...rivals.map((x) => new Option(x.t, x.id)), new Option(t("A nominee not on my list"), "other"));
   select.value = store.p.snubs[f.id] || "";
 };
@@ -298,7 +300,7 @@ $("unreadableFresh").addEventListener("click", async () => {
 // The list's own name, counts and colors.
 for (const el of document.querySelectorAll("[data-count]")) el.textContent = String(catalog.films.length);
 if (!seagal) {
-  const editorial = list.id === GALA_LIST_ID ? GALA : CURATED_COLLECTIONS.find(p => p.id === list.id);
+  const editorial = list.id === GALA_LIST_ID ? GALA : [...CURATED_COLLECTIONS, ...AWARD_LISTS].find(p => p.id === list.id);
   const displayName = editorial ? localized(editorial.title || editorial.name) : list.name;
   for (const el of document.querySelectorAll("[data-name]")) el.textContent = displayName;
   // Long names: the masthead and the envelope's name mark size themselves by these (css/tonight.css).

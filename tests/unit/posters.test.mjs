@@ -62,6 +62,21 @@ test("the whole table goes through, and the file it writes is the one the app re
   assert.ok(Object.values(FILM_TABLE).every((f) => Number.isInteger(f.tmdb) && f.tmdb > 0));
 });
 
+test("the posters Kuvert ships are for its own films: a TMDB entry and a plain poster path each, and a date", async () => {
+  // Whatever the monthly job last wrote: this runs before the job publishes, so a bad file never ships.
+  const { POSTERS, POSTERS_AT } = await import("../../js/data/posters.js");
+  const entries = Object.entries(POSTERS);
+  for (const [id, entry] of entries) {
+    assert.ok(FILM_TABLE[id], id + " is a Kuvert film");
+    assert.ok(Array.isArray(entry) && entry.length === 2 && Number.isInteger(entry[0]) && entry[0] > 0, id + " names a TMDB entry");
+    assert.match(entry[1], /^\/[A-Za-z0-9_-]+\.(?:jpg|jpeg|png|webp)$/, id + " has a plain poster path");
+  }
+  if (entries.length) assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(POSTERS_AT) && Number.isFinite(Date.parse(POSTERS_AT)), "posters carry the day they were fetched");
+  else assert.equal(POSTERS_AT, null);
+  // No TMDB entry stands for two films.
+  assert.equal(new Set(entries.map(([, e]) => e[0])).size, entries.length);
+});
+
 test("the client sends the token the way TMDB takes it, waits when told to, and treats a missing film as missing", async () => {
   assert.equal(tmdbClient(""), null);
   const seen = [];

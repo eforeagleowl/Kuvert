@@ -74,7 +74,7 @@ How it's built: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Every feature:
 ## Credits and licenses
 
 - Kuvert's code is released under the [MIT License](LICENSE).
-- Type: Cormorant Garamond, Geist, Geist Mono and Michroma, under the SIL Open Font License
+- Type: Playfair Display, Familjen Grotesk, Courier Prime and Michroma, under the SIL Open Font License
   ([assets/fonts/OFL.txt](assets/fonts/OFL.txt)).
 - QR codes: qrcode-generator 2.0.4 by Kazuhiko Arase, MIT ([license](js/vendor/QRCODE-LICENSE.txt)).
 - Offline structured film facts: Wikidata (CC0), plus linked presentation sources.

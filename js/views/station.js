@@ -88,12 +88,13 @@ export class Station {
     }).observe($("stFlapwrap"));
     this.syncToggles();
     this.setDrawLabel();
-    // The flaps are painted with Geist: wait for it (briefly) so the atlas isn't drawn in a fallback face.
+    // The flaps are painted with the page's own faces: wait for them (briefly) so the atlas isn't drawn in a fallback.
     const faces = document.fonts
       ? Promise.all([
-          document.fonts.load('600 32px "Geist"', "AÅÄÖ09½"),
-          document.fonts.load('400 32px "Geist"', "Time"),
-          document.fonts.load('500 16px "Geist Mono"', "KU0"),
+          document.fonts.load('600 32px "Familjen Grotesk"', "AÅÄÖ09½"),
+          document.fonts.load('400 32px "Familjen Grotesk"', "Time"),
+          document.fonts.load('400 16px "Courier Prime"', "KU0"),
+          document.fonts.load('700 16px "Courier Prime"', "KU0"),
           document.fonts.load('400 32px "Noto Sans Symbols 2"', "★"),
         ])
       : Promise.resolve();

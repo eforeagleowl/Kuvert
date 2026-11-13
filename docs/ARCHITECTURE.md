@@ -68,8 +68,11 @@ tests/classic/    Kuvert Classic itself, kept for the tests only (never publishe
   properties, `color-mix()` palettes, container queries on the ticket, `:has()`, `@starting-style`
   for dialogs and toasts, `interpolate-size` for disclosures, scroll-driven animation on the app bar,
   view transitions between pages, and `linear()` springs.
-- **Fonts** are self-hosted (Cormorant Garamond, Geist, Geist Mono and Michroma, all under the OFL),
-  so the page makes no requests to other sites unless you connect TMDB or sync.
+- **Fonts** are self-hosted (Playfair Display, Familjen Grotesk, Courier Prime and Michroma, all under
+  the OFL), so the page makes no requests to other sites unless you connect TMDB or sync. Kuvert was
+  drawn around Cormorant Garamond, Geist and Geist Mono; `css/fonts.css` scales Playfair Display and
+  Familjen Grotesk (`size-adjust`) so their capitals stand as tall as those faces' did, which keeps
+  every size and fitting rule in the stylesheets true. Courier Prime is as wide as Geist Mono was.
 
 ## The compatibility contract
 

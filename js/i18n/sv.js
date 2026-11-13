@@ -226,7 +226,7 @@ export const SV = {
   "Your progress stays in this browser. Posters load from TMDB’s image server; Kuvert only asks TMDB for film details when you connect it, and only talks to GitHub when you turn on sync.": "Dina framsteg stannar i den här webbläsaren. Affischer hämtas från TMDB:s bildserver; Kuvert frågar bara TMDB om filmfakta när du ansluter det, och pratar bara med GitHub när du slår på synk.",
   "Version": "Version",
   "Type": "Typsnitt",
-  "Cormorant Garamond, Geist and Geist Mono": "Cormorant Garamond, Geist och Geist Mono",
+  "Playfair Display, Familjen Grotesk and Courier Prime": "Playfair Display, Familjen Grotesk och Courier Prime",
   "Icons": "Ikoner",
   "(ISC license)": "(ISC-licens)",
   "Feedback": "Synpunkter",

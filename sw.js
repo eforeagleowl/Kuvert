@@ -8,7 +8,7 @@
 // small on purpose: no libraries, and nothing but the app and its posters is ever cached.
 
 // <stamp> written by tools/stamp.mjs (npm run stamp); do not edit by hand.
-const VERSION = "a4c26e67cc18";
+const VERSION = "2faff1bff6e3";
 const FILES = [
   "./",
   "./manifest.webmanifest",
@@ -91,18 +91,20 @@ const FILES = [
   "./js/views/station.js",
   "./js/views/stats.js",
   "./assets/crowns.svg",
-  "./assets/fonts/cormorant-500-700-italic-latin-ext.woff2",
-  "./assets/fonts/cormorant-500-700-italic-latin.woff2",
-  "./assets/fonts/cormorant-600-700-latin-ext.woff2",
-  "./assets/fonts/cormorant-600-700-latin.woff2",
-  "./assets/fonts/geist-400-700-latin-ext.woff2",
-  "./assets/fonts/geist-400-700-latin.woff2",
+  "./assets/fonts/courier-prime-400-latin-ext.woff2",
+  "./assets/fonts/courier-prime-400-latin.woff2",
+  "./assets/fonts/courier-prime-700-latin-ext.woff2",
+  "./assets/fonts/courier-prime-700-latin.woff2",
+  "./assets/fonts/familjen-400-700-latin-ext.woff2",
+  "./assets/fonts/familjen-400-700-latin.woff2",
   "./assets/fonts/geist-arrows.woff2",
-  "./assets/fonts/geist-mono-400-600-latin-ext.woff2",
-  "./assets/fonts/geist-mono-400-600-latin.woff2",
   "./assets/fonts/michroma-400-latin-ext.woff2",
   "./assets/fonts/michroma-400-latin.woff2",
   "./assets/fonts/noto-symbols-2-marks.woff2",
+  "./assets/fonts/playfair-400-900-italic-latin-ext.woff2",
+  "./assets/fonts/playfair-400-900-italic-latin.woff2",
+  "./assets/fonts/playfair-400-900-latin-ext.woff2",
+  "./assets/fonts/playfair-400-900-latin.woff2",
   "./assets/paper.webp",
   "./assets/tmdb.svg",
   "./favicon.svg",

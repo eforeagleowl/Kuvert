@@ -47,10 +47,10 @@
     --good: #9fd0a8;
     --danger: #e3877c;
 
-    /* Type: Cormorant Garamond for the big words, Geist for everything read, Geist Mono for print. */
-    --font-display: "Cormorant Garamond", "Noto Sans Symbols 2", "Cormorant", Garamond, "Times New Roman", serif;
-    --font-ui: "Geist", "Noto Sans Symbols 2", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-    --font-mono: "Geist Mono", "Noto Sans Symbols 2", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    /* Type: Playfair Display for the big words, Familjen Grotesk for everything read, Courier Prime for print. */
+    --font-display: "Playfair Display", "Noto Sans Symbols 2", Georgia, "Times New Roman", serif;
+    --font-ui: "Familjen Grotesk", "Noto Sans Symbols 2", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "Courier Prime", "Noto Sans Symbols 2", "Courier New", ui-monospace, Menlo, Consolas, monospace;
     --fs-1: 0.75rem;
     --fs-2: 0.8125rem;
     --fs-3: 0.9375rem;

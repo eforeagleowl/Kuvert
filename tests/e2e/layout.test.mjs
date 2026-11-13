@@ -2,7 +2,7 @@
 // safety net (main, .appbar { overflow-x: clip }) switched off, so a real overflow can't hide behind it.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { env, openPage, problems } from "./helpers.mjs";
+import { env, newContext, openPage, problems } from "./helpers.mjs";
 import { CURATED_COLLECTIONS } from "../../js/data/curated.js";
 
 const CORS = { "access-control-allow-origin": "*", "access-control-allow-headers": "*" };
@@ -133,4 +133,33 @@ test("on phones, no page is wider than the screen", async () => {
     assert.deepEqual(await problems(page), []);
     await context.close();
   }
+});
+
+test("Kuvert is set in Playfair Display, Familjen Grotesk and Courier Prime, from its own files", async () => {
+  const context = await newContext();
+  const page = await openPage(context, "/");
+  await page.click("#drawBtn");
+  await page.waitForFunction(() => !window.kuvert.app.stage.busy && window.kuvert.app.stage.open);
+  const seen = await page.evaluate(async () => {
+    await document.fonts.ready;
+    const first = (sel) => getComputedStyle(document.querySelector(sel)).fontFamily.split(",")[0].replaceAll('"', "").trim();
+    return {
+      faces: [first("#pickTitle"), first(".marquee-title"), first("body"), first("#drawSub"), first(".t-head"), first("#pickFacts")],
+      loaded: ['600 20px "Playfair Display"', 'italic 500 20px "Playfair Display"', '16px "Familjen Grotesk"', '600 16px "Familjen Grotesk"', '12px "Courier Prime"'].filter((f) => !document.fonts.check(f, "Åäö 1917")),
+      files: performance.getEntriesByType("resource").filter((r) => r.name.endsWith(".woff2")).map((r) => new URL(r.name).pathname.split("/").pop()),
+      origins: [...new Set(performance.getEntriesByType("resource").map((r) => new URL(r.name).origin))],
+    };
+  });
+  assert.deepEqual(seen.faces, ["Playfair Display", "Playfair Display", "Familjen Grotesk", "Familjen Grotesk", "Courier Prime", "Courier Prime"]);
+  assert.deepEqual(seen.loaded, [], "every face the page asks for is there");
+  assert.ok(seen.files.length >= 3 && seen.files.every((f) => /^(playfair|familjen|courier-prime|geist-arrows|noto-symbols)/.test(f)), seen.files.join(", "));
+  assert.deepEqual(seen.origins, [env.url], "and nothing is fetched from anywhere else");
+  // The envelope's name still fits beside the horse, and a long title still fits the ticket.
+  const fits = await page.evaluate(() => {
+    const within = (sel) => { const e = document.querySelector(sel), r = e.getBoundingClientRect(), p = e.parentElement.getBoundingClientRect(); return r.left >= p.left - 1 && r.right <= p.right + 1; };
+    return { title: within("#pickTitle"), head: document.querySelector(".t-head").scrollWidth <= document.querySelector(".t-head").clientWidth + 1, page: document.documentElement.scrollWidth <= innerWidth };
+  });
+  assert.deepEqual(fits, { title: true, head: true, page: true });
+  assert.deepEqual(await problems(page), []);
+  await context.close();
 });

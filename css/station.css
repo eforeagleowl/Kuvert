@@ -44,7 +44,7 @@
     --flap-face: #14243a;
     --flap-ink: #f3ebd9;
     --flap-hl: #e3c36e;
-    --flap-font: "Geist", "Noto Sans Symbols 2", ui-sans-serif, system-ui, sans-serif;
+    --flap-font: "Familjen Grotesk", "Noto Sans Symbols 2", ui-sans-serif, system-ui, sans-serif;
     --flap-weight: 600;
     --flap-scale: 0.64;
     --st-brass: #e3c36e;
@@ -875,7 +875,7 @@
     --flap-face: #04110a;
     --flap-ink: #8fe05a;
     --flap-hl: #ff5a4a;
-    --flap-font: "Geist Mono", ui-monospace, monospace;
+    --flap-font: "Courier Prime", "Courier New", ui-monospace, monospace;
     --flap-weight: 500;
     --flap-scale: 0.66;
     --st-brass: #8fe05a;

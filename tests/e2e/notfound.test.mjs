@@ -21,7 +21,7 @@ test("a missing page shows the crying Carolean, styled, with the way back to Kuv
     problems: window.__problems,
   }));
   assert.equal(seen.base, env.url + "/", "links start from the site's own folder");
-  assert.match(seen.title, /Cormorant/, "the page's stylesheets load");
+  assert.match(seen.title, /Playfair/, "the page's stylesheets load");
   assert.match(seen.art, /Carolean/);
   assert.ok(seen.wide <= 390, "no sideways scrolling on a phone");
   assert.deepEqual(seen.problems, [], "nothing blocked by the page's policy");

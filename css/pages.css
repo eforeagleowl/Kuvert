@@ -1373,7 +1373,7 @@
     justify-content: flex-end;
     gap: var(--s-1) var(--s-4);
   }
-  /* A real italic (Geist has none, so the browser would slant it): the display face's. */
+  /* A real italic (the text face is loaded without one, so the browser would slant it): the display face's. */
   .secret-door .link {
     color: var(--faint);
     font: italic 500 1.2rem var(--font-display);

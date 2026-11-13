@@ -109,9 +109,9 @@ export class Share {
   fonts() {
     const seagal = this.app.seagal;
     return {
-      display: seagal ? F_SEAGAL : '"Cormorant Garamond", Garamond, "Times New Roman", serif',
-      body: seagal ? F_SEAGAL : '"Geist", system-ui, sans-serif',
-      mono: seagal ? F_SEAGAL : '"Geist Mono", ui-monospace, Menlo, monospace',
+      display: seagal ? F_SEAGAL : '"Playfair Display", Georgia, "Times New Roman", serif',
+      body: seagal ? F_SEAGAL : '"Familjen Grotesk", system-ui, sans-serif',
+      mono: seagal ? F_SEAGAL : '"Courier Prime", "Courier New", ui-monospace, monospace',
       // SEAGAL's one face runs wide: smaller sizes.
       f: (spec) => (seagal ? spec.replace(/italic\s+/, "").replace(/(\d+)px/, (m, n) => Math.round(n * 0.74) + "px") : spec),
     };
@@ -119,7 +119,7 @@ export class Share {
   async ensureFonts() {
     const specs = this.app.seagal
       ? ['400 40px "Michroma"']
-      : ['600 80px "Cormorant Garamond"', '700 80px "Cormorant Garamond"', 'italic 500 30px "Cormorant Garamond"', '400 28px "Geist"', '600 28px "Geist"', '500 24px "Geist Mono"'];
+      : ['600 80px "Playfair Display"', '700 80px "Playfair Display"', 'italic 500 30px "Playfair Display"', '400 28px "Familjen Grotesk"', '600 28px "Familjen Grotesk"', '400 24px "Courier Prime"', '700 24px "Courier Prime"'];
     try {
       await Promise.all(specs.map((f) => document.fonts.load(f)));
     } catch {}
@@ -287,16 +287,20 @@ export class Share {
     ctx.font = F.f("500 24px " + F.mono);
     spaced(ctx, (f.y + (catalog.shelfOf(f) ? " · " + t(catalog.shelfOf(f).label) : "")).toUpperCase(), tx, cy, 3);
     const line = catalog.oscarLine(f);
+    // Where the words beside the poster end: a long title with a long award line runs past the poster's foot.
+    let wordsEnd = cy;
     if (line) {
       ctx.fillStyle = "#4A3B33";
       ctx.font = F.f("italic 500 32px " + F.display);
-      wrapLines(ctx, this.sg(line, line.replace(/^Lost to /, "Outgunned by ").replace(/^Beat /, "Took out ")), tw, 3).forEach((l, i) => {
+      const said = wrapLines(ctx, this.sg(line, line.replace(/^Lost to /, "Outgunned by ").replace(/^Beat /, "Took out ")), tw, 3);
+      said.forEach((l, i) => {
         ctx.textAlign = "left";
         ctx.fillText(l, tx, cy + 54 + i * 40);
       });
+      wordsEnd = cy + 54 + (said.length - 1) * 40;
     }
-    // Watched: stars, date, rank and the stamp. Otherwise, tonight's line.
-    const by = py + ph + 90;
+    // Watched: stars, date, rank and the stamp. Otherwise, tonight's line. Below the poster and the words, whichever ends lower.
+    const by = Math.max(py + ph, wordsEnd + 14) + 90;
     ctx.setLineDash([8, 8]);
     ctx.strokeStyle = "#9B8869";
     ctx.beginPath();

@@ -155,6 +155,13 @@
   html[data-mode="seagal"] .ticket.watched .stamp-sedd {
     opacity: 1 !important;
   }
+  /* The commendation stamp: on paper its blue ink is multiplied into the page; on this dark file that
+     left it too dim to read. Here it is stamped in the file's own light ink. */
+  html[data-mode="seagal"] .milestone-ink {
+    border-color: color-mix(in oklab, var(--ink) 70%, transparent);
+    color: var(--ink);
+    mix-blend-mode: normal;
+  }
   /* The tab bar is solid here: the case file under it would make its labels too faint. */
   html[data-mode="seagal"] .tabbar {
     background: var(--deep);

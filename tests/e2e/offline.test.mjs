@@ -86,7 +86,7 @@ test("Kuvert starts offline after one visit", async () => {
 
     await page.goto(url + "/");
     await newApp(page);
-    assert.equal(await page.evaluate(() => document.fonts.check("16px Geist")), true, "fonts come from the cache");
+    assert.equal(await page.evaluate(() => document.fonts.check('16px "Familjen Grotesk"')), true, "fonts come from the cache");
     await page.click("#drawBtn");
     await page.waitForSelector("#ticket:not([hidden])");
     assert.deepEqual(errors, []);

@@ -21,6 +21,12 @@
   .gala-years { color: #f3ebd9; font: 600 1.6rem/1 var(--font-display); letter-spacing: .06em; }
   [data-theme='gala'] .collection-art { background: radial-gradient(ellipse at 30% 0,#ebc86e30,transparent 70%),linear-gradient(140deg,#3a2b1f,#0c0907); }
   [data-theme='gala'] .collection-seal { background: #a52a33; }
+  /* The Christmas envelope: fir green, a little snow, a red seal. */
+  [data-theme='jul'] .collection-art { background: radial-gradient(circle at 22% 30%,#f3ebd92e 0 1.5px,transparent 2px) 0 0/34px 34px,radial-gradient(circle at 70% 72%,#f3ebd91f 0 1px,transparent 1.5px) 0 0/26px 26px,linear-gradient(140deg,#1f3d2e,#0a1510); }
+  [data-theme='jul'] .collection-seal { background: #a8322b; }
+  /* BAFTA Best Film: bronze on black. */
+  [data-theme='bafta'] .collection-art { background: radial-gradient(ellipse at 78% 110%,#b9793a55,transparent 62%),linear-gradient(140deg,#23262c,#0b0c0e); }
+  [data-theme='bafta'] .collection-seal { background: #8a5a2b; }
   .collection-number { position: absolute; top: 14px; left: 18px; font: 13px var(--font-mono); color: #e3c36e; }
   .collection-seal { position: absolute; bottom: 20px; right: 18px; z-index: 2; padding: 10px; font: 11px var(--font-mono); letter-spacing: .15em; color: #f3ebd9; border: 1px dashed #f3ebd9; border-radius: 50%; background: #9a3e39; transform: rotate(-10deg); }
   [data-theme='vinter'] .collection-art { background: radial-gradient(ellipse at 50% 0,#737f9650,transparent 80%),linear-gradient(130deg,#192b42,#0d1727); }

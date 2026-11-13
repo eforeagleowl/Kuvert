@@ -14,7 +14,7 @@ export function listSaves(storage) {
   const builtin = { id: "builtin", name: KUVERT.name, key: KEYS.builtin, ctx: listContext({ films: FILMS, catalogue: KUVERT.catalogue, olderCatalogues: KUVERT.olderCatalogues, retired: KUVERT.retired }) };
   const custom = Object.values(readCustomLists(storage))
     .filter((def) => def?.id && Array.isArray(def.films) && def.films.length)
-    .map((def) => ({ id: def.id, name: def.name, key: KEYS.list(def.id), ctx: listContext({ films: def.films, catalogue: def.catalogue, custom: true }) }));
+    .map((def) => ({ id: def.id, name: def.name, key: KEYS.list(def.id), ctx: listContext({ films: def.films, catalogue: def.catalogue, olderCatalogues: Array.isArray(def.olderCatalogues) ? def.olderCatalogues : [], custom: true }) }));
   return [builtin, ...custom];
 }
 

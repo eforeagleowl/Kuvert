@@ -72,6 +72,67 @@ test("on a laptop, a returning visitor sees the envelope and its button without 
   }
 });
 
+test("the ticket says what the film is about; the night's own stub leaves it out, and the stub in the Library has it", async () => {
+  const context = await newContext();
+  const page = await openPage(context, "/");
+  const { PREMISES } = await import("../../js/data/premises-en.js");
+  await page.evaluate(() => window.kuvert.app.stage.openFilm("1942-casablanca"));
+  await page.waitForSelector("#pickPremise:not([hidden])");
+  assert.equal(await page.textContent("#pickPremise"), PREMISES["1942-casablanca"]);
+  assert.match(await page.textContent("#pickPremise"), /^In wartime Casablanca, a cynical nightclub owner/);
+  // It reads across the ticket, under the film's facts and above the buttons, and never spills out of the paper.
+  const box = (sel) => page.evaluate((s) => document.querySelector(s).getBoundingClientRect().toJSON(), sel);
+  const [premise, body, actions, paper] = [await box("#pickPremise"), await box("#ticketBody"), await box("#ticketActions"), await box("#ticket .paper")];
+  assert.ok(premise.top >= body.bottom && premise.bottom <= actions.top, "between the facts and the buttons");
+  assert.ok(premise.left >= paper.left && premise.right <= paper.right, "inside the ticket");
+  // Another film: its own line, with no moment of the first one's.
+  await page.evaluate(() => window.kuvert.app.stage.openFilm("1976-rocky"));
+  await page.waitForFunction((line) => document.getElementById("pickPremise").textContent === line, PREMISES["1976-rocky"]);
+  // Marked as watched tonight: the stub is about the stars, so the line steps aside…
+  await page.click("#markBtn");
+  await page.waitForSelector("#watchedPanel:not([hidden])");
+  assert.equal(await page.isHidden("#pickPremise"), true, "not on the night's own stub");
+  await page.click("#wpDone");
+  // …and is back when the stub is opened again from the Library, to remember the film by.
+  await page.evaluate(() => window.kuvert.app.stage.openFilm("1976-rocky"));
+  await page.waitForSelector("#watchedPanel:not([hidden])");
+  await page.waitForSelector("#pickPremise:not([hidden])");
+  assert.equal(await page.textContent("#pickPremise"), PREMISES["1976-rocky"]);
+  // The premise files are fetched as needed, never with the page: only the page's language.
+  const fetched = await page.evaluate(() => performance.getEntriesByType("resource").map((r) => r.name).filter((n) => /premises-/.test(n)));
+  assert.equal(fetched.length, 1);
+  assert.match(fetched[0], /js\/data\/premises-en\.js$/);
+  assert.equal(await page.locator('link[rel="modulepreload"][href*="premises-"]').count(), 0, "not in the start-up list");
+  assert.deepEqual(await problems(page), []);
+  await context.close();
+});
+
+test("a film Kuvert has no line for (your own list's) shows a ticket without one", async () => {
+  const context = await newContext();
+  const page = await openPage(context, "/");
+  // A list of your own: one film Kuvert knows (same title and year, so the same id), one it doesn't.
+  await page.evaluate(async () => {
+    const { buildListDefinition, readCustomLists, writeCustomLists } = await import("./js/data/lists.js");
+    const def = buildListDefinition({ id: "mine", name: "Mine", films: [{ title: "Casablanca", year: 1942 }, { title: "A Home Movie Nobody Knows", year: 2019 }] });
+    const lists = readCustomLists(localStorage);
+    lists[def.id] = def;
+    writeCustomLists(localStorage, lists);
+    localStorage.setItem("kuvert:activeList", "mine");
+  });
+  await page.reload();
+  await page.waitForFunction(() => window.kuvert?.app?.list.id === "mine");
+  await page.evaluate(() => window.kuvert.app.stage.openFilm("2019-a-home-movie-nobody-knows"));
+  await page.waitForSelector("#ticket:not([hidden])");
+  await page.waitForFunction(() => !window.kuvert.app.stage.busy);
+  await page.evaluate(() => window.kuvert.app.stage.openFilm("1942-casablanca"));
+  await page.waitForSelector("#pickPremise:not([hidden])");
+  assert.match(await page.textContent("#pickPremise"), /^In wartime Casablanca/, "a film Kuvert knows has its line in any list");
+  await page.evaluate(() => window.kuvert.app.stage.openFilm("2019-a-home-movie-nobody-knows"));
+  await page.waitForFunction(() => document.getElementById("pickTitle").textContent.includes("Home Movie") && document.getElementById("pickPremise").hidden);
+  assert.deepEqual(await problems(page), []);
+  await context.close();
+});
+
 test("the next day: Watched it dates the film the night it was drawn, and opens on its stars", async () => {
   const context = await newContext();
   const page = await openPage(context, "/");

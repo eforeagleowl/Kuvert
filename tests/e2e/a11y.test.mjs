@@ -109,9 +109,13 @@ for (const [lang, mode, width] of [
         await page.evaluate((d) => document.getElementById(d).close(), id);
       }
       await page.evaluate(() => window.kuvert.app.router.show("journeys"));
-      await page.locator("#curatedGrid .collection-card:not(.gala-card)").last().locator("button").last().click();
+      await page.locator("#curatedGrid .collection-card:not(.gala-card, .award-card)").last().locator("button").last().click();
       await page.waitForSelector("#journeyDialog[open]");
       await check("an envelope's preview", "#journeyDialog");
+      await page.evaluate(() => document.getElementById("journeyDialog").close());
+      await page.locator("#curatedGrid .award-card").locator("button").last().click();
+      await page.waitForSelector("#journeyDialog[open]");
+      await check("an award list's preview", "#journeyDialog");
       await page.evaluate(() => document.getElementById("journeyDialog").close());
       await page.evaluate(() => window.kuvert.app.router.show("stats"));
       await page.click("#openPassport");

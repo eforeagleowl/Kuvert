@@ -8,9 +8,10 @@ to your home screen, and it works offline after your first visit.
 
 ## What it does
 
-- **The draw.** Break the seal, watch the year dial roll, and pull out tonight's ticket, with a link to
-  where it's streaming. Series play in order, and you can set one film aside for later. Drew one you saw
-  years ago? "Seen it before" marks it and draws another.
+- **The draw.** Break the seal, watch the year dial roll, and pull out tonight's ticket: the film, one
+  line on what it's about (never more than where it starts), and a link to where it's streaming. Series
+  play in order, and you can set one film aside for later. Drew one you saw years ago? "Seen it before"
+  marks it and draws another.
 - **Tonight's filters.** Draw only films that fit the time you have, suit a mood, are on your streaming
   services, or are discs on your shelf.
 - **The station.** A split-flap departure board makes the same draw: the board flips, a chime rings, and
@@ -26,9 +27,13 @@ to your home screen, and it works offline after your first visit.
   watched), and the draw only picks films none of you has seen.
 - **Your own lists.** Import any film list, or bring your history in from Letterboxd.
 - **Envelopes.** Small curated collections (seven nights of noir, a Swedish winter, first steps into
-  silent cinema, a Hitchcock week), each with its own progress, context cards and a printable keepsake
-  when it's done. Galan, every Best Picture nominee from all 98 ceremonies, is there too. A film you've
-  watched in one list is watched in every list that has it.
+  silent cinema, a Hitchcock week, and a Christmas envelope that moves to the front of the shelf from
+  November to Epiphany), each with its own progress, context cards and a printable keepsake when it's
+  done. A film you've watched in one list is watched in every list that has it.
+- **Award lists.** Every winner of the British Academy's Best Film, 80 films from 1947 to today, as a
+  list of its own on the Envelopes page, in the award's own words ("Won at the 36th British Academy Film
+  Awards."). Most of them are Kuvert films already, so what you've watched is already ticked. Galan,
+  every Best Picture nominee from all 98 ceremonies, is there too.
 - **Sealed invitations.** Send a friend tonight's film as a link or QR code; they break the seal to see it.
 - **Cinema passport.** A printable journal of the films you've watched, for all time or one year.
 - **Film club.** Friends agree on a film together and reveal their stars at the same moment. It needs
@@ -50,7 +55,7 @@ can:
 - copy a short progress code, or
 - turn on sync through a private GitHub Gist.
 
-Offline film facts include a source-linked runtime, director and suggested moods for every film in every list Kuvert ships (664 films). Posters, cast and current streaming offers come from [TMDB](https://www.themoviedb.org/). Connect a personal TMDB key in Settings, or let the optional Kuvert service supply them using its operator token. Sources and edition notes are documented in [EDITORIAL.md](docs/EDITORIAL.md).
+Offline film facts include a source-linked runtime, director, suggested moods and a one-line premise (in English and Swedish) for every film in every list Kuvert ships (684 films). Posters, cast and current streaming offers come from [TMDB](https://www.themoviedb.org/). Connect a personal TMDB key in Settings, or let the optional Kuvert service supply them using its operator token. Sources and edition notes are documented in [EDITORIAL.md](docs/EDITORIAL.md).
 
 Kuvert can also carry posters of its own for all of those films, so visitors see them without a key, in
 every list. They're off until a repository secret named `TMDB_TOKEN` holds a TMDB API read access token.

@@ -8,7 +8,7 @@
 // small on purpose: no libraries, and nothing but the app and its posters is ever cached.
 
 // <stamp> written by tools/stamp.mjs (npm run stamp); do not edit by hand.
-const VERSION = "2faff1bff6e3";
+const VERSION = "4a0e3533cb7c";
 const FILES = [
   "./",
   "./manifest.webmanifest",
@@ -31,7 +31,9 @@ const FILES = [
   "./js/compat/legacy-ids.js",
   "./js/compat/serialize.js",
   "./js/compat/validate.js",
+  "./js/data/award-lists.js",
   "./js/data/awards.js",
+  "./js/data/bafta.js",
   "./js/data/basics.js",
   "./js/data/catalogue.js",
   "./js/data/ceremonies.js",
@@ -39,10 +41,13 @@ const FILES = [
   "./js/data/films.js",
   "./js/data/lists.js",
   "./js/data/posters.js",
+  "./js/data/premises-en.js",
+  "./js/data/premises-sv.js",
   "./js/fun/gala.js",
   "./js/fun/seagal.js",
   "./js/i18n/index.js",
   "./js/i18n/journeys.js",
+  "./js/i18n/premises.js",
   "./js/i18n/sv.js",
   "./js/i18n/titles-sv.js",
   "./js/i18n/titles.js",

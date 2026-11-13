@@ -131,9 +131,11 @@ plays all three as real releases.
 `js/data/films.js` is the film table: every film Kuvert ships, once, with its title, year, series,
 Wikidata item, TMDB entry and source-linked facts. Lists don't repeat any of that. The built-in list
 (`catalogue.js`) is rows of id, shelf and ceremony; a ballot (`ceremonies.js`) is one line with its
-films' ids, winner first; an envelope (`curated.js`) picks ids and keeps its own notes. `basics.js`
-turns a table row into the record the ticket and the filters read. `tools/catalogue-check.mjs` checks
-all of them against the table, and `tools/film-facts.mjs` prints the line for a new film.
+films' ids, winner first; an envelope (`curated.js`) picks ids and keeps its own notes; an award list
+(`award-lists.js`, with its winners in a file of their own such as `bafta.js`) is rows of ceremony and
+winner. `basics.js` turns a table row into the record the ticket and the filters read.
+`tools/catalogue-check.mjs` checks all of them against the table, and `tools/film-facts.mjs` prints the
+line for a new film.
 
 Because every list names a film by the same id, a film watched in one list is watched in each list
 that has it (`js/state/shared.js`). Every list still keeps its own save, so backups, codes and sync
@@ -141,8 +143,23 @@ stay per list: the film comes along when the other list opens, and until then th
 counts it already. A film un-marked or set aside in a list stays as that list left it.
 
 `js/data/awards.js` says what an award calls its prize, its ceremony and its trophy. A list follows an
-award by naming it; the built-in list and Galan follow the Oscars, and a list that follows none gets
-plain words. The catalog hands the views `award` and `prize`, so no view names an award itself.
+award by naming it; the built-in list and Galan follow the Oscars, the British Academy's winners follow
+theirs, and a list that follows none gets plain words. The catalog hands the views `award` and `prize`,
+so no view names an award itself. A new award list is three things: its winners as rows, its words in
+`awards.js`, and an entry in `award-lists.js`; the Envelopes page gives it a card.
+
+A list Kuvert ships can change after someone has installed it: an envelope swaps a film, an award list
+gains a winner, Galan gains a ceremony. The installed copy is rebuilt when Kuvert starts
+(`upgradeCurated` in `js/views/journeys.js`, `installGalaList`). A list's catalogue name counts its
+films, and a save is read only by the list it names, so a rebuilt list remembers the names it had
+(`supersede` in `js/data/lists.js`) and its save takes the new one (`renameSave`): progress, and
+backups made before the change, stay readable.
+
+The premise lines (`js/data/premises-en.js`, `premises-sv.js`) are one line per film on what it is
+about, keyed by the same ids. They are the one piece of film data that is not loaded at start-up:
+`js/i18n/premises.js` fetches the file for the page's language when the page has settled, or when the
+first ticket asks, and the ticket shows the line when it arrives (`paintPremise` in
+`js/views/stage.js`). The service worker caches both files like everything else, so they work offline.
 
 Swedish titles (`js/i18n/titles-sv.js`) and posters (`js/data/posters.js`, written by
 `tools/posters.mjs`) are keyed by the same ids, so they too reach every list with the film.

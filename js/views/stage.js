@@ -12,6 +12,7 @@ import { fmtDay, dayLong, dateFull, defaultWatchDate } from "../state/dates.js";
 import { t, decimal } from "../i18n/index.js";
 import { titleParts } from "../i18n/titles.js";
 import { metadataFor } from "./journeys.js";
+import { premises } from "../i18n/premises.js";
 
 const VERDICTS = [
   ["yes", "Yes"],
@@ -40,6 +41,9 @@ export class Stage {
     // The stand-in poster's title is fitted again whenever its card changes size, and once the fonts are in.
     if (typeof ResizeObserver === "function") new ResizeObserver(() => this.fitCard()).observe($("posterWell"));
     document.fonts?.ready.then(() => this.fitCard());
+    // The premise lines are fetched once the page has settled, so the first ticket already has its line.
+    if (typeof requestIdleCallback === "function") requestIdleCallback(() => premises(), { timeout: 4000 });
+    else setTimeout(premises, 1500);
   }
 
   /** The stand-in poster's title (no poster yet) gets smaller until it fits its card, clear of the year:
@@ -678,6 +682,7 @@ export class Stage {
     const wasOpen = this.open;
     if (!fresh || !wasOpen) this.showInfo(film);
     this.setMode("watched");
+    if (fresh) $("pickPremise").hidden = true;
     this.showExtras(!fresh);
     this.renderWatched();
     if (!wasOpen) await this.openStage({ animate: true, year: film.y });
@@ -877,6 +882,16 @@ export class Stage {
   }
 
   // ---------------------------------------------------------------- film details from TMDB
+  /** What the film is about, in one line. The night's own stub goes without: there the stars come first. */
+  async paintPremise(f, req) {
+    const el = $("pickPremise");
+    el.hidden = true;
+    if (!f || f.kind === "album") return;
+    const line = (await premises())[f.id];
+    if (req !== this.infoReq || !line) return;
+    el.textContent = line;
+    el.hidden = this.mode === "watched" && this.fresh;
+  }
   async showInfo(f) {
     const req = ++this.infoReq,
       { details, seagal } = this.app;
@@ -889,6 +904,7 @@ export class Stage {
     this.ticket.classList.remove("loading", "no-details");
     $("moreDetails").hidden = !f;
     this.app.seagalCassette?.(f);
+    this.paintPremise(f, req);
     if (!f) return;
     if (f.kind === "album") {
       // An album on the list: nothing to look up on TMDB.

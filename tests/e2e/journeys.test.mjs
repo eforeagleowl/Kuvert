@@ -3,10 +3,12 @@ import assert from 'node:assert/strict';
 import {newContext,openPage,problems} from './helpers.mjs';
 test('curated envelope, offline facts, reflection, invitation and private-note journal',async()=>{
  const context=await newContext({welcomed:false});const page=await openPage(context,'/');
- await page.click('a[data-route="journeys"]:visible');assert.equal(await page.locator('#curatedGrid .collection-card:not(.gala-card)').count(),4);
- assert.equal(await page.locator('#curatedGrid .collection-card').first().locator('.collection-films li').count(),7,'the envelope shows its seven films');
+ await page.click('a[data-route="journeys"]:visible');assert.equal(await page.locator('#curatedGrid .collection-card:not(.gala-card,.award-card)').count(),5);
+ // By name: an envelope in season leads the shelf, so which one comes first depends on the day.
+ const noir=page.locator('#curatedGrid .collection-card',{hasText:'Seven Nights of Noir'});
+ assert.equal(await noir.locator('.collection-films li').count(),7,'the envelope shows its seven films');
  assert.equal(await page.locator('#ceremonySelect').count(),0);assert.equal(await page.locator('#clubTeaser').isVisible(),false,'no club service here, so no club on offer');
- await page.locator('#curatedGrid .collection-card').first().getByRole('button',{name:'Start this envelope',exact:true}).click();
+ await noir.getByRole('button',{name:'Start this envelope',exact:true}).click();
  await page.waitForFunction(()=>window.kuvert?.app?.list.id==='curated-noir');
  await page.evaluate(()=>window.kuvert.app.stage.openFilm('1944-double-indemnity'));
  await page.waitForSelector('#ticket:not([hidden])');await page.waitForFunction(()=>!window.kuvert.app.stage.busy);
@@ -80,4 +82,77 @@ test('a film watched in one list is watched in every list that has it, and Galan
  await page.click('#drawBtn');await page.waitForFunction(()=>!window.kuvert.app.stage.busy&&window.kuvert.app.stage.open);
  assert.match(await page.textContent('#pickFacts'),/90 min · Dir\. Roland West/i);
  assert.deepEqual(await problems(page),[]);await context.close();
+});
+test('BAFTA Best Film: every winner as a list of its own, in the British Academy\'s words, with what was watched elsewhere',async()=>{
+ const context=await newContext();const page=await openPage(context,'/');
+ // The Apartment won both prizes. Watched in Kuvert's own list, it counts on the BAFTA card before that list is ever opened.
+ await page.evaluate(()=>{const{store}=window.kuvert.app;store.markSeen('1960-the-apartment',true,{date:'2026-02-14'});store.markSeen('1995-heat',true);});
+ await page.evaluate(()=>window.kuvert.app.router.show('journeys'));
+ const card=page.locator('.award-card');
+ assert.match(await card.textContent(),/BAFTA Best Film/);assert.match(await card.textContent(),/80 films · 1 watched/);assert.match(await card.textContent(),/1947 – 2025/);
+ // Look inside: all eighty, and the way in.
+ await card.getByRole('button',{name:'Look inside',exact:true}).click();await page.waitForSelector('#journeyDialog[open]');
+ assert.equal(await page.locator('#journeyContent li').count(),80);assert.match(await page.textContent('#journeyContent'),/Bicycle Thieves/);assert.doesNotMatch(await page.textContent('#journeyContent'),/null|— min/);
+ assert.equal(await page.locator('#journeyContent').getByRole('button',{name:'Start this list',exact:true}).count(),1);
+ await page.click('#journeyClose');
+ await Promise.all([page.waitForEvent('load'),card.getByRole('button',{name:'Start this list',exact:true}).click()]);await page.waitForFunction(()=>window.kuvert?.app?.list.id==='bafta');
+ const there=await page.evaluate(()=>{const{list,catalog,store}=window.kuvert.app;return{films:catalog.films.length,award:list.award,prize:catalog.prize,seen:[...store.p.seen],date:store.p.dates['1960-the-apartment'],palette:document.documentElement.dataset.palette,name:document.querySelector('[data-name]').textContent,title:document.title};});
+ assert.deepEqual(there,{films:80,award:'bafta',prize:'Best Film',seen:['1960-the-apartment'],date:'2026-02-14',palette:'natt',name:'BAFTA Best Film',title:'BAFTA Best Film'},'Heat never won it, so it stays behind');
+ assert.match(await page.textContent('#toast'),/1 film came along from Kuvert/);
+ // A winner's ticket: the British Academy's ceremony and what the film is about.
+ await page.evaluate(()=>window.kuvert.app.stage.openFilm('1982-gandhi'));await page.waitForFunction(()=>!window.kuvert.app.stage.busy&&window.kuvert.app.stage.open);
+ assert.match(await page.textContent('#ticket'),/Won at the 36th British Academy Film Awards\./);assert.equal(await page.textContent('#pickMeta'),'1982 · Best Film winner');
+ await page.waitForSelector('#pickPremise:not([hidden])');
+ // The year two films shared the prize.
+ await page.evaluate(()=>window.kuvert.app.stage.openFilm('1961-the-hustler'));await page.waitForFunction(()=>/The Hustler/.test(document.getElementById('pickTitle').textContent));
+ assert.equal(await page.textContent('#oscarLine'),'Shared the prize with Ballad of a Soldier at the 15th British Academy Film Awards.');
+ // Two of the three Lord of the Rings films won: here they are films of their own, not parts of a series.
+ await page.evaluate(()=>window.kuvert.app.stage.openFilm('2003-the-lord-of-the-rings-the-return-of-the-king'));await page.waitForFunction(()=>/Return of the King/.test(document.getElementById('pickTitle').textContent));
+ assert.equal(await page.isHidden('#pickNote'),true);
+ // Every winner has a runtime and moods, the seventeen that are new to Kuvert too.
+ const facts=await page.evaluate(()=>{const{store,catalog}=window.kuvert.app;return{runtimes:catalog.films.filter(f=>store.p.runtimes[f.id]).length,moods:catalog.films.filter(f=>store.moodsFor(f.id).length).length};});
+ assert.deepEqual(facts,{runtimes:80,moods:80});
+ // Watched here, judged here: the question names the prize, and the film it shared with is not offered as one it beat.
+ await page.evaluate(()=>window.kuvert.app.stage.openFilm('1961-the-hustler'));await page.waitForFunction(()=>/The Hustler/.test(document.getElementById('pickTitle').textContent));
+ await page.click('#markBtn');await page.waitForSelector('#watchedPanel:not([hidden])');await page.click('#wpMore');
+ assert.equal(await page.textContent('#wpVerdictLabel'),'Deserved Best Film?');
+ await page.locator('#wpVerdictGroup').getByRole('button',{name:'No',exact:true}).click();
+ await page.waitForSelector('#wpShouldWrap:not([hidden])');
+ assert.deepEqual(await page.$$eval('#wpShould option',o=>o.map(x=>x.textContent)),['Pick a film…','A nominee not on my list']);
+ await page.evaluate(()=>window.kuvert.app.router.show('library'));assert.equal(await page.textContent('#leftline'),'78 winners still to watch.');
+ // Its card now leads back to Kuvert, where The Hustler (an Oscar nominee) has come along.
+ await page.evaluate(()=>window.kuvert.app.router.show('journeys'));
+ assert.match(await page.locator('.award-card').textContent(),/80 films · 2 watched/);
+ assert.equal(await page.locator('.award-card').getByRole('button',{name:'Start this list',exact:true}).count(),0);
+ await Promise.all([page.waitForEvent('load'),page.locator('.award-card').getByRole('button',{name:'Back to Kuvert',exact:true}).click()]);await page.waitForFunction(()=>window.kuvert?.app?.list.id==='builtin');
+ assert.deepEqual(await page.evaluate(()=>{const p=window.kuvert.app.store.p;return{hustler:p.seen.has('1961-the-hustler'),heat:p.seen.has('1995-heat'),films:window.kuvert.app.catalog.films.length};}),{hustler:true,heat:true,films:275});
+ assert.match(await page.textContent('#toast'),/1 film came along from BAFTA Best Film/);
+ await page.evaluate(()=>window.kuvert.app.router.show('journeys'));
+ assert.match(await page.locator('.award-card').textContent(),/Continue this list/,'begun, so its button says so');
+ assert.deepEqual(await problems(page),[]);await context.close();
+});
+test('the Christmas envelope: seven films with a note each, first on the shelf in season and in its place the rest of the year',async()=>{
+ const context=await newContext();await context.clock.setFixedTime(new Date('2026-12-10T19:00:00'));
+ const page=await openPage(context,'/');
+ await page.evaluate(()=>window.kuvert.app.store.markSeen('1960-the-apartment',true));
+ await page.evaluate(()=>window.kuvert.app.router.show('journeys'));
+ assert.deepEqual(await page.$$eval('#curatedGrid .collection-card h2',h=>h.map(x=>x.textContent)),['The Christmas Envelope','Seven Nights of Noir','A Swedish Winter','First Steps into Silent Cinema','Hitchcock Week','BAFTA Best Film','Galan']);
+ const card=page.locator('#curatedGrid .collection-card',{hasText:'The Christmas Envelope'});
+ assert.equal(await card.getAttribute('data-theme'),'jul');assert.match(await card.textContent(),/7 films · 1 watched/,'The Apartment, watched in the main list');assert.equal(await card.locator('.collection-films li').count(),7);
+ await Promise.all([page.waitForEvent('load'),card.getByRole('button',{name:'Start this envelope',exact:true}).click()]);await page.waitForFunction(()=>window.kuvert?.app?.list.id==='curated-christmas');
+ assert.equal(await page.evaluate(()=>document.documentElement.dataset.palette),'falu');
+ await page.evaluate(()=>window.kuvert.app.stage.openFilm('1940-the-shop-around-the-corner'));await page.waitForFunction(()=>!window.kuvert.app.stage.busy&&window.kuvert.app.stage.open);
+ assert.match(await page.textContent('#pickFacts'),/99 min · Dir\. Ernst Lubitsch/i);
+ await page.waitForSelector('#pickPremise:not([hidden])');assert.match(await page.textContent('#pickPremise'),/^Two clerks in a Budapest gift shop/);
+ await page.click('#moreDetails > summary');assert.match(await page.textContent('#filmContext'),/cigarette box that plays a tune/);assert.doesNotMatch(await page.textContent('#filmContext'),/null/);
+ // It's a Wonderful Life: the envelope's own figure and source for the edition it recommends.
+ await page.evaluate(()=>window.kuvert.app.stage.openFilm('1946-it-s-a-wonderful-life'));await page.waitForFunction(()=>/Wonderful Life/.test(document.getElementById('pickTitle').textContent));
+ assert.match(await page.textContent('#pickFacts'),/131 min · Dir\. Frank Capra/i);
+ await page.waitForFunction(()=>/Listed at 131 minutes/.test(document.getElementById('filmContext').textContent));
+ assert.deepEqual(await problems(page),[]);await context.close();
+ // In July it waits its turn at the end of the shelf.
+ const summer=await newContext();await summer.clock.setFixedTime(new Date('2027-07-01T19:00:00'));
+ const later=await openPage(summer,'/');await later.evaluate(()=>window.kuvert.app.router.show('journeys'));
+ assert.deepEqual(await later.$$eval('#curatedGrid .collection-card h2',h=>h.map(x=>x.textContent)),['Seven Nights of Noir','A Swedish Winter','First Steps into Silent Cinema','Hitchcock Week','The Christmas Envelope','BAFTA Best Film','Galan']);
+ assert.deepEqual(await problems(later),[]);await summer.close();
 });

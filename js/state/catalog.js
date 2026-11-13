@@ -100,13 +100,17 @@ export function makeCatalog(list, { posters = {} } = {}) {
   const ceremonyFilms = (c) => films.filter((f) => f.c === c && (f.s === "W" || f.s === "N"));
   const ceremonyWinner = (c) => ceremonyFilms(c).find(isWinner) || null;
   // "Lost to Rocky at the 49th Academy Awards." / "Beat Taxi Driver, All the President's Men and 2 more at …"
+  // A tied year: "Shared the prize with The Hustler at the 15th British Academy Film Awards."
   function oscarLine(f) {
     if (!f || !Number.isInteger(f.c) || (f.s !== "W" && f.s !== "N")) return "";
     const at = t(" at the {ord} {ceremony}.", { ord: ordinal(f.c), ceremony: ceremonyName });
     if (isWinner(f)) {
-      const others = ceremonyFilms(f.c).filter((x) => x !== f),
+      const rest = ceremonyFilms(f.c).filter((x) => x !== f),
+        shared = rest.filter(isWinner),
+        others = rest.filter((x) => !isWinner(x)),
         total = fieldSize(f.c),
-        more = total ? Math.max(0, total - 1 - others.length) : 0;
+        more = total ? Math.max(0, total - 1 - rest.length) : 0;
+      if (shared.length) return t("Shared the prize with {titles}", { titles: joinTitles(shared.map((x) => x.t), 0) }) + at;
       if (others.length) return t("Beat {titles}", { titles: joinTitles(others.map((x) => x.t), more) }) + at;
       return total ? t("Beat {n} other nominees", { n: total - 1 }) + at : t("Won") + at;
     }

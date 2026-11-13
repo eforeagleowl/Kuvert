@@ -52,7 +52,7 @@ function builtinList() {
 }
 function listFor(definition) {
   if (!definition) return builtinList();
-  return { ...definition, custom: true, definition, storageKey: KEYS.list(definition.id), olderCatalogues: [], retired: [] };
+  return { ...definition, custom: true, definition, storageKey: KEYS.list(definition.id), olderCatalogues: definition.olderCatalogues || [], retired: [] };
 }
 function checkedDefinition(raw, id) {
   assertObject(raw, "list definition");
@@ -86,6 +86,11 @@ function checkedDefinition(raw, id) {
   if (raw.version != null) {
     if (!Number.isSafeInteger(raw.version) || raw.version < 1) throw Error("Invalid library list version.");
     clean.version = raw.version;
+  }
+  // The names the list went by before it changed length (js/data/lists.js supersede).
+  if (raw.olderCatalogues != null) {
+    if (!Array.isArray(raw.olderCatalogues) || raw.olderCatalogues.length > 12 || raw.olderCatalogues.some((c) => typeof c !== "string" || !c.startsWith("custom:" + id + ":") || c.length > 200)) throw Error("Invalid library catalog.");
+    if (raw.olderCatalogues.length) clean.olderCatalogues = [...raw.olderCatalogues];
   }
   return clean;
 }

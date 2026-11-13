@@ -7,7 +7,7 @@ import { KEYS } from "../compat/keys.js";
 import { CEREMONIES } from "../data/ceremonies.js";
 import { KUVERT } from "../data/catalogue.js";
 import { listed } from "../data/films.js";
-import { buildListDefinition, readCustomLists, writeCustomLists } from "../data/lists.js";
+import { buildListDefinition, readCustomLists, writeCustomLists, supersede, renameSave } from "../data/lists.js";
 
 export const GALA_LIST_ID = "gala";
 // Bump when the ballots change, so installed copies are rebuilt (ids stay, so progress stays).
@@ -47,9 +47,12 @@ export function installGalaList(storage) {
     films: galaFilms(),
   });
   def.version = GALA_VERSION;
-  lists[def.id] = def;
+  // A new ceremony makes the list longer: the copy installed before, and its save, come along (js/data/lists.js).
+  const old = lists[def.id];
+  lists[def.id] = supersede(old, def);
   writeCustomLists(storage, lists);
-  return def;
+  renameSave(storage, old, lists[def.id]);
+  return lists[def.id];
 }
 
 export function enterGala(storage) {

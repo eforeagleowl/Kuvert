@@ -2,8 +2,9 @@ import { $, h, s, icon, copyText, keepFocus } from "../ui/dom.js";
 import { t, swedish, LOCALE } from "../i18n/index.js";
 import { localFilm, titleParts } from "../i18n/titles.js";
 import { CURATED_COLLECTIONS, CURATED_METADATA } from "../data/curated.js";
+import { AWARD_LISTS } from "../data/award-lists.js";
 import { BASIC_METADATA } from "../data/basics.js";
-import { buildListDefinition, readCustomLists, writeCustomLists } from "../data/lists.js";
+import { buildListDefinition, readCustomLists, writeCustomLists, supersede, renameSave } from "../data/lists.js";
 import { KEYS } from "../compat/keys.js";
 import { invitationURL, decodeInvitation } from "../journeys/invitations.js";
 import { qrSVG } from "../journeys/qr.js";
@@ -34,14 +35,15 @@ export function seedBasics(store) {
   if (changed && !store.writeLocked) store.persist();
 }
 
-// An envelope's films can change in a later version (A Swedish Winter's version 2 swapped a film). A copy
-// installed earlier is brought up to date when Kuvert starts, unless its progress mentions a film that's
-// no longer in it: then it stays as it was, so nothing recorded there is lost.
-export function upgradeCurated(storage) {
+// An envelope's films can change in a later version (A Swedish Winter's version 2 swapped a film), and an
+// award list grows by a winner a year. A copy installed earlier is brought up to date when Kuvert starts,
+// unless its progress mentions a film that's no longer in it: then it stays as it was, so nothing
+// recorded there is lost.
+export function upgradeCurated(storage, packs = [...CURATED_COLLECTIONS, ...AWARD_LISTS]) {
   let lists;
   try { lists = readCustomLists(storage); } catch { return; }
-  let changed = false;
-  for (const pack of CURATED_COLLECTIONS) {
+  const rebuilt = [];
+  for (const pack of packs) {
     const old = lists[pack.id];
     if (!old || (old.version || 1) >= (pack.version || 1)) continue;
     const keep = new Set(pack.films.map((f) => f.id));
@@ -53,11 +55,25 @@ export function upgradeCurated(storage) {
       progress = JSON.stringify(rest);
     } catch { continue; }
     if (gone.some((id) => progress.includes('"' + id + '"'))) continue;
-    lists[pack.id] = { ...buildListDefinition(pack), version: pack.version || 1 };
-    changed = true;
+    lists[pack.id] = supersede(old, { ...buildListDefinition(pack), version: pack.version || 1 });
+    rebuilt.push([old, lists[pack.id]]);
   }
-  if (changed) try { writeCustomLists(storage, lists); } catch {}
+  if (!rebuilt.length) return;
+  try { writeCustomLists(storage, lists); } catch { return; }
+  // A list that changed length has a new catalogue name: its save takes it too (js/data/lists.js).
+  for (const [old, fresh] of rebuilt) renameSave(storage, old, fresh);
 }
+
+// An envelope with a season leads the shelf while it lasts: the Christmas envelope from November to Epiphany.
+export function inSeason(pack, now = new Date()) {
+  if (!pack.season) return false;
+  const at = ([month, day]) => month * 100 + day,
+    today = at([now.getMonth() + 1, now.getDate()]),
+    from = at(pack.season.from),
+    to = at(pack.season.to);
+  return from <= to ? today >= from && today <= to : today >= from || today <= to;
+}
+export const shelfOrder = (packs, now = new Date()) => [...packs.filter((p) => inSeason(p, now)), ...packs.filter((p) => !inSeason(p, now))];
 
 const button = (text, fn, cls = "btn") => h("button", { type: "button", class: cls, text: t(text), on: { click: fn } });
 const sourceLink = source => {
@@ -104,14 +120,22 @@ export class Journeys {
       location.reload();
     } catch(e) { this.app.toast.show(t(e.message)); }
   }
+  // Back to Kuvert's own list, from an award list's card. (A list whose save can't be read has nothing to
+  // save first: leaving it is always possible.)
+  home() {
+    const { storage, store } = this.app;
+    if (!storage) return;
+    if (!store.writeLocked && (store.dirty || !store.persist())) return this.app.toast.show(t("Progress could not be saved. Download a backup before changing lists."));
+    try { storage.setItem(KEYS.activeList, "builtin"); location.hash = "tonight"; location.reload(); } catch(e) { this.app.toast.show(t(e.message)); }
+  }
   render() {
     if (this.app.seagal) return;
     this.records = null; // read afresh: another list's save may have changed
     keepFocus(() => {
-      $("curatedGrid").replaceChildren(...CURATED_COLLECTIONS.map((pack, index) => {
+      $("curatedGrid").replaceChildren(...shelfOrder(CURATED_COLLECTIONS).map((pack, index) => {
         const seen = this.progress(pack.id), count = pack.films.filter(f => seen.has(f.id)).length;
         const title = localized(pack.title || pack.name);
-        return h("article", {class:"collection-card", dataset:{theme:pack.palette || "kuvert"}},
+        return h("article", {class:"collection-card", dataset:{theme:pack.art || pack.palette || "kuvert"}},
           h("div", {class:"collection-art"}, h("span",{class:"collection-number",attrs:{"aria-hidden":"true"},text:"0"+(index+1)}), this.filmStrip(pack.films, seen), h("span",{class:"collection-seal",attrs:{"aria-hidden":"true"},text:pack.badge})),
           h("div",{class:"collection-copy"},h("p",{class:"kicker",text:t("Curated envelope")}),h("h2",{text:title}),
             h("p",{text:localized(pack.tagline || pack.introduction || pack.description || pack.subtitle)}),
@@ -120,7 +144,7 @@ export class Journeys {
             count === pack.films.length ? h("p",{class:"completion-stamp",text:localized(pack.completion)}) : null,
             h("div",{class:"row"},button(this.begun(pack.id) ? "Continue this envelope" : "Start this envelope",()=>this.start(pack),"btn btn-primary"),button("Look inside",()=>this.preview(pack))),
             count === pack.films.length ? button("Print your keepsake",()=>this.passport.show({listId:pack.id})) : null));
-      }), this.galaCard());
+      }), ...AWARD_LISTS.map((list) => this.awardCard(list)), this.galaCard());
       $("clubTeaser").hidden = !this.app.club?.available;
     });
   }
@@ -133,6 +157,17 @@ export class Journeys {
         h("span",{attrs:{"aria-hidden":"true"},text:String(f.y)}),
         h("span",{class:"sr-only",text:name+(seen.has(f.id)?t(", watched"):"")}));
     }));
+  }
+  // An award list (js/data/award-lists.js): every winner of one prize. What you've watched in other lists counts.
+  awardCard(list) {
+    const here=this.app.list.id===list.id, total=list.films.length, across=this.progress(list.id), seen=list.films.filter(f=>across.has(f.id)).length;
+    return h("article",{class:"collection-card award-card",dataset:{theme:list.art || list.palette, list:list.id}},
+      h("div",{class:"collection-art"},h("span",{class:"collection-number",attrs:{"aria-hidden":"true"},text:String(list.ceremonies)}),h("p",{class:"gala-years",attrs:{"aria-hidden":"true"},text:list.firstYear+" – "+list.lastYear}),h("span",{class:"collection-seal",attrs:{"aria-hidden":"true"},text:list.badge})),
+      h("div",{class:"collection-copy"},h("p",{class:"kicker",text:t("Every winner")}),h("h2",{text:localized(list.title)}),
+        h("p",{text:localized(list.subtitle)}),
+        h("p",{class:"fine",text:t("{n} films · {seen} watched",{n:total,seen})}),
+        h("progress",{max:total,value:seen,attrs:{"aria-label":t("Collection progress")}}),
+        h("div",{class:"row"},here?button("Back to Kuvert",()=>this.home(),"btn btn-primary"):button(this.begun(list.id)?"Continue this list":"Start this list",()=>this.start(list),"btn btn-primary"),button("Look inside",()=>this.preview(list,"list")))));
   }
   // Galan, every Best Picture nominee: a list of its own beside the envelopes (js/fun/gala.js).
   galaCard() {
@@ -147,10 +182,11 @@ export class Journeys {
         h("progress",{max:total,value:seen,attrs:{"aria-label":t("Collection progress")}}),
         h("div",{class:"row"},here?button("Leave the gala",go(leaveGala),"btn btn-primary"):button(this.begun(GALA_LIST_ID)?"Back to the gala":"Enter the gala",go(enterGala),"btn btn-primary"))));
   }
-  preview(pack) {
+  preview(pack, kind = "envelope") {
+    const here = this.app.list.id === pack.id;
     this.open(localized(pack.title || pack.name),h("p",{text:localized(pack.curatorNote || pack.introduction || pack.subtitle)}),
       h("ol",{class:"journey-film-list"},...pack.films.map(f=>h("li",{},h("strong",{},...titleParts(localFilm(f))),h("span",{text:f.y+" · "+(metadataFor(f.id)?.runtime || "—")+" min"})))),
-      button("Start this envelope",()=>this.start(pack),"btn btn-primary"));
+      ...(here ? [] : [button(kind === "list" ? "Start this list" : "Start this envelope",()=>this.start(pack),"btn btn-primary")]));
   }
   context(f) {
     const data = f && metadataFor(f.id), key = f?.id+":"+this.app.store.p.seen.has(f?.id)+":"+this.app.stage.open;

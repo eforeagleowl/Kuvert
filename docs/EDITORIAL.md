@@ -1,14 +1,16 @@
 # Kuvert editorial review
 
-Prepared 13 October 2026; film table and ballot-film facts added 11 November 2026. The collection introductions, context cards and questions are original Kuvert drafts for review in English and Swedish. Film titles, directors and durations are source-linked facts. Mood tags are editorial suggestions, not content ratings.
+Prepared 13 October 2026; film table and ballot-film facts added 11 November 2026; premise lines, the British Academy's winners and the Christmas envelope added 13 November 2026. The collection introductions, context cards and questions are original Kuvert drafts for review in English and Swedish. Film titles, directors and durations are source-linked facts. Mood tags are editorial suggestions, not content ratings.
 
 ## Coverage
 
-- The film table (`js/data/films.js`): every film Kuvert ships, once. 664 films, each with its Wikidata item and TMDB entry; every one has a source-linked runtime, a director and mood suggestions.
+- The film table (`js/data/films.js`): every film Kuvert ships, once. 684 films, each with its Wikidata item and TMDB entry; every one has a source-linked runtime, a director and mood suggestions.
+- Premise lines (`js/data/premises-en.js`, `premises-sv.js`): one line on what each of the 684 films is about, in English and in Swedish, written for Kuvert (below).
 - Main Kuvert catalog: 275 films; source-linked offline runtime and mood suggestions for all 275.
-- Curated envelopes: 4 finite collections of 7, 6, 6 and 7 films, 26 different films in all.
-- Curated film cards: all 26 have a director, a named presentation duration, a spoiler-safe introduction and two discussion questions in both languages. Discussion questions are intended to appear after a film is watched.
+- Curated envelopes: 5 finite collections of 7, 6, 6, 7 and 7 films, 33 different films in all.
+- Curated film cards: all 33 have a director, a named presentation duration, a spoiler-safe introduction and two discussion questions in both languages. Discussion questions are intended to appear after a film is watched.
 - Academy ballots: all 98 complete official Best Picture fields, containing 621 nominations including each winner. Together they make Galan, the extra mode switched on from "for the completists." in About. The main 275-film catalog remains a selection of nominees and honorable mentions. The 368 films that are only on a ballot have had their facts since 11 November 2026 (below).
+- British Academy Film Awards: every winner of Best Film, 80 films over 79 ceremonies, as a list of its own (`js/data/bafta.js`, below). 63 of them were already Kuvert films; 17 are new.
 - Posters: no artwork was invented or copied into these new files. Existing licensed artwork/provider plumbing remains separate.
 
 ## Source and edition policy
@@ -20,6 +22,8 @@ The remaining 38 core duration records were resolved through named BFI, film-ins
 The first runtime snapshot contains 275 of 275 core films. Film facts need no personal API key.
 
 The second snapshot, read on 11 November 2026, covers the 368 films that appear only on a ballot, under the same rule. Each film was matched to its Wikidata item by title and release year, first among the items Wikidata lists under the award, then by English label, then through the film's English Wikipedia page; every match was checked to be a film released within a year of Kuvert's year, and no two films share an item. For 344 films the non-deprecated duration statements agreed on one duration. For the other 24 they disagreed, usually by a few minutes: those use the running time in the film's English Wikipedia infobox, which most often cites the BBFC or the AFI catalog. Each of those records links the article, says which fields came from it, and carries the note that other editions may differ. Two films had no director statement and take the director from the same infobox. Directors are listed as Wikidata lists them, which can include uncredited ones. Like the first snapshot, these are source-linked community-maintained facts, not checks against a film print.
+
+The third snapshot, read on 13 November 2026, adds the 17 British Academy winners that were on no Academy ballot, under the same rule. For 14 the duration statements agreed. Lacombe, Lucien and Jean de Florette had statements that disagreed, and La Ronde's Wikidata duration (110 minutes) is far from the 95 minutes of its English Wikipedia infobox: those three use the infobox's running time and say so. The Christmas envelope's seven films cite Wikidata for the edition they recommend, except It's a Wonderful Life, whose 131 minutes are the Wikipedia infobox's (Wikidata gives 125).
 
 Every film's TMDB entry in the table is Wikidata's own statement (P4947). The poster job checks that the entry looks like the film before using its poster, and reports any that don't.
 
@@ -34,6 +38,28 @@ Every ballot links to the Academy's official record. Two pages are cited through
 The Academy's page/edition label is not always the presentation calendar year: its 1931 page is the 3rd awards, held on 5 November 1930; its 1932 and 1933 pages correspond to presentations in 1931 and 1932. The data stores both the edition label and the actual date. Early eligibility windows span release years, and international films can compete after an earlier premiere. Existing permanent core film IDs are retained.
 
 Validation checks each field against the known official nominee count, exactly one winner, all 98 ceremony numbers, and the existing core winner ID. It also checks provenance URLs, bilingual card completeness, collection sizes, series numbering and runtime coverage. Run `node tools/catalogue-check.mjs` and `node --test tests/unit/editorial.test.mjs`.
+
+## The British Academy's Best Film
+
+`js/data/bafta.js` lists every winner of the British Academy's Best Film, one row per ceremony: the 1st honoured the films of 1947, the 79th those of 2025. The 15th had two winners (Ballad of a Soldier and The Hustler), so 79 ceremonies make 80 films. Until the 21st ceremony the prize was called Best Film from any Source; Kuvert calls it Best Film throughout. The list holds winners only: the British Academy's nominees are not in Kuvert.
+
+The rows were read from English Wikipedia's list of the award's winners on 13 November 2026 and each film matched to its Wikidata item; the British Academy's own awards database could not be reached from where this was prepared, so it has not been checked against it directly. Each winner's year in Kuvert is the film's own (its first release), which is why a ceremony's film is often a year or two older than the ceremony.
+
+The list is an ordinary Kuvert list with its own award words (`js/data/awards.js`): "Won at the 36th British Academy Film Awards.", "Deserved Best Film?". Series are left out of it, since only two of the three Lord of the Rings films won. Validation checks that the ceremonies run from the 1st to the last with none missing, that every film is a winner and is in the film table, and that its year is near its ceremony's.
+
+## Premise lines
+
+Every film has one line on what it is about, shown on its ticket: `js/data/premises-en.js` and `js/data/premises-sv.js`, keyed by film id. They are original Kuvert text, written for this purpose in both languages (the Swedish lines are written, not machine translated), and are not copied from any synopsis. Each was written from knowledge of the film and, where that was thin, checked against the introduction of the film's English Wikipedia article.
+
+The rules a line follows:
+
+- Where the story starts, and nothing past that: the situation, the people and what sets things moving. No endings, no reveals, nothing a viewer would rather find out. Where a film's fame rests on a turn (Psycho, The Crying Game, The Sixth Sense), the line stops well before it.
+- One sentence, or two short ones; at most 160 characters; no quotation marks and no dashes.
+- Plain statement, present tense. No praise, no "classic", no cast names; a director or real person is named only when the film is about them.
+- Facts in it (a year, an age, a place) are the film's own. For a film about real events, the line may say what history already has (Apollo 13, Selma).
+- The two languages say the same thing in their own words.
+
+`npm run check:catalogue` checks that every film in the table has a line in both languages, that no line is left over, and the length and punctuation rules. A new film needs its line before the check passes. `tests/unit/premises.test.mjs` also looks for the commonest tells of a line that says too much ("in the end", "turns out"); the rule itself is a person's to keep.
 
 ## Collections and card drafts
 
@@ -733,6 +759,196 @@ En lekfull jakt för en societetsdam från San Francisco till en liten kuststad,
 - Hur förändrade frånvaron av musik ditt sätt att lyssna?
 - Vad tror du att fåglarna står för, om något?
 
+### The Christmas Envelope / Julkuvertet
+
+ID: `curated-christmas` · 7 films · palette: `falu` · seal: JUL · 7
+
+**English**
+
+Snow outside. A light in the window. Seven films to open.
+
+Seven films for the days around Christmas, from a Budapest gift shop in 1940 to a snowed-in boarding school in 1970. Not all of them are Christmas films from start to finish, but each has Christmas at its heart: as a deadline, a party, or a night when someone needs company. Watch in any order, though the two oldest make a good start and The Holdovers a good last evening.
+
+**Svenska**
+
+Snö utanför. Ljus i fönstret. Sju filmer att öppna.
+
+Sju filmer för dagarna kring jul, från en presentbutik i Budapest 1940 till en insnöad internatskola 1970. Alla är inte julfilmer från början till slut, men var och en har julen i sitt hjärta: som en tidsgräns, en fest eller en natt då någon behöver sällskap. Se dem i valfri ordning, även om de två äldsta är en bra början och The Holdovers en bra sista kväll.
+
+**Completion keepsake:** The Christmas Star · seven lights in the window / Julstjärnan · sju ljus i fönstret
+
+#### The Shop Around the Corner (1940)
+
+Ernst Lubitsch · 99 min · Romantic, Funny
+
+[Presentation source](https://www.wikidata.org/wiki/Q782751)
+
+**Before watching — English**
+
+Two clerks in a Budapest shop quarrel all day and, without knowing it, write to each other every night. Lubitsch keeps almost the whole film inside the shop in the weeks before Christmas, and lets small things carry the feeling: a cigarette box that plays a tune, a wallet, a seat at a café table. Notice how gently it treats everyone who works there, including the ones who behave badly.
+
+**Före filmen — svenska**
+
+Två expediter i en butik i Budapest grälar hela dagarna och skriver, utan att veta om det, till varandra varje kväll. Lubitsch håller nästan hela filmen inne i butiken veckorna före jul och låter småsaker bära känslan: en cigarettask som spelar en melodi, en plånbok, en plats vid ett kafébord. Lägg märke till hur varsamt filmen behandlar alla som arbetar där, även dem som beter sig illa.
+
+**After watching — English**
+
+- When did you first feel the two of them were right for each other, and what told you?
+- What does the shop itself, with its routines and its worries about money, add to the love story?
+
+**Efter filmen — svenska**
+
+- När kände du först att de två passade ihop, och vad fick dig att känna det?
+- Vad tillför själva butiken, med sina rutiner och sin oro för pengar, till kärlekshistorien?
+
+#### Meet Me in St. Louis (1944)
+
+Vincente Minnelli · 113 min · Uplifting, Romantic
+
+[Presentation source](https://www.wikidata.org/wiki/Q1066873)
+
+**Before watching — English**
+
+A year in the life of a St. Louis family, told season by season as the 1904 World's Fair approaches. Minnelli's first great colour musical is remembered for its Christmas, when Judy Garland sings to her little sister on the night the family's future is being decided. Listen to how the songs grow out of ordinary moments: a trolley ride, a party, a window in winter.
+
+**Före filmen — svenska**
+
+Ett år i en familjs liv i St. Louis, berättat årstid för årstid medan världsutställningen 1904 närmar sig. Minnellis första stora färgmusikal är ihågkommen för sin jul, när Judy Garland sjunger för sin lillasyster den kväll då familjens framtid avgörs. Lyssna på hur sångerna växer fram ur vardagliga stunder: en spårvagnsfärd, en fest, ett fönster om vintern.
+
+**After watching — English**
+
+- Which of the film's seasons stayed with you most, and why?
+- The song at the heart of the Christmas scene is a sad one. What does the film gain from that?
+
+**Efter filmen — svenska**
+
+- Vilken av filmens årstider stannade kvar hos dig, och varför?
+- Sången mitt i julscenen är sorgsen. Vad vinner filmen på det?
+
+#### It's a Wonderful Life (1946)
+
+Frank Capra · 131 min · Uplifting, Reflective
+
+[Presentation source](https://en.wikipedia.org/wiki/It%27s_a_Wonderful_Life) · Listed at 131 minutes; some records give a few minutes less.
+
+**Before watching — English**
+
+On Christmas Eve, a man who has spent his life helping a small town believes it would be better off without him. Capra takes his time getting there: most of the film is the life itself, with its postponed plans and small loyalties, so that the last half-hour lands with its full weight. Watch James Stewart's face in the scenes where George is at his angriest; the film is darker than its reputation.
+
+**Före filmen — svenska**
+
+På julafton tror en man som ägnat sitt liv åt att hjälpa en småstad att den skulle klara sig bättre utan honom. Capra tar god tid på sig: större delen av filmen är själva livet, med sina uppskjutna planer och små lojaliteter, så att den sista halvtimmen får sin fulla tyngd. Se på James Stewarts ansikte i scenerna där George är som argast; filmen är mörkare än sitt rykte.
+
+**After watching — English**
+
+- What did George give up, and did the film persuade you it was worth it?
+- Why do you think this became a Christmas tradition, when so much of it is about disappointment?
+
+**Efter filmen — svenska**
+
+- Vad gav George upp, och övertygade filmen dig om att det var värt det?
+- Varför tror du att den blev en jultradition, när så mycket av den handlar om besvikelse?
+
+#### Miracle on 34th Street (1947)
+
+George Seaton · 96 min · Uplifting, Funny
+
+[Presentation source](https://www.wikidata.org/wiki/Q1467214)
+
+**Before watching — English**
+
+The man hired to play Santa Claus at Macy's insists that he is the real one, and New York has to decide what to do about it. Much of the film was shot in the real store and at the real Thanksgiving parade of 1946, which gives its fairy tale a crowded, practical city to live in. Notice how the film lets the adults' doubts be reasonable, and settles the argument in a courtroom.
+
+**Före filmen — svenska**
+
+Mannen som anställts för att spela jultomte på varuhuset Macy's hävdar att han är den riktige, och New York måste bestämma sig för vad man ska göra åt saken. Mycket av filmen spelades in i det verkliga varuhuset och under den verkliga Thanksgivingparaden 1946, vilket ger sagan en trång och praktisk stad att leva i. Lägg märke till att filmen låter de vuxnas tvivel vara rimliga, och avgör saken i en rättssal.
+
+**After watching — English**
+
+- Who changes most in the film: the child, her mother or the lawyer?
+- What does the film suggest that believing in something is good for?
+
+**Efter filmen — svenska**
+
+- Vem förändras mest i filmen: barnet, hennes mamma eller advokaten?
+- Vad menar filmen att det är bra för, att tro på något?
+
+#### The Apartment (1960)
+
+Billy Wilder · 125 min · Romantic, Reflective
+
+[Presentation source](https://www.wikidata.org/wiki/Q270510)
+
+**Before watching — English**
+
+An office clerk lends his flat to his bosses for their affairs, and the film takes him through an office Christmas party to New Year's Eve. Wilder's comedy is set among paper cups and party hats, but its holidays are lonely ones, and it is honest about what people put up with to get ahead. Watch the vast office in the opening minutes, and how small one desk looks in it.
+
+**Före filmen — svenska**
+
+En kontorist lånar ut sin lägenhet till chefernas snedsprång, och filmen följer honom genom en julfest på kontoret fram till nyårsafton. Wilders komedi utspelar sig bland pappersmuggar och partyhattar, men dess helger är ensamma, och den är ärlig med vad människor står ut med för att komma sig upp. Se det väldiga kontoret i de första minuterna, och hur litet ett skrivbord ser ut där.
+
+**After watching — English**
+
+- How does the film make you like a man who, at the start, is doing something shabby?
+- Why set this story between Christmas and New Year rather than at any other time?
+
+**Efter filmen — svenska**
+
+- Hur får filmen dig att tycka om en man som i början gör något ganska ynkligt?
+- Varför utspelar sig berättelsen mellan jul och nyår och inte vid någon annan tid?
+
+#### Carol (2015)
+
+Todd Haynes · 118 min · Romantic, Reflective
+
+[Presentation source](https://www.wikidata.org/wiki/Q15963780)
+
+**Before watching — English**
+
+A young shop assistant sells a train set to a woman in a fur coat in the Christmas rush of 1952, and the two cannot stop thinking about each other. Todd Haynes shot the film on Super 16, which gives New York a soft, grainy winter light, and much of it is seen through glass: shop windows, car windows, a rainy windscreen. Notice how much is said by a hand on a shoulder.
+
+**Före filmen — svenska**
+
+Ett ungt butiksbiträde säljer en tågbana till en kvinna i päls i julruschen 1952, och de två kan inte sluta tänka på varandra. Todd Haynes filmade på Super 16, vilket ger New York ett mjukt och kornigt vinterljus, och mycket ses genom glas: skyltfönster, bilrutor, en regnig vindruta. Lägg märke till hur mycket som sägs med en hand på en axel.
+
+**After watching — English**
+
+- The film begins and ends with the same meeting. What had changed for you the second time?
+- What do the windows and reflections tell us about what these two can and cannot show?
+
+**Efter filmen — svenska**
+
+- Filmen börjar och slutar med samma möte. Vad hade förändrats för dig den andra gången?
+- Vad säger fönstren och speglingarna om vad de två kan och inte kan visa?
+
+#### The Holdovers (2023)
+
+Alexander Payne · 133 min · Funny, Reflective
+
+[Presentation source](https://www.wikidata.org/wiki/Q112114745)
+
+**Before watching — English**
+
+A teacher nobody likes, a pupil with nowhere to go and the school's cook are left behind at a New England boarding school over Christmas 1970. Alexander Payne made the film look and sound as if it had been found in a 1970s film can, down to the old studio logos, and gives its three lonely people time to surprise each other. A good last evening for this envelope.
+
+**Före filmen — svenska**
+
+En lärare som ingen tycker om, en elev som inte har någonstans att ta vägen och skolans kokerska blir kvar på en internatskola i New England över julen 1970. Alexander Payne fick filmen att se ut och låta som om den hittats i en filmburk från 1970-talet, ända ner till de gamla bolagslogotyperna, och ger sina tre ensamma människor tid att överraska varandra. En bra sista kväll för det här kuvertet.
+
+**After watching — English**
+
+- Which of the three did you understand best by the end, and when did that change?
+- What does the 1970s look add to a story that could be told in any decade?
+
+**Efter filmen — svenska**
+
+- Vem av de tre förstod du bäst mot slutet, och när ändrades det?
+- Vad tillför 1970-talsstilen till en berättelse som kunde utspela sig när som helst?
+
 ## Review decisions
 
 The winter collection is explicitly a viewing season, not six stories all set in winter. Four of its films are by Bergman; a later Swedish collection can give other directors and periods more space. The noir collection deliberately includes a gothic film and a press satire at the edges of noir. The silent collection requests the 1925 Gold Rush rather than the narrated 1942 reissue and acknowledges score and projection-speed differences. Hitchcock Week follows one director across his Hollywood years, chosen for range rather than as a ranking; its cards stay spoiler-safe, Psycho above all, and Rebecca and Rear Window share their cards with the main list. These choices are part of the drafts for your review.
+
+The Christmas envelope is seven films with Christmas at their heart rather than seven Christmas films: The Apartment and Carol are set among the holidays without being about them, and the introduction says so. It is American studio filmmaking for the most part, which a later seasonal envelope can widen. From 1 November to 6 January it moves to the front of the shelf. Four of its films were already Kuvert films with Wikidata facts; as envelope films their notes now carry the facts for the edition recommended, like every other envelope film.
+
+The premise lines are drafts for review like the cards. They were written in one pass on 13 November 2026 and proofread once; a line that says too much, or too little, is a one-line change in each language file.

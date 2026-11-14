@@ -1,5 +1,5 @@
-// Share images for the group chat: a ticket and your ranking, drawn on a canvas in Kuvert's style and
-// sent through the phone's share sheet, or saved as a PNG on desktop.
+// Share images for the group chat: a ticket, your ranking and your film year, drawn on a canvas in
+// Kuvert's style and sent through the phone's share sheet, or saved as a PNG on desktop.
 import { imageUrl } from "../tmdb/client.js";
 import { STAR_PATH } from "../ui/stars.js";
 import { HORSE_BODY } from "../ui/horse.js";
@@ -7,7 +7,10 @@ import { slugify } from "../data/lists.js";
 import { dayLong } from "../state/dates.js";
 import { rankedFilms, ratingOf } from "../state/stats.js";
 import { download } from "../storage/files.js";
-import { t, plural } from "../i18n/index.js";
+import { t, plural, LOCALE } from "../i18n/index.js";
+import { exportLibrary } from "../storage/library-backup.js";
+import { passportRecords } from "../journeys/passport.js";
+import { reviewYears, pickYear, yearReview } from "../state/year.js";
 
 const F_SEAGAL = '"Michroma", "Arial Black", sans-serif';
 const RETICLE = "M50 3a42 42 0 1 0 0.01 0zM50 10a35 35 0 1 1 -0.01 0z M47 0h6v30h-6zM47 60h6v30h-6zM4 42h30v6h-30zM66 42h30v6h-30zM50 40a5 5 0 1 0 0.01 0z";
@@ -419,6 +422,126 @@ export class Share {
     }
     this.brand(ctx, W, H - 64, horse, c, F);
     return canvas;
+  }
+
+  /** Every dated watch in every list, one record per film (the cinema passport's records). */
+  watched() {
+    return passportRecords(exportLibrary(this.app.storage, { store: this.app.store }));
+  }
+  /** The year the picture would show, or null when nothing is dated. Cheap: the open list's own dates. */
+  yearOnOffer(now = new Date()) {
+    const { p } = this.app.store;
+    return pickYear(reviewYears([...p.seen].map((id) => ({ date: p.dates[id] || "" }))), now);
+  }
+  /** The film year as a picture: how much was watched, the best five, and a few facts. */
+  async yearCanvas(r) {
+    await this.ensureFonts();
+    const c = this.colors(),
+      F = this.fonts(),
+      W = 1080,
+      H = 1350;
+    const canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    this.backdrop(ctx, W, H, c);
+    const horse = await this.horse(c);
+    const rule = (y) => {
+      ctx.strokeStyle = "rgba(227,195,110,.55)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(80, y);
+      ctx.lineTo(W - 80, y);
+      ctx.stroke();
+    };
+    ctx.fillStyle = c.brass;
+    ctx.font = "500 24px " + F.mono;
+    spaced(ctx, "FILMÅRET", 80, 140, 6);
+    ctx.fillStyle = c.paper;
+    ctx.font = "600 190px " + F.display;
+    spaced(ctx, String(r.year), 70, 318, 0);
+    ctx.fillStyle = "#B9C5D2";
+    ctx.font = "400 30px " + F.body;
+    spaced(ctx, t("My film year"), 80, 378, 0);
+    rule(418);
+    // Three figures: films, hours, evenings.
+    const hours = Math.round(r.minutes / 60);
+    const figures = [plural(r.films, "film"), ...(hours ? [plural(hours, "hour")] : []), plural(r.evenings, "evening")].map((x) => x.split(" "));
+    const colW = (W - 160) / figures.length;
+    figures.forEach(([n, ...word], i) => {
+      const x = 80 + i * colW;
+      ctx.fillStyle = c.brass;
+      ctx.font = "700 96px " + F.display;
+      spaced(ctx, n, x, 536, 0);
+      ctx.fillStyle = "#B9C5D2";
+      ctx.font = "400 24px " + F.mono;
+      spaced(ctx, word.join(" ").toUpperCase(), x + 4, 580, 4);
+    });
+    rule(626);
+    ctx.fillStyle = c.brass;
+    ctx.font = "500 24px " + F.mono;
+    spaced(ctx, t(r.rated ? "The year's best" : "Latest films").toUpperCase(), 80, 690, 5);
+    const rowH = 72;
+    r.top.forEach((f, i) => {
+      const y = 716 + i * rowH;
+      ctx.fillStyle = c.brass;
+      ctx.font = "700 40px " + F.display;
+      ctx.textAlign = "left";
+      ctx.fillText(String(i + 1), 80, y + rowH - 22);
+      const starSize = 24,
+        starsW = Number.isFinite(f.rating) ? starSize * 1.12 * 5 : 0;
+      ctx.fillStyle = "#E1E6EB";
+      ctx.font = "400 32px " + F.body;
+      const maxW = W - 160 - 70 - starsW - 20;
+      let title = f.t + " (" + f.y + ")";
+      if (ctx.measureText(title).width > maxW) {
+        title = f.t;
+        while (ctx.measureText(title + "…").width > maxW && title.length > 4) title = title.slice(0, -1);
+        if (title !== f.t) title = title.trimEnd() + "…";
+      }
+      ctx.fillText(title, 150, y + rowH - 24);
+      if (starsW) drawStars(ctx, W - 80 - starsW, y + rowH - 24 - starSize + 3, starSize, f.rating, c.brass, "rgba(255,255,255,.14)");
+      ctx.strokeStyle = "rgba(83,103,126,.45)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(80, y + rowH - 4);
+      ctx.lineTo(W - 80, y + rowH - 4);
+      ctx.stroke();
+    });
+    // A few facts under the list, as many as the year has.
+    const month = r.busiest ? new Date(2000, r.busiest.month, 1).toLocaleDateString(LOCALE, { month: "long" }) : "";
+    const facts = [
+      r.busiest && r.films > 2 ? t("Busiest month: {month}, {films}", { month, films: plural(r.busiest.films, "film") }) : null,
+      r.run > 1 ? t("Longest run: {n} evenings in a row", { n: r.run }) : null,
+      r.oldest ? t("Oldest film: {title} ({year})", { title: r.oldest.t, year: r.oldest.y }) : null,
+    ].filter(Boolean);
+    ctx.fillStyle = "#B9C5D2";
+    ctx.font = "400 28px " + F.body;
+    ctx.textAlign = "left";
+    facts.forEach((line, i) => {
+      let text = line;
+      while (ctx.measureText(text).width > W - 160 && text.length > 8) text = text.slice(0, -2);
+      ctx.fillText(text === line ? line : text.trimEnd() + "…", 80, 716 + 5 * rowH + 52 + i * 42);
+    });
+    this.brand(ctx, W, H - 46, horse, c, F);
+    return canvas;
+  }
+  /** Shares (or saves) the picture of the film year: this year, or in January the one just ended. */
+  async year(now = new Date()) {
+    if (this.sharing) return;
+    this.sharing = true;
+    try {
+      const records = this.watched(),
+        year = pickYear(reviewYears(records), now);
+      if (!year) return;
+      const name = "kuvert-" + year + ".png";
+      const out = await this.deliver(await this.yearCanvas(yearReview(records, year)), name, t("My film year") + " · " + year);
+      if (out === "saved") this.app.toast.show(t("Film year image saved as {file}.", { file: name }));
+    } catch (e) {
+      this.app.toast.show(t(e.message || "The film year image couldn't be made."));
+    } finally {
+      this.sharing = false;
+    }
   }
 
   async deliver(canvas, fileName, title) {

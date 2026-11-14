@@ -21,15 +21,18 @@ to your home screen, and it works offline after your first visit.
 - **Your watchthrough.** Mark films watched (the next day too: "Watched it" dates the film the night you
   drew it), rate them, say whether the winner deserved it, and rank your favorites: your stars put each
   film in the ranking, and you fine-tune it. The Library holds the whole list and a poster wall, and lets
-  you tick off films you'd seen before Kuvert without a date, so they never skew your pace. Stats show
-  your pace, streaks and milestones. The dala horse gets painted as you go.
+  you tick off films you'd seen before Kuvert without a date, so they never skew your pace. Its search
+  finds a film by its title, its year, a nickname, or a word for what it's about ("boxer", "shark").
+  Stats show your pace, streaks and milestones, and give you your film year as a picture to share: the
+  year's films, hours and best five. The dala horse gets painted as you go.
 - **Group night.** Add your friends' friend codes (one short line each, saying only which films they've
   watched), and the draw only picks films none of you has seen.
 - **Your own lists.** Import any film list, or bring your history in from Letterboxd.
 - **Envelopes.** Small curated collections (seven nights of noir, a Swedish winter, first steps into
   silent cinema, a Hitchcock week, and a Christmas envelope that moves to the front of the shelf from
   November to Epiphany), each with its own progress, context cards and a printable keepsake when it's
-  done. A film you've watched in one list is watched in every list that has it.
+  done. A film you've watched in one list is watched in every list that has it, and the card of the
+  envelope you're in leads back to Kuvert's own list.
 - **Award lists.** Every winner of the British Academy's Best Film, 80 films from 1947 to today, as a
   list of its own on the Envelopes page, in the award's own words ("Won at the 36th British Academy Film
   Awards."). Most of them are Kuvert films already, so what you've watched is already ticked. Galan,

@@ -37,6 +37,7 @@ export class Stats {
       app.toast.show(t(ok ? "Ranking copied. Paste it into the group chat." : "Select the ranking below and copy it."));
     });
     $("shareRanking").addEventListener("click", () => app.share.ranking());
+    $("shareYear").addEventListener("click", () => app.share.year());
     $("placeRated").addEventListener("click", () => {
       const undo = store.placeRated();
       app.toast.show(t("Placed by their stars. Drag any of them to fine-tune."), undo);
@@ -215,6 +216,10 @@ export class Stats {
       unranked = unrankedFilms(p, catalog);
     $("rankSummary").textContent = t("{n} ranked", { n: ranked.length }) + (unranked.length ? t(" · {n} to place", { n: unranked.length }) : "");
     $("copyRanking").hidden = $("shareRanking").hidden = !ranked.length;
+    // The film year: on offer once a watch has a date. In January it is the year that just ended.
+    const year = this.app.share.yearOnOffer();
+    $("shareYear").hidden = !year;
+    if (year) $("shareYearLabel").textContent = t("Share your film year · {year}", { year });
     const list = $("rankList");
     if (!ranked.length)
       list.replaceChildren(

@@ -8,6 +8,7 @@ export const decadeOf = (f) => Math.floor(f.y / 10) * 10;
 
 // ---------------------------------------------------------------- forgiving search
 //   "et" → E.T.   "lotr" → Lord of the Rings   "godfather 2" → Part II   "zola 1937"
+//   and by what a film is about: "boxer" → Rocky, Raging Bull…   "vienna" → The Third Man
 const ROMAN = { i: 1, ii: 2, iii: 3, iv: 4, v: 5, vi: 6, vii: 7, viii: 8, ix: 9, x: 10 };
 export function searchWords(s) {
   return String(s)
@@ -77,7 +78,27 @@ export function makeCatalog(list, { posters = {} } = {}) {
       return [f.id, { words: [...words, ...extra], keys, joined: words.join("") }];
     }),
   );
-  function matchesSearch(f, raw) {
+  // What each film is about, once the premise lines are in (js/i18n/premises.js): film id → its words.
+  let about = null;
+  /** Lets the search find films by what they are about. Returns whether any of this list's films has a line. */
+  function learnPremises(lines) {
+    about = new Map(films.filter((f) => typeof lines?.[f.id] === "string").map((f) => [f.id, { line: lines[f.id], words: searchWords(lines[f.id]) }]));
+    return about.size > 0;
+  }
+  /**
+   * "boxer", "vienna 1949": every typed word starts a word of the film's premise, its title or its year.
+   * Only for a search with a real word in it (four letters or more), so the first letters you type still
+   * narrow the list by title.
+   */
+  function matchesAbout(f, raw) {
+    const q = searchWords(raw),
+      a = about?.get(f.id);
+    if (!a || !q.some((w) => w.length >= 4)) return false;
+    const words = [...a.words, ...(index.get(f.id)?.words || [])];
+    return q.every((w) => words.some((x) => x.startsWith(w))) && q.some((w) => w.length >= 4 && a.words.some((x) => x.startsWith(w)));
+  }
+  const matchesSearch = (f, raw) => matchesTitle(f, raw) || matchesAbout(f, raw);
+  function matchesTitle(f, raw) {
     const q = searchWords(raw);
     if (!q.length) return true;
     const idx = index.get(f.id);
@@ -146,6 +167,10 @@ export function makeCatalog(list, { posters = {} } = {}) {
     tmdbId: (id) => (Object.hasOwn(posters, id) ? posters[id][0] : null),
     poster: (id) => (Object.hasOwn(posters, id) ? posters[id][1] : null),
     matchesSearch,
+    matchesTitle,
+    learnPremises,
+    // The film's premise line, once learnt: the Library shows it beside a film found by what it is about.
+    premise: (id) => about?.get(id)?.line || null,
     oscarLine,
     ceremonyFilms,
     ceremonyWinner,

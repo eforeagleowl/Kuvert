@@ -41,9 +41,6 @@ export class Stage {
     // The stand-in poster's title is fitted again whenever its card changes size, and once the fonts are in.
     if (typeof ResizeObserver === "function") new ResizeObserver(() => this.fitCard()).observe($("posterWell"));
     document.fonts?.ready.then(() => this.fitCard());
-    // The premise lines are fetched once the page has settled, so the first ticket already has its line.
-    if (typeof requestIdleCallback === "function") requestIdleCallback(() => premises(), { timeout: 4000 });
-    else setTimeout(premises, 1500);
   }
 
   /** The stand-in poster's title (no poster yet) gets smaller until it fits its card, clear of the year:

@@ -435,6 +435,31 @@
   .films > li.no-thumb {
     grid-template-columns: 36px minmax(0, 1fr) auto auto;
   }
+  /* A search also finds films by what they are about: they follow the titles, each with its line. */
+  .films > li.about-head {
+    display: block;
+    min-height: 0;
+    padding: 18px 6px 8px;
+    color: var(--brass);
+    font: 600 var(--fs-1) / 1.2 var(--font-ui);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .films > li.about-head:hover {
+    background: none;
+  }
+  .film-about {
+    display: grid;
+    gap: 2px;
+    justify-items: start;
+    min-width: 0;
+    padding: 4px 0;
+  }
+  .about-line {
+    color: var(--muted);
+    font-size: var(--fs-2);
+    line-height: 1.4;
+  }
   .tick {
     display: grid;
     place-items: center;

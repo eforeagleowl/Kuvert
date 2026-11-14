@@ -120,7 +120,7 @@ export class Journeys {
       location.reload();
     } catch(e) { this.app.toast.show(t(e.message)); }
   }
-  // Back to Kuvert's own list, from an award list's card. (A list whose save can't be read has nothing to
+  // Back to Kuvert's own list, from the card of the envelope or award list you are in. (A list whose save can't be read has nothing to
   // save first: leaving it is always possible.)
   home() {
     const { storage, store } = this.app;
@@ -142,7 +142,8 @@ export class Journeys {
             h("p",{class:"fine",text:t("{n} films · {seen} watched",{n:pack.films.length,seen:count})}),
             h("progress",{max:pack.films.length,value:count,attrs:{"aria-label":t("Collection progress")}}),
             count === pack.films.length ? h("p",{class:"completion-stamp",text:localized(pack.completion)}) : null,
-            h("div",{class:"row"},button(this.begun(pack.id) ? "Continue this envelope" : "Start this envelope",()=>this.start(pack),"btn btn-primary"),button("Look inside",()=>this.preview(pack))),
+            // The envelope you are in leads back to Kuvert's own list; any other one opens.
+            h("div",{class:"row"},this.app.list.id === pack.id ? button("Back to Kuvert",()=>this.home(),"btn btn-primary") : button(this.begun(pack.id) ? "Continue this envelope" : "Start this envelope",()=>this.start(pack),"btn btn-primary"),button("Look inside",()=>this.preview(pack))),
             count === pack.films.length ? button("Print your keepsake",()=>this.passport.show({listId:pack.id})) : null));
       }), ...AWARD_LISTS.map((list) => this.awardCard(list)), this.galaCard());
       $("clubTeaser").hidden = !this.app.club?.available;

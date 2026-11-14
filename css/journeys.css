@@ -1,12 +1,6 @@
 @layer pages {
   .journeys-nav .icon { color: var(--brass); }
   html:not([data-gala]) .gala-only { display: none; }
-  .welcome { padding: 18px 24px; }
-  .welcome .row { margin-top: 12px; }
-  .welcome .fine { margin-top: 10px; }
-  .welcome .kicker { display: none; }
-  .welcome h2 { font-size: 1.6rem; }
-  .welcome > p:not(.fine,.kicker) { font-size: .95rem; }
   .curated-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 22px; margin: 24px 0 48px; }
   .collection-card { overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
   /* The envelope's films as a row of little stubs across its band: posters where there are some. */
@@ -98,7 +92,18 @@
   html[data-mode='seagal'] :is(.journeys-nav,.passport-action) { display: none; }
   @media(max-width:900px) { .curated-grid { grid-template-columns: 1fr; } }
   @media(max-width:760px) { .tabbar { grid-template-columns: repeat(5,minmax(0,1fr)); } .tabbar a { font-size: 10px; } .club-teaser { flex-direction: column; align-items: start; } #clubBody .card { padding: 20px; } html[data-mode='seagal'] .tabbar { grid-template-columns: repeat(4,minmax(0,1fr)); } }
-  @media(max-width:520px) { .collection-copy { padding: 20px; } .welcome { padding: 16px; } .welcome h2 { font-size: 1.4rem; } .welcome > .fine { display: none; } .welcome .btn { font-size: .78rem; } .film-card-title { font-size: 1.1rem; inset-inline: 5px; } }
+  @media(max-width:520px) { .film-card-title { font-size: 1.1rem; inset-inline: 5px; } }
+  /* On a phone an envelope's films overlap into one row, like stubs fanned in a hand, and its card is tighter. */
+  @media(max-width:520px) {
+    .curated-grid { gap: 16px; margin-top: 16px; }
+    .collection-art { min-height: 0; padding: 30px 84px 14px 18px; }
+    .collection-films { flex-wrap: nowrap; gap: 0; }
+    .collection-films li { flex: none; width: 44px; height: 66px; box-shadow: -4px 0 8px -2px rgb(0 0 0 / .6); }
+    .collection-films li + li { margin-left: -12px; }
+    .collection-films li.seen::after { right: auto; left: 2px; }
+    .collection-copy { padding: 16px 18px 18px; gap: 10px; }
+    .collection-copy h2 { font-size: 1.6rem; }
+  }
 }
 @media print {
   body:has(#passportDialog[open]) > :not(#passportDialog) { display: none !important; }

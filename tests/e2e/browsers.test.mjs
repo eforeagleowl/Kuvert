@@ -20,8 +20,11 @@ for (const [name, type] of Object.entries({ chromium, firefox, webkit })) {
       await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
       await page.goto(service.url + "/");
       await page.waitForFunction(() => window.kuvert?.app);
-      await page.click("#welcomeStart");
+      // A first visit: the envelope's own button starts it, and the welcome beneath it steps aside.
+      assert.equal(await page.isVisible("#welcome"), true);
+      await page.click("#drawBtn");
       await page.waitForSelector("#ticket:not([hidden])");
+      await page.waitForSelector("#welcome", { state: "hidden" });
       await page.waitForFunction(() => !window.kuvert.app.stage.busy);
       await page.click("#markBtn");
       await page.waitForSelector("#watchedPanel:not([hidden])");

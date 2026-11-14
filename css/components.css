@@ -646,6 +646,21 @@
     --on: var(--brass);
     --off: color-mix(in oklab, var(--text) 16%, transparent);
   }
+  /* On the ticket the stars are the evening's main tap: large, in brass, with an edge that reads on paper. */
+  .watched .stars {
+    gap: 6px;
+    --star: 40px;
+    --on: var(--brass);
+    --off: transparent;
+  }
+  .watched .stars svg {
+    stroke: color-mix(in oklab, var(--ink) 36%, transparent);
+    stroke-width: 1.2;
+    stroke-linejoin: round;
+  }
+  .watched .stars .s-fill svg {
+    stroke: color-mix(in oklab, var(--brass) 40%, var(--ink));
+  }
   .stars .star {
     position: relative;
     width: var(--star);

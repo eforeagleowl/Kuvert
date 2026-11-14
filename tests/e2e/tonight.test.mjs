@@ -80,10 +80,10 @@ test("the ticket says what the film is about; the night's own stub leaves it out
   await page.waitForSelector("#pickPremise:not([hidden])");
   assert.equal(await page.textContent("#pickPremise"), PREMISES["1942-casablanca"]);
   assert.match(await page.textContent("#pickPremise"), /^In wartime Casablanca, a cynical nightclub owner/);
-  // It reads across the ticket, under the film's facts and above the buttons, and never spills out of the paper.
+  // It reads under the film's line of facts and above the buttons, and never spills out of the paper.
   const box = (sel) => page.evaluate((s) => document.querySelector(s).getBoundingClientRect().toJSON(), sel);
-  const [premise, body, actions, paper] = [await box("#pickPremise"), await box("#ticketBody"), await box("#ticketActions"), await box("#ticket .paper")];
-  assert.ok(premise.top >= body.bottom && premise.bottom <= actions.top, "between the facts and the buttons");
+  const [premise, facts, actions, paper] = [await box("#pickPremise"), await box("#ticketBody .t-meta"), await box("#ticketActions"), await box("#ticket .paper")];
+  assert.ok(premise.top >= facts.bottom && premise.bottom <= actions.top, "between the facts and the buttons");
   assert.ok(premise.left >= paper.left && premise.right <= paper.right, "inside the ticket");
   // Another film: its own line, with no moment of the first one's.
   await page.evaluate(() => window.kuvert.app.stage.openFilm("1976-rocky"));
@@ -323,6 +323,184 @@ test("Restore from a file takes a whole-library backup as well as a progress fil
   await chooser.setFiles(file);
   await page.waitForSelector("#journeyDialog[open]");
   assert.equal(await page.textContent("#journeyTitle"), "Restore your full library");
+  assert.deepEqual(await problems(page), []);
+  await context.close();
+});
+
+test("on a phone the ticket comes up under the bar: the poster large, its buttons on screen, the streak in words", async () => {
+  const context = await phone();
+  const page = await openPage(context, "/");
+  // A film last week and one this week: two weeks in a row.
+  await page.evaluate(() => {
+    const { store } = window.kuvert.app;
+    const day = (back) => new Date(Date.now() - back * 86400e3).toISOString().slice(0, 10);
+    store.markSeen("1942-casablanca", true, { date: day(7) });
+    store.markSeen("1995-heat", true, { date: day(0) });
+  });
+  await settled(page);
+  await page.evaluate(() => window.kuvert.app.stage.openFilm("1976-rocky"));
+  await opened(page);
+  const box = (sel) => page.evaluate((s) => document.querySelector(s).getBoundingClientRect().toJSON(), sel);
+  // After a draw the page moves up to show the ticket's buttons, as far as the title allows; here it is
+  // asked to, the same way. In Safari's short window the poster and the title stay and the buttons follow.
+  await page.evaluate(() => window.kuvert.app.stage.showTicket());
+  await settled(page);
+  const bar = await box(".appbar"),
+    tabs = await box(".tabbar"),
+    mark = await box("#markBtn"),
+    title = await box("#pickTitle");
+  assert.ok(title.top >= bar.bottom && title.bottom <= tabs.top, "the title is on screen");
+  assert.ok(mark.height > 0 && mark.top < tabs.top, "Mark as watched has come into view: " + JSON.stringify([bar.bottom, title.top, mark.top, mark.bottom, tabs.top]));
+  const poster = await box("#posterWell"),
+    paper = await box("#ticket .paper");
+  assert.ok(poster.width / paper.width >= 0.3, "the poster takes about a third of the ticket: " + poster.width + " of " + paper.width);
+  // One line of facts, then what the film is about, then how it did.
+  assert.equal(await page.textContent("#pickMeta"), "1976 · Best Picture winner");
+  assert.equal(await page.textContent("#pickFacts"), "119 min · dir. John G. Avildsen");
+  await page.waitForSelector("#pickPremise:not([hidden])");
+  const order = await page.$$eval("#ticketBody .t-main > *", (els) => els.filter((e) => e.getClientRects().length).map((e) => e.id || e.className));
+  assert.deepEqual(order.slice(0, 5), ["pickEyebrow", "pickTitle", "t-meta", "pickPremise", "oscarLine"]);
+  const premise = await box("#pickPremise");
+  assert.ok(premise.top >= poster.bottom && premise.left <= poster.left + 1, "the premise runs the full width under the poster");
+  assert.match(await page.textContent("#punches"), /^2 weeks in a row$/);
+  assert.equal(await page.getAttribute("#punches", "aria-label"), "2 weeks in a row with a film");
+  assert.deepEqual(await problems(page), []);
+  await context.close();
+});
+
+test("Tonight says the name once: the masthead has it, the bar keeps to the tally; other pages keep the name in the bar", async () => {
+  const context = await newContext();
+  const page = await openPage(context, "/");
+  assert.equal(await page.isVisible(".appbar .brand"), false);
+  assert.equal(await page.isVisible("#tonightTitle"), true);
+  assert.equal(await page.isVisible("#tally"), true);
+  await page.evaluate(() => window.kuvert.app.router.show("library"));
+  assert.equal(await page.isVisible(".appbar .brand"), true);
+  assert.deepEqual(await problems(page), []);
+  await context.close();
+});
+
+test("a first visit: the envelope and its button come first, the other ways to begin beneath, until the first draw", async () => {
+  const context = await phone({ welcomed: false });
+  const page = await openPage(context, "/");
+  await settled(page);
+  const box = (sel) => page.evaluate((s) => document.querySelector(s).getBoundingClientRect().toJSON(), sel);
+  assert.ok((await box("#drawBtn")).bottom <= (await box(".tabbar")).top, "the draw button is on the first screen");
+  assert.ok((await box("#welcome")).top >= (await box("#drawBtn")).bottom, "the welcome sits under it");
+  assert.deepEqual(await page.$$eval("#welcome button", (b) => b.map((x) => x.textContent)), ["I've seen some already", "Bring my own list", "Connect sync or load a backup"]);
+  await page.click("#drawBtn");
+  await opened(page);
+  await page.waitForSelector("#welcome", { state: "hidden" });
+  assert.equal(await page.evaluate(() => localStorage.getItem("kuvert:welcomed")), "1");
+  assert.deepEqual(await problems(page), []);
+  await context.close();
+});
+
+test("Stats opens its long lists short: the top ten of the ranking and three winners to judge, the rest a tap away", async () => {
+  const context = await newContext();
+  const page = await openPage(context, "/");
+  // Fourteen rated films, six of them winners.
+  await page.evaluate(() => {
+    const { store, catalog } = window.kuvert.app;
+    const winners = catalog.films.filter(catalog.isWinner).slice(0, 6),
+      others = catalog.films.filter((f) => !catalog.isWinner(f)).slice(0, 8);
+    [...winners, ...others].forEach((f, i) => {
+      store.markSeen(f.id, true, { date: "2026-10-" + String(i + 1).padStart(2, "0") });
+      store.rate(f.id, 5 - (i % 5) * 0.5);
+    });
+  });
+  await page.evaluate(() => window.kuvert.app.router.show("stats"));
+  await page.waitForSelector("#rankList .rank-row");
+  assert.equal(await page.locator("#rankList .rank-row").count(), 10);
+  assert.equal(await page.textContent("#rankMore"), "Show all 14");
+  assert.equal(await page.locator("#verdictList > li").count(), 3);
+  assert.equal(await page.textContent("#verdictMore"), "Show all 6");
+  // A winner you judge stays where it is.
+  const first = await page.locator("#verdictList .verdict-title").first().textContent();
+  await page.locator("#verdictList > li").first().getByRole("button", { name: "Yes", exact: true }).click();
+  await page.waitForSelector('#verdictList .verdict-btn[aria-pressed="true"]');
+  assert.equal(await page.locator("#verdictList .verdict-title").first().textContent(), first);
+  assert.equal(await page.locator("#verdictList > li").count(), 3);
+  // A film moved below the tenth place opens the whole ranking, so it stays in sight.
+  const tenth = await page.locator("#rankList .rank-row").nth(9).getAttribute("data-rank");
+  await page.locator("#rankList .rank-row").nth(9).locator('[data-key^="rankdown-"]').click();
+  await page.waitForFunction(() => document.querySelectorAll("#rankList .rank-row").length === 14);
+  assert.equal(await page.locator("#rankList .rank-row").nth(10).getAttribute("data-rank"), tenth);
+  assert.equal(await page.textContent("#rankMore"), "Show the top ten");
+  await page.click("#rankMore");
+  assert.equal(await page.locator("#rankList .rank-row").count(), 10);
+  // Dragging within the top ten leaves the films below it where they were.
+  const below = await page.evaluate(() => window.kuvert.app.store.p.rankings.slice(10));
+  await page.click("#verdictMore");
+  assert.equal(await page.locator("#verdictList > li").count(), 6);
+  assert.equal(await page.textContent("#verdictMore"), "Show fewer");
+  assert.deepEqual(await page.evaluate(() => window.kuvert.app.store.p.rankings.slice(10)), below);
+  assert.deepEqual(await problems(page), []);
+  await context.close();
+});
+
+test("on a phone the ranking's arrows step aside for the title, and stay there for a keyboard", async () => {
+  const context = await phone();
+  const page = await openPage(context, "/");
+  await page.evaluate(() => {
+    const { store } = window.kuvert.app;
+    for (const [id, stars] of [["1942-casablanca", 5], ["1995-heat", 4], ["1976-rocky", 3]]) {
+      store.markSeen(id, true, { date: "2026-10-03" });
+      store.rate(id, stars);
+    }
+  });
+  await page.evaluate(() => window.kuvert.app.router.show("stats"));
+  await page.waitForSelector("#rankList .rank-row");
+  const row = page.locator('#rankList .rank-row[data-rank="1995-heat"]');
+  const width = (sel) => row.locator(sel).evaluate((el) => el.getBoundingClientRect().width);
+  assert.ok((await width(".rank-moves")) <= 1, "the arrows are out of sight");
+  assert.ok((await width(".rank-title")) > 150, "the title has the room: " + (await width(".rank-title")));
+  // Still there for a keyboard: focus shows them, and they work.
+  await row.locator('[data-key="rankup-1995-heat"]').focus();
+  await page.waitForFunction(() => document.querySelector('#rankList .rank-row[data-rank="1995-heat"] .rank-moves').getBoundingClientRect().width > 20);
+  await page.keyboard.press("Enter");
+  await page.waitForFunction(() => window.kuvert.app.store.p.rankings[0] === "1995-heat");
+  assert.deepEqual(await problems(page), []);
+  await context.close();
+});
+
+test("the Library shows the list as rows or as posters, and remembers which", async () => {
+  const context = await newContext();
+  const page = await openPage(context, "/");
+  await page.evaluate(() => window.kuvert.app.router.show("library"));
+  await page.waitForSelector("#list > li");
+  // No filter yet: the switch for tonight's draw waits until there is one.
+  assert.equal(await page.isHidden("#drawSelectionRow"), true);
+  assert.equal(await page.getAttribute('#listView [data-view="list"]', "aria-pressed"), "true");
+  // A wide row carries the director and the running time.
+  const rocky = page.locator("#list > li", { has: page.locator('[data-key="title-1976-rocky"]') });
+  assert.equal(await rocky.locator(".film-dir").textContent(), "John G. Avildsen");
+  assert.equal(await rocky.locator(".film-rt").textContent(), "119 min");
+  assert.equal(await rocky.locator(".film-dir").isVisible(), true);
+  // A decade is a filter: the switch shows, and goes again with the filter.
+  await page.locator("#decs .dec").first().click();
+  await page.waitForSelector("#drawSelectionRow:not([hidden])");
+  await page.locator("#decs .dec").first().click();
+  await page.waitForSelector("#drawSelectionRow", { state: "hidden" });
+  // As posters: every film still there, each opening its ticket.
+  const rows = await page.locator("#list > li").count();
+  await page.click('#listView [data-view="posters"]');
+  await page.waitForSelector("#list.as-posters .p-film");
+  assert.equal(await page.locator("#list .p-film").count(), rows);
+  assert.equal(await page.getAttribute('#listView [data-view="posters"]', "aria-pressed"), "true");
+  assert.match(await page.locator("#list .p-film", { has: page.locator('[data-key="title-1976-rocky"]') }).textContent(), /^Rocky 1976 · Won$/);
+  // Found by what it is about, the heading spans the grid.
+  await page.fill("#search", "boxer");
+  await page.waitForSelector("#list.as-posters .about-head");
+  await page.fill("#search", "");
+  // Remembered after a reload.
+  await page.reload();
+  await page.waitForFunction(() => window.kuvert?.app);
+  await page.evaluate(() => window.kuvert.app.router.show("library"));
+  await page.waitForSelector("#list.as-posters .p-film");
+  await page.locator('#list [data-key="title-1976-rocky"]').click();
+  await page.waitForSelector("#ticket:not([hidden])");
+  assert.match(await page.textContent("#pickTitle"), /Rocky/);
   assert.deepEqual(await problems(page), []);
   await context.close();
 });

@@ -65,6 +65,33 @@
       margin-top: 0;
     }
   }
+  /* A first visit on a short phone: the masthead gives up some height too, and keeps its line of
+     introduction, so the envelope's button is still on the first screen. */
+  @media (max-width: 700px) and (max-height: 780px) {
+    :root:not([data-returning]) .marquee {
+      padding-top: 0;
+    }
+    :root:not([data-returning]) .marquee-title {
+      --marquee-size: 2.6rem;
+    }
+    :root:not([data-returning]) .hast {
+      width: 48px;
+    }
+    :root:not([data-returning]) .marquee-sub {
+      margin-top: var(--s-2);
+      font-size: var(--fs-2);
+    }
+    :root:not([data-returning]) .nixie {
+      margin-bottom: var(--s-4);
+    }
+    :root:not([data-returning]) .draw-bar {
+      margin-top: 0;
+    }
+    /* The envelope gives up the height that is still missing. */
+    :root:not([data-returning]) .stage[data-state="closed"] .envelope {
+      --w: min(100vw - 32px, max(220px, (100vh - 500px) * 1.62));
+    }
+  }
   /* The same on a laptop: wide, but too short for the full masthead. The name, the year dial, the
      envelope and its button share the first screen, and the envelope gives up the height that's missing. */
   @media (min-width: 701px) and (max-height: 899px) {
@@ -786,6 +813,9 @@
     color: var(--ink-3);
     font-weight: 500;
   }
+  .punches span {
+    margin-left: 3px;
+  }
   .punches i {
     width: 9px;
     height: 9px;
@@ -882,16 +912,15 @@
   .t-meta {
     color: var(--ink-2);
     font-size: var(--fs-3);
+    line-height: 1.45;
+  }
+  /* The running time and the director carry on the same line, in the same voice. */
+  .t-facts::before {
+    content: "\a0·\20";
   }
   .t-oscar {
     color: var(--ink-2);
-    font: italic 500 1.25rem / 1.3 var(--font-display);
-  }
-  .t-facts {
-    color: var(--ink-2);
-    font: 500 12px / 1.5 var(--font-mono);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font: italic 500 1.125rem / 1.35 var(--font-display);
   }
   .t-line {
     color: var(--ink-2);
@@ -989,12 +1018,12 @@
       background-position: -200% 0;
     }
   }
-  /* What the film is about: one line across the ticket, under its facts. */
+  /* What the film is about: one line under the title and its facts, before anything else is said. */
   .t-premise {
     max-width: 64ch;
-    margin-top: 16px;
+    margin-top: 4px;
     color: var(--ink);
-    font-size: var(--fs-3);
+    font-size: 1rem;
     line-height: 1.45;
     text-wrap: pretty;
   }
@@ -1033,8 +1062,28 @@
       order: 3;
       flex-basis: 100%;
     }
+    /* Narrow: the poster takes a good third of the ticket with the title beside it, and the rest runs
+       the full width beneath. */
     .t-body {
-      grid-template-columns: clamp(84px, 28cqi, 120px) minmax(0, 1fr);
+      display: flow-root;
+    }
+    .t-poster {
+      float: left;
+      width: clamp(104px, 36cqi, 150px);
+      margin: 0 14px 12px 0;
+    }
+    .t-main {
+      display: block;
+      align-content: normal; /* with any other value a block keeps clear of the float instead of wrapping under it */
+    }
+    .t-main > * + * {
+      margin-top: 8px;
+    }
+    .t-main > :is(.t-premise, .t-oscar, .t-line, .t-moods, .t-shelf, .t-status, .btn, .t-choices) {
+      clear: left;
+    }
+    .t-main > .t-premise {
+      margin-top: 10px;
     }
   }
   .ticket.no-details .t-poster {
@@ -1685,21 +1734,32 @@
       display: none;
     }
   }
+  /* A first visit: beneath the envelope's button, what Kuvert is and the other ways to begin. */
   .welcome {
     display: grid;
-    gap: var(--s-3);
-    width: min(640px, 100%);
-    padding: var(--s-5);
-    border-color: color-mix(in oklab, var(--brass) 35%, var(--line));
-    background:
-      radial-gradient(420px 200px at 100% 0%, var(--brass-wash), transparent),
-      color-mix(in oklab, var(--surface) 90%, transparent);
+    justify-items: center;
+    gap: var(--s-2);
+    width: min(48ch, 100%);
+    margin: var(--s-5) auto 0;
+    padding-top: var(--s-5);
+    border-top: 1px solid var(--line-soft);
+    text-align: center;
   }
   .welcome h2 {
     color: var(--paper);
-    font: 600 var(--fs-6) / 1.1 var(--font-display);
+    font: 600 var(--fs-5) / 1.2 var(--font-display);
   }
   .welcome p {
     color: var(--muted);
+    font-size: var(--fs-3);
+  }
+  .welcome-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2px var(--s-5);
+  }
+  .welcome .fine {
+    font-size: var(--fs-2);
   }
 }

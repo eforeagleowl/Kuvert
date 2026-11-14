@@ -454,10 +454,30 @@ export class Stage {
     }
     if (animate) {
       this.ticket.focus({ preventScroll: true });
-      // On a phone the title would sit under the fold, under the envelope: bring the ticket up to it.
-      this.bringIntoView($("pickTitle"), this.ticket);
+      this.showTicket();
     }
     this.app.renderSoon();
+  }
+  /**
+   * After a draw the ticket's buttons would sit under the fold, below the envelope. The page moves up as far
+   * as it takes to show them, and never so far that the poster and the title leave: on a short screen the
+   * ticket's head goes first, then the buttons wait a scroll away.
+   */
+  showTicket() {
+    const key = [$("againBtn"), $("markBtn")].find((el) => el.getClientRects().length);
+    if (!key) return this.bringIntoView($("pickTitle"), this.ticket);
+    const bar = document.querySelector(".appbar"),
+      tabs = document.querySelector(".tabbar"),
+      top = bar ? bar.getBoundingClientRect().bottom : 0,
+      bottom = tabs?.getClientRects().length ? tabs.getBoundingClientRect().top : innerHeight;
+    const need = key.getBoundingClientRect().bottom - (bottom - 10),
+      heads = [$("pickEyebrow"), $("pickTitle"), $("posterWell")].filter((el) => el.getClientRects().length).map((el) => el.getBoundingClientRect().top),
+      room = Math.min(...heads, this.ticket.getBoundingClientRect().top + 400) - (top + 10);
+    const by = Math.min(need, room);
+    if (by <= 0) return;
+    const y = Math.max(0, scrollY + by);
+    if (reduceMotion()) window.scrollTo({ top: y, behavior: "instant" });
+    else return this.glideTo(y);
   }
   /** Scrolls so `el` shows between the app bar and the tab bar; if it has to move, `anchor` goes to the top. */
   bringIntoView(el, anchor = el) {
@@ -1086,7 +1106,8 @@ export class Stage {
       n = seagal ? 0 : this.app.streak(),
       shown = Math.min(n, 8);
     punches.hidden = !n;
-    punches.replaceChildren(...Array.from({ length: shown }, () => h("i")), n > shown ? "+" + (n - shown) : "");
+    // The holes, and in words what they count: on a phone there is no hover to explain them.
+    punches.replaceChildren(...Array.from({ length: shown }, () => h("i")), h("span", { text: n === 1 ? t("1 week so far") : t("{weeks} in a row", { weeks: plural(n, "week") }) }));
     punches.setAttribute("aria-label", t("{weeks} in a row with a film", { weeks: plural(n, "week") }));
     punches.title = punches.getAttribute("aria-label");
     this.paintShelf();

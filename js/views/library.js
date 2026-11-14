@@ -7,6 +7,7 @@ import { fmtWhen } from "../state/dates.js";
 import { plural, starText, wallFilms, watchedFilms } from "../state/stats.js";
 import { t, listOf, decimal } from "../i18n/index.js";
 import { titleParts } from "../i18n/titles.js";
+import { metadataFor } from "./journeys.js";
 
 // Row buttons say what they do on screen and which film only to screen readers, so each one's name starts
 // with the words you see (voice control finds it by them).
@@ -44,6 +45,11 @@ export class Library {
     $("search").addEventListener("focus", () => this.app.learnPremises?.(), { once: true });
     $("drawSelection").checked = store.settings.drawSelection;
     $("drawSelection").addEventListener("change", (e) => store.set({ drawSelection: e.target.checked }));
+    // The list as rows or as posters: remembered with the other Library settings.
+    $("listView").addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-view]");
+      if (b) store.set({ listView: b.dataset.view });
+    });
     $("wallSort").addEventListener("click", (e) => {
       const b = e.target.closest("button[data-sort]");
       if (b) store.set({ wallSort: b.dataset.sort });
@@ -98,6 +104,10 @@ export class Library {
   }
   thumbImage(path) {
     return this.deferredImage(imageUrl("w92", path), (e) => e.target.remove());
+  }
+  // The same poster at the size of a tile, for the list shown as posters.
+  tileImage(path) {
+    return this.deferredImage(imageUrl("w342", path), (e) => e.target.remove());
   }
   // Rows fetch their poster when they scroll into view, two at a time.
   watchThumb(span) {
@@ -181,6 +191,7 @@ export class Library {
     const path = this.app.store.posterPath(f.id);
     if (!path) return;
     for (const span of document.querySelectorAll('.thumb[data-film="' + CSS.escape(f.id) + '"]')) if (!span.querySelector("img")) span.replaceChildren(this.thumbImage(path));
+    for (const art of document.querySelectorAll('.p-art[data-film="' + CSS.escape(f.id) + '"]')) if (!art.querySelector("img")) art.append(this.tileImage(path));
   }
 
   // ---------------------------------------------------------------- rows
@@ -244,6 +255,14 @@ export class Library {
     }
     if (document.activeElement !== $("search")) $("search").value = st.query;
     $("drawSelection").checked = st.drawSelection;
+    // The switch only means something once a filter narrows the list (or while it is on).
+    $("drawSelectionRow").hidden = !(st.drawSelection || st.query.trim() || st.statusFilter || st.decadeFilter !== null);
+    // Rows or posters, where there are posters to show.
+    const canPoster = !isArchive && (this.app.details.connected || catalog.hasPosters);
+    this.asPosters = canPoster && st.listView === "posters";
+    $("listView").hidden = !canPoster;
+    for (const b of $("listView").querySelectorAll("button")) b.setAttribute("aria-pressed", String((b.dataset.view === "posters") === this.asPosters));
+    $("scopeRow").hidden = $("drawSelectionRow").hidden && !canPoster;
 
     // Decades and what's left.
     const byDec = new Map();
@@ -298,6 +317,7 @@ export class Library {
       st = store.settings,
       q = st.query.trim();
     $("list").hidden = isArchive;
+    $("list").classList.toggle("as-posters", !isArchive && this.asPosters);
     if (isArchive) return;
     const rows = catalog.films
       .filter((f) => {
@@ -318,14 +338,55 @@ export class Library {
       );
       return;
     }
-    const line = (f, title = this.title(f)) => this.row(f, [this.tick(f), "thumb", title, this.shelfTag(f), h("span", { class: "yr", text: String(f.y) })], p.seen.has(f.id) ? "done" : "");
+    // A row: the director and the running time join it where there is room (css/pages.css), and a film
+    // found by what it is about carries its line beneath the title.
+    const line = (f, about = false) => {
+      const m = metadataFor(f.id),
+        runtime = p.runtimes[f.id] || m?.runtime;
+      return this.row(
+        f,
+        [
+          this.tick(f),
+          "thumb",
+          this.title(f),
+          h("span", { class: "film-dir", text: m?.director || "" }),
+          h("span", { class: "film-rt", text: runtime ? runtime + " min" : "" }),
+          this.shelfTag(f),
+          h("span", { class: "yr", text: String(f.y) }),
+          about ? h("span", { class: "about-line", text: catalog.premise(f.id) || "" }) : null,
+        ],
+        ["film-row", about ? "film-about" : "", p.seen.has(f.id) ? "done" : ""].filter(Boolean).join(" "),
+      );
+    };
+    // The same film as a poster: the poster opens it, the ring in its corner ticks it off.
+    const tile = (f) => {
+      const path = store.posterPath(f.id),
+        shelf = catalog.shelfOf(f);
+      const art = h("span", { class: "wall-art p-art", dataset: { film: f.id }, attrs: { "aria-hidden": "true" } }, mark("dala-mark", "poster-mark"));
+      if (path) art.append(this.tileImage(path));
+      else if (path === undefined) this.watchThumb(art);
+      return h(
+        "li",
+        { class: "p-film" + (p.seen.has(f.id) ? " done" : "") },
+        h(
+          "button",
+          { class: "p-open", type: "button", dataset: { key: "title-" + f.id }, on: { click: () => this.app.stage.openFilm(f.id) } },
+          art,
+          h("span", { class: "wall-caption" }, ...titleParts(f)),
+          " ",
+          h("span", { class: "wall-year", text: f.y + (shelf ? " · " + t(shelf.chip) : "") }),
+        ),
+        this.tick(f),
+      );
+    };
+    const one = this.asPosters ? (f) => tile(f) : line;
     // A search lists the titles it found first, then the films it found by what they are about, each with its line.
     const byTitle = q ? rows.filter((f) => catalog.matchesTitle(f, q)) : rows,
       byAbout = q ? rows.filter((f) => !catalog.matchesTitle(f, q)) : [];
     $("list").replaceChildren(
-      ...byTitle.map((f) => line(f)),
+      ...byTitle.map((f) => one(f)),
       ...(byAbout.length ? [h("li", { class: "about-head", text: t("About “{q}”", { q }) })] : []),
-      ...byAbout.map((f) => line(f, h("div", { class: "film-about" }, this.title(f), h("span", { class: "about-line", text: catalog.premise(f.id) || "" })))),
+      ...byAbout.map((f) => one(f, true)),
     );
   }
 

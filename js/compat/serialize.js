@@ -102,6 +102,8 @@ export function browserSave(p, ctx, { settings, lastBackup = null, availability 
       subscriptionOnly: settings.subscriptionOnly,
       selectedServices: settings.selectedServices,
       wallSort: settings.wallSort,
+      // Newer than the original app: only written once chosen, so an untouched save stays as it was.
+      ...(settings.listView === "posters" ? { listView: "posters" } : {}),
     },
     matches: p.matches,
     runtimes: p.runtimes,

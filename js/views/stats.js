@@ -25,6 +25,9 @@ const VERDICTS = [
   ["unsure", "Unsure"],
   ["no", "No"],
 ];
+// Long lists open with their top: the first ten of the ranking, and three winners to judge.
+const RANKS_SHOWN = 10,
+  VERDICTS_SHOWN = 3;
 
 export class Stats {
   constructor(app) {
@@ -53,9 +56,27 @@ export class Stats {
       this.allMilestones = !this.allMilestones;
       this.milestones();
     });
+    // So do the ranking and the winners to judge.
+    this.allRanks = this.allVerdicts = false;
+    this.ranksBelow = [];
+    this.verdictPick = null;
+    $("rankMore").addEventListener("click", () => {
+      this.allRanks = !this.allRanks;
+      this.ranking();
+    });
+    $("verdictMore").addEventListener("click", () => {
+      this.allVerdicts = !this.allVerdicts;
+      this.verdictPick = null;
+      this.verdicts();
+    });
   }
 
   enter() {
+    // Each visit starts with the winners still to judge.
+    if (this.verdictPick) {
+      this.verdictPick = null;
+      this.verdicts();
+    }
     // The board lights up film by film the first time you open Stats in a visit.
     if (!this.swept && !reduceMotion()) {
       this.swept = true;
@@ -220,6 +241,14 @@ export class Stats {
     const year = this.app.share.yearOnOffer();
     $("shareYear").hidden = !year;
     if (year) $("shareYearLabel").textContent = t("Share your film year · {year}", { year });
+    // The top ten, with the rest a tap away. A list only a little longer is shown whole.
+    const short = !this.allRanks && ranked.length > RANKS_SHOWN + 2,
+      shown = short ? ranked.slice(0, RANKS_SHOWN) : ranked;
+    this.ranksBelow = ranked.slice(shown.length).map((f) => f.id);
+    const more = $("rankMore");
+    more.hidden = ranked.length <= RANKS_SHOWN + 2;
+    more.textContent = short ? t("Show all {n}", { n: ranked.length }) : t("Show the top ten");
+    more.setAttribute("aria-expanded", String(!short));
     const list = $("rankList");
     if (!ranked.length)
       list.replaceChildren(
@@ -229,7 +258,7 @@ export class Stats {
       );
     else
       list.replaceChildren(
-        ...ranked.map((f, i) => {
+        ...shown.map((f, i) => {
           const r = ratingOf(p, f.id);
           const thumb = library.thumb(f);
           const li = h(
@@ -239,8 +268,13 @@ export class Stats {
             h("span", { class: "rank-pos", text: String(i + 1) }),
             thumb,
             h("span", { class: "rank-body" }, h("span", { class: "rank-title" }, ...titleParts(f)), h("span", { class: "rank-meta", text: (r !== null ? starText(r) + " · " : "") + f.y })),
-            h("button", { class: "rank-btn", type: "button", disabled: i === 0, dataset: { key: "rankup-" + f.id }, attrs: { "aria-label": t("Move {title} up", { title: f.t }) }, on: { click: () => this.move(f.id, -1) } }, icon("up")),
-            h("button", { class: "rank-btn", type: "button", disabled: i === ranked.length - 1, dataset: { key: "rankdown-" + f.id }, attrs: { "aria-label": t("Move {title} down", { title: f.t }) }, on: { click: () => this.move(f.id, 1) } }, icon("down")),
+            // The arrows move a film without dragging. On a phone they step aside for the title (css/pages.css).
+            h(
+              "span",
+              { class: "rank-moves" },
+              h("button", { class: "rank-btn", type: "button", disabled: i === 0, dataset: { key: "rankup-" + f.id }, attrs: { "aria-label": t("Move {title} up", { title: f.t }) }, on: { click: () => this.move(f.id, -1) } }, icon("up")),
+              h("button", { class: "rank-btn", type: "button", disabled: i === ranked.length - 1, dataset: { key: "rankdown-" + f.id }, attrs: { "aria-label": t("Move {title} down", { title: f.t }) }, on: { click: () => this.move(f.id, 1) } }, icon("down")),
+            ),
             h(
               "button",
               {
@@ -291,6 +325,10 @@ export class Stats {
               on: {
                 click: () => {
                   const undo = store.placeInRanking(f.id);
+                  if (!this.allRanks && store.p.rankings.indexOf(f.id) >= RANKS_SHOWN) {
+                    this.allRanks = true;
+                    this.app.renderSoon();
+                  }
                   this.app.toast.show(t("{title} added at #{n}.", { title: f.t, n: store.p.rankings.indexOf(f.id) + 1 }), undo);
                   requestAnimationFrame(() => $("rankList").querySelector('[data-rank="' + CSS.escape(f.id) + '"] .rank-handle')?.focus({ preventScroll: true }));
                 },
@@ -304,6 +342,9 @@ export class Stats {
     );
   }
   move(id, delta) {
+    // A film that steps below the top ten opens the whole list, so it stays in sight.
+    const at = rankedFilms(this.app.store.p, this.app.catalog).findIndex((f) => f.id === id);
+    if (!this.allRanks && at + delta >= RANKS_SHOWN) this.allRanks = true;
     const j = this.app.store.moveRank(id, delta);
     if (j === null) return;
     this.app.announce(t("{title} is now #{n}.", { title: this.app.catalog.byId.get(id).t, n: j + 1 }));
@@ -319,6 +360,8 @@ export class Stats {
     e.preventDefault();
     const list = $("rankList"),
       store = this.app.store;
+    // The films below the top ten keep their places while the list is short.
+    const below = this.ranksBelow;
     const startOrder = [...list.querySelectorAll(".rank-row")].map((r) => r.dataset.rank);
     row.classList.add("dragging");
     const move = (ev) => {
@@ -346,7 +389,7 @@ export class Stats {
       row.classList.remove("dragging");
       const order = [...list.querySelectorAll(".rank-row")].map((r) => r.dataset.rank);
       if (order.join() === startOrder.join()) return;
-      const undo = store.setRanking(order);
+      const undo = store.setRanking([...order, ...below]);
       const id = row.dataset.rank;
       this.app.toast.show(t("{title} moved to #{n}.", { title: this.app.catalog.byId.get(id).t, n: order.indexOf(id) + 1 }), undo);
     };
@@ -371,9 +414,24 @@ export class Stats {
       : decided.length
         ? t("Winners you'd keep: {n} of {total}", { n: keep, total: decided.length }) + (handed ? t(" · you'd hand {trophies} to another film", { trophies: plural(handed, catalog.award?.trophy || "award") }) : "") + (toJudge ? t(" · {n} to judge", { n: toJudge }) : "")
         : t("{winners} to judge", { winners: plural(toJudge, "winner") });
+    if (!winners.length) $("verdictMore").hidden = true;
     if (!winners.length) return $("verdictList").replaceChildren(emptyState(t("No winners watched yet"), catalog.prize ? t("Watch a {prize} winner to judge it here.", { prize: catalog.prize }) : t("Watch a winner to judge it here.")));
+    // Three at a time: the first still to judge, and they stay put while you judge them.
+    const more = $("verdictMore"),
+      long = winners.length > VERDICTS_SHOWN + 1;
+    if (long && !this.allVerdicts) {
+      const kept = (this.verdictPick || []).filter((id) => winners.some((f) => f.id === id));
+      if (kept.length < VERDICTS_SHOWN) {
+        const open = winners.filter((f) => !p.verdicts[f.id]).map((f) => f.id);
+        this.verdictPick = [...new Set([...kept, ...open, ...winners.map((f) => f.id)])].slice(0, VERDICTS_SHOWN);
+      }
+    }
+    const shown = long && !this.allVerdicts ? winners.filter((f) => this.verdictPick.includes(f.id)) : winners;
+    more.hidden = !long;
+    more.textContent = shown.length < winners.length ? t("Show all {n}", { n: winners.length }) : t("Show fewer");
+    more.setAttribute("aria-expanded", String(shown.length === winners.length));
     $("verdictList").replaceChildren(
-      ...winners.map((f) => {
+      ...shown.map((f) => {
         const group = h(
           "span",
           { class: "verdicts", attrs: { role: "group", "aria-label": catalog.prize ? t("Did {title} deserve {prize}?", { title: f.t, prize: catalog.prize }) : t("Did {title} deserve the win?", { title: f.t }) } },

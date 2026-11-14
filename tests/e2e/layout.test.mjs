@@ -151,7 +151,8 @@ test("Kuvert is set in Playfair Display, Familjen Grotesk and Courier Prime, fro
       origins: [...new Set(performance.getEntriesByType("resource").map((r) => new URL(r.name).origin))],
     };
   });
-  assert.deepEqual(seen.faces, ["Playfair Display", "Playfair Display", "Familjen Grotesk", "Familjen Grotesk", "Courier Prime", "Courier Prime"]);
+  // The ticket's head is typewritten; its line of facts reads in the same face as the rest of the ticket.
+  assert.deepEqual(seen.faces, ["Playfair Display", "Playfair Display", "Familjen Grotesk", "Familjen Grotesk", "Courier Prime", "Familjen Grotesk"]);
   assert.deepEqual(seen.loaded, [], "every face the page asks for is there");
   assert.ok(seen.files.length >= 3 && seen.files.every((f) => /^(playfair|familjen|courier-prime|geist-arrows|noto-symbols)/.test(f)), seen.files.join(", "));
   assert.deepEqual(seen.fontOrigins, [env.url], "every font file is Kuvert's own");

@@ -101,6 +101,8 @@ export class Evening {
       st = store.settings,
       p = store.p,
       env = store.env();
+    // The first film drawn (or ticked off) ends the first-visit welcome.
+    if (!$("welcome").hidden && (p.current || p.seen.size)) this.endWelcome();
     const films = baseDrawFilms(env),
       pending = films.filter((f) => missingForDraw(env, f)).length,
       units = store.units(),
@@ -291,7 +293,8 @@ export class Evening {
     this.app.renderSoon();
   }
 
-  // The first-visit welcome card.
+  // The first visit: a few words under the envelope's button, and the other ways to begin. Drawing the
+  // first film ends it (render), as does taking one of those ways.
   welcome() {
     const { store, storage, sync } = this.app;
     let show = false;
@@ -308,10 +311,7 @@ export class Evening {
       } catch {}
       $("welcome").hidden = true;
     };
-    $("welcomeStart").addEventListener("click", () => {
-      dismiss();
-      this.app.stage.drawOrFinale();
-    });
+    this.endWelcome = dismiss;
     $("welcomeSeen").addEventListener("click", () => {
       dismiss();
       this.app.library.setBackfill(true);
@@ -319,10 +319,6 @@ export class Evening {
     $("welcomeImport").addEventListener("click", () => {
       dismiss();
       this.app.settings.open("importList");
-    });
-    $("welcomeTmdb").addEventListener("click", () => {
-      dismiss();
-      this.app.settings.open("tmdbTok");
     });
     $("welcomeSync").addEventListener("click", () => {
       dismiss();

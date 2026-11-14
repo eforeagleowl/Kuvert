@@ -20,7 +20,7 @@ to your home screen, and it works offline after your first visit.
   and gold, and SEAGAL from Dark Territory, a rail depot with a green terminal and a radio dispatcher.
 - **Your watchthrough.** Mark films watched (the next day too: "Watched it" dates the film the night you
   drew it), rate them, say whether the winner deserved it, and rank your favorites: your stars put each
-  film in the ranking, and you fine-tune it. The Library holds the whole list and a poster wall, and lets
+  film in the ranking, and you fine-tune it. The Library holds the whole list, as rows or as posters, and lets
   you tick off films you'd seen before Kuvert without a date, so they never skew your pace. Its search
   finds a film by its title, its year, a nickname, or a word for what it's about ("boxer", "shark").
   Stats show your pace, streaks and milestones, and give you your film year as a picture to share: the

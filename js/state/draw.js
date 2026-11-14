@@ -21,6 +21,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
   subscriptionOnly: false,
   selectedServices: {},
   wallSort: "recent",
+  listView: "list",
 });
 
 export const moodsFor = (p, id) => (Object.hasOwn(p.moods, id) ? p.moods[id] : p.moodSuggestions[id] || []);

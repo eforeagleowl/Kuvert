@@ -31,7 +31,8 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
   Set-aside films are out of the draw. Draw again never repeats the film on the ticket when another is eligible.
   "This is the only eligible ticket" when nothing else qualifies. Finale when every film is watched.
 - Opening animation: seal breaks, flap lifts, ticket slides out. The horse nods at every draw.
-- Ticket: "Kuvert · Biobiljett" header, ticket number, weekly streak punch holes (up to 8, then +n),
+- Ticket: "Kuvert · Biobiljett" header, ticket number, weekly streak punch holes (up to 8) with what they
+  count in words ("26 weeks in a row"),
   eyebrow "Kvällens film" / "Kvällens vinnare" / "Nästa del" / "Sedd", title, year and shelf,
   Oscar line ("Beat Taxi Driver, All the President's Men and 2 more at the 49th Academy Awards." /
   "Lost to Rocky at …"), poster well with the horse as placeholder, loading skeleton.
@@ -68,8 +69,12 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
   Escape leaves a field or closes the toast.
 - Finale ticket "Hela samlingen." with 275 FILMER SEDDA seal, first and last recorded watch,
   total running time when every film has a runtime, confetti (tickets, crowns, dots), "See your watchthrough".
-- Welcome card on first visit: Start with this list, Bring my own list, Add posters & streaming,
-  Connect sync or load a backup.
+- First visit: the envelope and its button come first. Beneath them, until the first draw: a few words on
+  what Kuvert is, with I've seen some already, Bring my own list, and Connect sync or load a backup.
+- On Tonight the masthead carries the name, so the app bar there shows the tally only.
+- After a draw the ticket comes up under the app bar as far as it takes to show its buttons. On a phone
+  the poster takes a good third of the ticket; the order is title, one line of facts (year, shelf,
+  running time, director), the premise, then the award line.
 
 ## Library ("The collection")
 
@@ -78,6 +83,10 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
 - Forgiving search: accents, punctuation, roman numerals, initials ("lotr", "lotr2", "et"), run-together
   words, years ("zola 1937").
 - Decade coverage buttons (filter by decade), "98 winners, 155 nominees and 22 honorable mentions still to watch."
+- List or Posters (remembered): the same films as rows or as a grid of posters, where the poster opens
+  the film and the ring in its corner ticks it off. Wide screens add the director and the running time
+  to each row. A film found by what it's about shows its premise under the title.
+- "Use these filters for tonight's draw" shows once a filter narrows the list (or while it is on).
 - "Use these filters for tonight's draw", Back to tonight.
 - Rows: watched toggle, poster thumbnail when TMDB is connected (lazy, two at a time, stops after three
   failures), title opens the film, shelf chip, year.
@@ -93,10 +102,13 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
 - Reel: one mark per film in year order, watched and tonight's ticket highlighted.
 - Facts: Watched, Watch time, Average length, Your average stars.
 - Jump bar: Ranking, Verdicts, Watch days, Milestones, Award shelves, Decades.
-- Ranking ("Min topplista"): drag with pointer, up / down / remove buttons, add from "Not ranked yet"
+- Ranking ("Min topplista"): the top ten, with "Show all n" for the rest (a film moved below the ten
+  opens the list). On a phone's touch screen the arrows step aside for the title and stay available to a
+  screen reader and a keyboard. Drag with pointer, up / down / remove buttons, add from "Not ranked yet"
   (placed after films rated the same or higher), Start from my stars, Copy for group chat (clipboard with
   a selectable fallback), Share as image.
-- Verdicts on watched winners: Yes / Unsure / No, "Should have won", summary line.
+- Verdicts on watched winners: Yes / Unsure / No, "Should have won", summary line. Three at a time, the
+  ones still to judge first, with "Show all n".
 - Watch days: 26-week (17 on phones) Monday-first heat strip with month labels, tap a day with one film to
   open it; evening facts: longest run, favorite night, busiest week.
 - Milestones: 1, 25, 50, 100 and the whole list; Across the decades; Winner's circle; Beyond the ballot;
@@ -125,7 +137,7 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
 
 ## Everywhere
 
-- App bar: horse + name (back to Tonight), tally with a Swedish cheer ("Förseglat", "Bra start",
+- App bar: horse + name (back to Tonight; not shown on Tonight itself), tally with a Swedish cheer ("Förseglat", "Bra start",
   "På god väg", "Över halvvägs", "Nästan där", "Klart!"), tabs, progress line. Bottom tabs in the
   installed app.
 - Toast with Undo (every change can be undone once), optional action, swipe to dismiss, pauses on hover.

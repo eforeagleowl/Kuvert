@@ -246,6 +246,7 @@ export class Store extends EventTarget {
     st.drawSelection = !!ps.drawSelection;
     st.filter = FILTERS.includes(ps.filter) ? ps.filter : "unseen";
     st.wallSort = WALL_SORTS.includes(ps.wallSort) ? ps.wallSort : "recent";
+    st.listView = ps.listView === "posters" ? "posters" : "list";
     st.query = typeof ps.query === "string" ? ps.query : "";
     st.statusFilter = this.catalog.shelves[ps.statusFilter] ? ps.statusFilter : null;
     st.decadeFilter = Number.isInteger(ps.decadeFilter) ? ps.decadeFilter : null;

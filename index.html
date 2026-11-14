@@ -195,19 +195,6 @@
       <p class="marquee-sub" data-subtitle>Best Picture winners, nominees and honorable mentions, drawn at random</p>
     </div>
 
-    <section class="welcome card" id="welcome" aria-labelledby="welcomeTitle" hidden>
-      <p class="kicker" lang="sv" data-sg="Briefing">Välkommen</p>
-      <h2 id="welcomeTitle" data-sg="Pull a file from the folder">Pull a film from the envelope</h2>
-      <p>Open an envelope. Watch a film. Keep the ticket. Your collection grows with every film night.</p>
-      <div class="row">
-        <button class="btn btn-primary" id="welcomeStart" type="button">Start with this list</button>
-        <button class="btn" id="welcomeSeen" type="button">I've seen some already</button>
-        <button class="btn" id="welcomeImport" type="button">Bring my own list</button>
-        <button class="btn" id="welcomeTmdb" type="button" hidden>Add posters &amp; streaming</button>
-      </div>
-      <p class="fine">The collection is ready. Used Kuvert on another device? <button class="link" id="welcomeSync" type="button">Connect sync or load a backup</button></p>
-    </section>
-
     <aside class="notice card danger" id="unreadable" role="alert" aria-labelledby="unreadableTitle" hidden>
       <div class="notice-head"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><h2 id="unreadableTitle">Kuvert couldn’t read the progress saved in this browser</h2></div>
       <p>It’s kept exactly as it was, and nothing will be written over it. Restore a backup or a code to carry on, or start fresh.</p>
@@ -284,11 +271,13 @@
             <div class="t-main">
               <p class="t-eyebrow" id="pickEyebrow"></p>
               <h2 class="t-title" id="pickTitle">—</h2>
-              <p class="t-meta" id="pickMeta"></p>
-              <p class="t-oscar" id="oscarLine" hidden></p>
+              <!-- One line of facts: the year and its shelf, then the running time and the director. -->
+              <p class="t-meta"><span id="pickMeta"></span><span class="t-facts" id="pickFacts" hidden></span></p>
               <div class="case-stamps" id="caseStamps"></div>
               <div class="t-skel" aria-hidden="true"><i></i><i></i><i></i></div>
-              <p class="t-facts" id="pickFacts" hidden></p>
+              <!-- What the film is about, in one line (js/i18n/premises.js), and then how it did. -->
+              <p class="t-premise" id="pickPremise" hidden></p>
+              <p class="t-oscar" id="oscarLine" hidden></p>
               <p class="t-line" id="finishEstimate" hidden></p>
               <p class="t-line t-intermission" id="intermission" hidden></p>
               <p class="t-line t-group" id="groupLine" hidden></p>
@@ -302,9 +291,6 @@
             </div>
             <aside class="t-stub" aria-hidden="true"><span lang="sv" data-sg="Eyes only">Gäller en person</span><b id="stubNo"></b></aside>
           </div>
-          <!-- What the film is about, in one line (js/i18n/premises.js). -->
-          <p class="t-premise" id="pickPremise" hidden></p>
-
           <section class="watched" id="watchedPanel" aria-labelledby="wpHeading" hidden>
             <div class="wp-head">
               <h3 id="wpHeading" lang="sv">Hur var den?</h3>
@@ -415,6 +401,16 @@
       <p class="sleepy-note" id="sleepyNote" hidden><span lang="sv">Dags att sova?</span> Time for bed? One more is fine too.</p>
       <a class="to-station" id="toStation" href="#station" data-route="station"><svg class="icon" aria-hidden="true"><use href="#i-train"/></svg><span lang="sv">Gå till stationen</span> Go to the station</a>
     </div>
+    <!-- A first visit: the envelope and its button come first; this sits beneath them until the first draw. -->
+    <section class="welcome" id="welcome" aria-labelledby="welcomeTitle" hidden>
+      <h2 id="welcomeTitle" data-sg="Pull a file from the folder">Pull a film from the envelope</h2>
+      <p>Open an envelope. Watch a film. Keep the ticket. Your collection grows with every film night.</p>
+      <p class="welcome-links">
+        <button class="link" id="welcomeSeen" type="button">I've seen some already</button>
+        <button class="link" id="welcomeImport" type="button">Bring my own list</button>
+      </p>
+      <p class="fine">The collection is ready. Used Kuvert on another device? <button class="link" id="welcomeSync" type="button">Connect sync or load a backup</button></p>
+    </section>
     <aside class="notice card" id="keepCopy" aria-labelledby="keepCopyTitle" hidden>
       <div class="notice-head"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><h2 id="keepCopyTitle" data-sg="Secure the intel">Keep a copy of your progress</h2></div>
       <p id="keepCopyText"></p>
@@ -529,8 +525,12 @@
       <label class="search"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><input id="search" type="search" placeholder="Find a film…" aria-label="Find a title" autocomplete="off" spellcheck="false"></label>
     </div>
     <div class="decades" id="decs" aria-label="Coverage by decade"></div>
-    <div class="row between scope">
-      <label class="switch"><input type="checkbox" id="drawSelection"><span>Use these filters for tonight’s draw</span></label>
+    <div class="row between scope" id="scopeRow">
+      <label class="switch" id="drawSelectionRow"><input type="checkbox" id="drawSelection"><span>Use these filters for tonight’s draw</span></label>
+      <div class="seg seg-sm list-view" id="listView" role="group" aria-label="Show the list as" hidden>
+        <button type="button" data-view="list">List</button>
+        <button type="button" data-view="posters">Posters</button>
+      </div>
     </div>
     <p class="fine" id="archiveHint" hidden></p>
     <ul class="films" id="list"></ul>
@@ -583,6 +583,7 @@
       </div>
       <textarea id="rankingText" class="copy-fallback" readonly hidden aria-label="Ranking as text"></textarea>
       <ol class="ranks" id="rankList"></ol>
+      <button class="link list-more" id="rankMore" type="button" aria-controls="rankList" hidden></button>
       <div id="unrankedBox" hidden>
         <h3 class="sub-head">Not ranked yet</h3>
         <div class="row between unranked-head">
@@ -599,6 +600,7 @@
     <section class="block" id="verdictBox" aria-labelledby="verdictHeading" hidden>
       <div class="block-head"><h2 id="verdictHeading" data-sg="Justified?">Deserved the win?</h2><span class="fine" id="verdictSummary"></span></div>
       <ul class="verdict-list" id="verdictList"></ul>
+      <button class="link list-more" id="verdictMore" type="button" aria-controls="verdictList" hidden></button>
     </section>
 
     <section class="block" id="watchDays" aria-labelledby="watchDaysHeading">

@@ -40,6 +40,8 @@ export class Library {
     });
     $("search").value = store.settings.query;
     $("search").addEventListener("input", (e) => store.set({ query: e.target.value }));
+    // Searching by what a film is about needs the premise lines: asked for at the latest when the search is used.
+    $("search").addEventListener("focus", () => this.app.learnPremises?.(), { once: true });
     $("drawSelection").checked = store.settings.drawSelection;
     $("drawSelection").addEventListener("change", (e) => store.set({ drawSelection: e.target.checked }));
     $("wallSort").addEventListener("click", (e) => {
@@ -309,14 +311,22 @@ export class Library {
     if (!rows.length) {
       $("list").replaceChildren(
         q
-          ? emptyState(t("No title matches “{q}”", { q }), t("Try part of the title, a year, or a nickname like lotr."))
+          ? emptyState(t("No title matches “{q}”", { q }), t("Try part of the title, a year, a nickname like lotr, or a word for what the film is about."))
           : st.filter === "unseen"
             ? emptyState(t("Nothing left here"), t("Every film that matches these filters is watched or set aside."), { label: t("Show all films"), run: () => store.set({ filter: "all" }) })
             : emptyState(t("Nothing matches these filters")),
       );
       return;
     }
-    $("list").replaceChildren(...rows.map((f) => this.row(f, [this.tick(f), "thumb", this.title(f), this.shelfTag(f), h("span", { class: "yr", text: String(f.y) })], p.seen.has(f.id) ? "done" : "")));
+    const line = (f, title = this.title(f)) => this.row(f, [this.tick(f), "thumb", title, this.shelfTag(f), h("span", { class: "yr", text: String(f.y) })], p.seen.has(f.id) ? "done" : "");
+    // A search lists the titles it found first, then the films it found by what they are about, each with its line.
+    const byTitle = q ? rows.filter((f) => catalog.matchesTitle(f, q)) : rows,
+      byAbout = q ? rows.filter((f) => !catalog.matchesTitle(f, q)) : [];
+    $("list").replaceChildren(
+      ...byTitle.map((f) => line(f)),
+      ...(byAbout.length ? [h("li", { class: "about-head", text: t("About “{q}”", { q }) })] : []),
+      ...byAbout.map((f) => line(f, h("div", { class: "film-about" }, this.title(f), h("span", { class: "about-line", text: catalog.premise(f.id) || "" })))),
+    );
   }
 
   renderArchive(isArchive, missingIds) {

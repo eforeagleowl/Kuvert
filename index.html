@@ -103,6 +103,7 @@
 <link rel="modulepreload" href="js/station/audio.js">
 <link rel="modulepreload" href="js/station/stations.js">
 <link rel="modulepreload" href="js/share/images.js">
+<link rel="modulepreload" href="js/state/year.js">
 <link rel="modulepreload" href="js/fun/seagal.js">
 <link rel="modulepreload" href="js/views/club.js">
 <link rel="modulepreload" href="js/club/client.js">
@@ -632,7 +633,10 @@
         </table>
       </div>
     </section>
-    <div class="passport-action"><button class="btn" id="openPassport" type="button">Open cinema passport</button><p class="fine">A printable journal of your films, stars and favorite discoveries.</p></div>
+    <div class="passport-action">
+      <div class="row"><button class="btn" id="openPassport" type="button">Open cinema passport</button><button class="btn" id="shareYear" type="button" hidden><svg class="icon" aria-hidden="true"><use href="#i-share"/></svg><span id="shareYearLabel">Share your film year</span></button></div>
+      <p class="fine">A printable journal of your films, stars and favorite discoveries. Your film year is a picture to share: the year's films, hours and best five.</p>
+    </div>
   </section>
 
   <!-- ============================================================ SETTINGS -->

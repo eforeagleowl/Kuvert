@@ -149,6 +149,14 @@ test('the Christmas envelope: seven films with a note each, first on the shelf i
  await page.evaluate(()=>window.kuvert.app.stage.openFilm('1946-it-s-a-wonderful-life'));await page.waitForFunction(()=>/Wonderful Life/.test(document.getElementById('pickTitle').textContent));
  assert.match(await page.textContent('#pickFacts'),/131 min · Dir\. Frank Capra/i);
  await page.waitForFunction(()=>/Listed at 131 minutes/.test(document.getElementById('filmContext').textContent));
+ // The envelope you are in leads back to Kuvert's own list from its card.
+ await page.evaluate(()=>window.kuvert.app.router.show('journeys'));
+ const here=page.locator('#curatedGrid .collection-card',{hasText:'The Christmas Envelope'});
+ assert.equal(await here.getByRole('button',{name:'Start this envelope',exact:true}).count(),0);
+ assert.equal(await page.locator('#curatedGrid .collection-card',{hasText:'Seven Nights of Noir'}).getByRole('button',{name:'Start this envelope',exact:true}).count(),1,'the others still open');
+ await Promise.all([page.waitForEvent('load'),here.getByRole('button',{name:'Back to Kuvert',exact:true}).click()]);await page.waitForFunction(()=>window.kuvert?.app?.list.id==='builtin');
+ await page.evaluate(()=>window.kuvert.app.router.show('journeys'));
+ assert.equal(await page.locator('#curatedGrid .collection-card').getByRole('button',{name:'Back to Kuvert',exact:true}).count(),0,'in Kuvert itself there is nowhere to go back to');
  assert.deepEqual(await problems(page),[]);await context.close();
  // In July it waits its turn at the end of the shelf.
  const summer=await newContext();await summer.clock.setFixedTime(new Date('2027-07-01T19:00:00'));

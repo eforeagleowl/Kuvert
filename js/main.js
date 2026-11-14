@@ -39,6 +39,7 @@ import { Journeys, seedBasics, localized, upgradeCurated } from "./views/journey
 import { Club } from "./views/club.js";
 import { CURATED_COLLECTIONS } from "./data/curated.js";
 import { AWARD_LISTS } from "./data/award-lists.js";
+import { premises } from "./i18n/premises.js";
 const arrivalHash = location.hash;
 const PAGES = ["tonight", "station", "journeys", "club", "library", "stats", "settings"];
 
@@ -230,6 +231,13 @@ app.renderSoon = () => {
   scheduled = true;
   requestAnimationFrame(render);
 };
+
+// The premise lines (js/i18n/premises.js) are fetched once the page has settled, so the first ticket
+// already has its line, and they join the search: the Library finds films by what they are about.
+let learnt = null;
+app.learnPremises = () => (learnt ||= premises().then((lines) => void (catalog.learnPremises(lines) && store.settings.query.trim() && app.renderSoon())));
+if (typeof requestIdleCallback === "function") requestIdleCallback(app.learnPremises, { timeout: 4000 });
+else setTimeout(app.learnPremises, 1500);
 function render() {
   scheduled = false;
   const n = store.p.seen.size,

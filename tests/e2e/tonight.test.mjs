@@ -133,6 +133,72 @@ test("a film Kuvert has no line for (your own list's) shows a ticket without one
   await context.close();
 });
 
+test("the Library finds films by what they are about: titles first, then the films about it, each with its line", async () => {
+  const context = await newContext();
+  const page = await openPage(context, "/");
+  await page.evaluate(() => window.kuvert.app.router.show("library"));
+  await page.click('#libraryTabs button[data-f="all"]');
+  await page.fill("#search", "boxer");
+  await page.waitForSelector("#list .about-head");
+  assert.equal(await page.textContent("#list .about-head"), "About “boxer”");
+  const about = await page.$$eval("#list .film-about", (rows) => rows.map((r) => [r.querySelector(".film-title").textContent, r.querySelector(".about-line").textContent]));
+  const rocky = about.find(([title]) => title === "Rocky");
+  assert.ok(rocky, about.map(([title]) => title).join(", "));
+  assert.match(rocky[1], /Philadelphia boxer/);
+  assert.ok(about.some(([title]) => title === "Raging Bull"));
+  // A title match comes first and needs no line: "rocky" is Rocky by name.
+  await page.fill("#search", "rocky");
+  await page.waitForFunction(() => !document.querySelector("#list .about-head"));
+  assert.deepEqual(await page.$$eval("#list > li .film-title", (b) => b.map((x) => x.textContent)), ["Rocky"]);
+  // Every film listed under the heading says the word in its line.
+  await page.fill("#search", "shark");
+  await page.waitForSelector("#list .about-head");
+  assert.ok((await page.$$eval("#list .film-about .film-title", (b) => b.map((x) => x.textContent))).includes("Jaws"));
+  assert.ok((await page.$$eval("#list .film-about .about-line", (b) => b.map((x) => x.textContent))).every((line) => /shark/i.test(line)));
+  // Opening one from there works like any row.
+  await page.locator("#list .film-about .film-title").first().click();
+  await page.waitForSelector("#ticket:not([hidden])");
+  // Nothing found: the hint mentions it.
+  await page.evaluate(() => window.kuvert.app.router.show("library"));
+  await page.fill("#search", "xylophonist");
+  await page.waitForSelector("#list .empty");
+  assert.match(await page.textContent("#list .empty"), /a word for what the film is about/);
+  assert.deepEqual(await problems(page), []);
+  await context.close();
+});
+
+test("the film year: a picture to share from Stats, for this year, or in January for the year just ended", async () => {
+  const context = await newContext();
+  await context.clock.setFixedTime(new Date("2027-01-04T19:00:00"));
+  const page = await openPage(context, "/");
+  await page.evaluate(() => window.kuvert.app.router.show("stats"));
+  assert.equal(await page.isHidden("#shareYear"), true, "nothing dated yet");
+  await page.evaluate(() => {
+    const { store } = window.kuvert.app;
+    for (const [id, date, stars] of [["1976-rocky", "2026-03-10", 4], ["1995-heat", "2026-03-11", 5], ["1942-casablanca", "2026-10-02", 5], ["1975-jaws", "2025-07-01", 3]]) {
+      store.markSeen(id, true, { date });
+      store.rate(id, stars);
+    }
+    window.kuvert.app.renderSoon();
+  });
+  await page.waitForSelector("#shareYear:not([hidden])");
+  assert.equal(await page.textContent("#shareYearLabel"), "Share your film year · 2026");
+  const drawn = await page.evaluate(async () => {
+    const { share } = window.kuvert.app;
+    const { yearReview } = await import("./js/state/year.js");
+    const review = yearReview(share.watched(), 2026);
+    const canvas = await share.yearCanvas(review);
+    return { size: [canvas.width, canvas.height], films: review.films, top: review.top.map((f) => f.t), busiest: review.busiest, painted: canvas.getContext("2d").getImageData(100, 250, 300, 60).data.some((v, i) => i % 4 === 0 && v > 200) };
+  });
+  assert.deepEqual(drawn, { size: [1080, 1350], films: 3, top: ["Heat", "Casablanca", "Rocky"], busiest: { month: 2, films: 2 }, painted: true });
+  const download = page.waitForEvent("download");
+  await page.click("#shareYear");
+  assert.equal((await download).suggestedFilename(), "kuvert-2026.png");
+  await page.waitForFunction(() => /Film year image saved as kuvert-2026\.png/.test(document.getElementById("toast").textContent));
+  assert.deepEqual(await problems(page), []);
+  await context.close();
+});
+
 test("the next day: Watched it dates the film the night it was drawn, and opens on its stars", async () => {
   const context = await newContext();
   const page = await openPage(context, "/");

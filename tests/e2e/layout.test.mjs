@@ -51,6 +51,11 @@ async function fullTmdb(context) {
 }
 
 async function widest(page) {
+  // Under reduced motion every change is still a transition, a hundredth of a millisecond long, and a box
+  // measured in the frame of the change has its old size: an envelope's long name, set a moment ago, is
+  // still at the size of the short one and runs off the screen for that one frame. Nothing in transition,
+  // then measure.
+  await page.waitForFunction(() => document.getAnimations().every((a) => a.constructor.name !== "CSSTransition" || a.playState !== "running"));
   return page.evaluate(() => {
     for (const el of document.querySelectorAll("main, .appbar")) el.style.setProperty("overflow-x", "visible", "important");
     // Past the right edge, and not inside a strip that's meant to be swiped sideways.

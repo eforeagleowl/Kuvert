@@ -1,6 +1,6 @@
 // Your watchthrough: a sentence that sums it up, the LED board (one light per film), facts, your ranking,
 // verdicts on winners, watch days, milestones, and progress by shelf and decade.
-import { $, h, icon, emptyState, keepFocus, copyText, reduceMotion } from "../ui/dom.js";
+import { $, h, s, icon, emptyState, keepFocus, copyText, reduceMotion } from "../ui/dom.js";
 import { byYear } from "../state/catalog.js";
 import { dayShort, isoDay, isoToDate, defaultWatchDate } from "../state/dates.js";
 import { t, LOCALE, swedish, decimal, listOf } from "../i18n/index.js";
@@ -28,6 +28,10 @@ const VERDICTS = [
 // Long lists open with their top: the first ten of the ranking, and three winners to judge.
 const RANKS_SHOWN = 10,
   VERDICTS_SHOWN = 3;
+// The kurbits garland under the heading: this many flowers, each painted in four steps (stem, leaves,
+// petals, heart), so the garland fills in a part at a time as you watch.
+const BLOOMS = 11,
+  BLOOM_STEPS = 4;
 
 export class Stats {
   constructor(app) {
@@ -56,6 +60,18 @@ export class Stats {
       this.allMilestones = !this.allMilestones;
       this.milestones();
     });
+    // The garland's flowers: an outline each, with its paint over it (css/pages.css). Not in SEAGAL.
+    if (!app.seagal)
+      $("garland").replaceChildren(
+        ...Array.from({ length: BLOOMS }, (_, i) =>
+          h(
+            "span",
+            { class: "bloom" + (i % 3 === 1 ? " alt" : "") },
+            s("svg", { class: "b-line", viewBox: "0 0 40 56" }, s("use", { href: "#kurbits" })),
+            s("svg", { class: "b-paint", viewBox: "0 0 40 56" }, s("use", { href: "#kurbits" })),
+          ),
+        ),
+      );
     // So do the ranking and the winners to judge.
     this.allRanks = this.allVerdicts = false;
     this.ranksBelow = [];
@@ -89,6 +105,7 @@ export class Stats {
       p = store.p;
     const d = statsData(p, catalog);
     this.headline(d);
+    this.garland(d);
     this.led();
     $("statsMetrics").replaceChildren(
       ...[
@@ -216,6 +233,13 @@ export class Stats {
       dots.forEach((d) => d.classList.remove("flash", "dim"));
       this.sweep();
     }, 1800);
+  }
+
+  // The kurbits garland: painted from the left, a part at a time. One film starts it; the last one finishes it.
+  garland(d) {
+    const steps = BLOOMS * BLOOM_STEPS,
+      done = !d.watched ? 0 : d.watched >= d.total ? steps : Math.max(1, Math.floor((steps * d.watched) / d.total));
+    [...$("garland").children].forEach((bloom, i) => (bloom.dataset.paint = String(Math.max(0, Math.min(BLOOM_STEPS, done - i * BLOOM_STEPS)))));
   }
 
   // ---------------------------------------------------------------- ranking ("Min topplista")

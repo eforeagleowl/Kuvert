@@ -8,7 +8,7 @@
 // small on purpose: no libraries, and nothing but the app and its posters is ever cached.
 
 // <stamp> written by tools/stamp.mjs (npm run stamp); do not edit by hand.
-const VERSION = "f060f456e7b9";
+const VERSION = "77adf7fb7401";
 const FILES = [
   "./",
   "./manifest.webmanifest",
@@ -77,8 +77,11 @@ const FILES = [
   "./js/tmdb/client.js",
   "./js/ui/dialogs.js",
   "./js/ui/dom.js",
+  "./js/ui/engraving.js",
   "./js/ui/horse.js",
   "./js/ui/install.js",
+  "./js/ui/light.js",
+  "./js/ui/marks.js",
   "./js/ui/sounds.js",
   "./js/ui/stars.js",
   "./js/ui/toast.js",

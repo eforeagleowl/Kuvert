@@ -12,6 +12,10 @@ to your home screen, and it works offline after your first visit.
   line on what it's about (never more than where it starts), and a link to where it's streaming. Series
   play in order, and you can set one film aside for later. Drew one you saw years ago? "Seen it before"
   marks it and draws another.
+- **A look of its own.** The poster lights the room while its ticket is out. Every ticket is engraved
+  for its film and printed on its decade's paper. The envelope collects a postmark or a label for each
+  milestone, the films you've watched fill a stamp album with your stars and the date struck on each,
+  and a kurbits garland on Stats is painted in as you go.
 - **Tonight's filters.** Draw only films that fit the time you have, suit a mood, are on your streaming
   services, or are discs on your shelf.
 - **The station.** A split-flap departure board makes the same draw: the board flips, a chime rings, and

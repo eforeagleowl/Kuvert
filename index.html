@@ -72,6 +72,9 @@
 <link rel="modulepreload" href="js/storage/safekeeping.js">
 <link rel="modulepreload" href="js/tmdb/client.js">
 <link rel="modulepreload" href="js/views/stage.js">
+<link rel="modulepreload" href="js/ui/light.js">
+<link rel="modulepreload" href="js/ui/engraving.js">
+<link rel="modulepreload" href="js/ui/marks.js">
 <link rel="modulepreload" href="js/views/nixie.js">
 <link rel="modulepreload" href="js/views/journeys.js">
 <link rel="modulepreload" href="js/data/curated.js">
@@ -112,6 +115,8 @@
 <script type="module" src="js/main.js"></script>
 </head>
 <body>
+<!-- The poster lights the room: two of its colours, while its ticket is out (js/ui/light.js). -->
+<div class="room-light" id="roomLight" aria-hidden="true"></div>
 <!-- Icons: Lucide (https://lucide.dev), ISC License. Copyright (c) 2026 Lucide Icons and Contributors. Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies. THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE. -->
 <svg class="sprite" aria-hidden="true" focusable="false">
 <symbol id="i-mail" viewBox="0 0 24 24"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" /><rect x="2" y="4" width="20" height="16" rx="2" /></symbol>
@@ -228,17 +233,22 @@
           <span class="edition" lang="sv"><strong data-name>Kuvert</strong>Filmkväll</span>
           <span class="postmark"><svg class="crowns" viewBox="0 0 24 20"><use href="#crowns"/></svg>Bio</span>
           <span class="case-no" id="caseNo"></span>
+          <!-- A mark for each milestone earned (js/ui/marks.js). -->
+          <span class="env-marks" id="envMarks"></span>
         </div>
         <button class="envelope-hit" id="envelopeOpen" type="button" aria-label="Öppna kuvertet: draw a movie"></button>
       </div>
 
       <article class="ticket" id="ticket" tabindex="-1" aria-label="Tonight’s film" hidden>
         <div class="paper">
+          <!-- The film's own engraving (js/ui/engraving.js): a rosette in the paper, and a band under the head. -->
+          <div class="t-engrave" id="ticketEngrave" aria-hidden="true"></div>
           <header class="t-head">
             <span class="t-brand" lang="sv" data-sg="Seagal · Case file">Kuvert · Biobiljett</span>
             <b class="punches" id="punches" role="img" hidden></b>
             <span class="t-no" id="ticketNumber"></span>
           </header>
+          <div class="t-band" id="ticketBand" aria-hidden="true"></div>
           <button class="t-close" id="ticketClose" type="button" aria-label="Close envelope" title="Close envelope"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
           <span class="stamp-sedd" aria-hidden="true" lang="sv">Sedd</span>
 
@@ -560,6 +570,8 @@
     <header class="page-head">
       <p class="kicker" lang="sv">Filmåret</p>
       <h1 class="page-title" id="statsHeading" tabindex="-1" data-sg="Debrief">Your watchthrough</h1>
+      <!-- A kurbits garland (Dalarna folk painting), painted in part by part as you watch (js/views/stats.js). -->
+      <div class="garland" id="garland" aria-hidden="true"></div>
     </header>
     <div class="stats-lead">
       <p class="headline" id="statsHeadline"></p>

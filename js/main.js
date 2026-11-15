@@ -243,10 +243,9 @@ function render() {
   const n = store.p.seen.size,
     total = catalog.films.length;
   const cheer = seagal ? null : tallyNote(n, total);
+  // The count is one piece and the cheer another: on a phone the cheer steps aside when the bar is full (pages.css).
   $("tally").replaceChildren(
-    h("b", { text: String(n) }),
-    t(" of {total}", { total }),
-    h("span", { class: "tally-word", text: seagal ? " targets neutralized" : t(" watched") }),
+    h("span", { class: "tally-count" }, h("b", { text: String(n) }), t(" of {total}", { total }), h("span", { class: "tally-word", text: seagal ? " targets neutralized" : t(" watched") })),
     cheer ? h("span", { class: "cheer", lang: "sv", title: t(cheer[1]), text: cheer[0] }) : "",
   );
   $("progressFill").style.setProperty("--p", (total ? (n / total) * 100 : 0) + "%");

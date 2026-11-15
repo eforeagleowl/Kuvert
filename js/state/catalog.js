@@ -36,8 +36,9 @@ function joinTitles(titles, more) {
   return t("{titles} and {n} more", { titles: shown.join(", "), n: extra });
 }
 
-// TMDB's terms allow keeping its data for six months.
-const POSTERS_KEEP_DAYS = 182;
+// TMDB's terms allow keeping its data for six months. The shortest six calendar months are 181 days
+// (September to March in a common year), so 180 stays inside the limit whatever the date.
+const POSTERS_KEEP_DAYS = 180;
 /** The list's own posters while they're fresh enough to use: film id → [TMDB id, poster path]. */
 export function freshPosters(posters, at, now = new Date()) {
   if (!at || !posters) return {};

@@ -146,9 +146,26 @@
     .appbar .tabs {
       display: none;
     }
+    /* The tally takes the room the name leaves, its count at the far end. The cheer comes after the count and
+       drops to a second line when the two don't fit, and the bar shows one line: so the cheer steps aside
+       before the name loses a letter, whatever the count, the list, the language or the text size. */
     .appbar .tally {
       display: block;
-      margin-left: auto;
+      flex: 1 1 0;
+      min-width: min-content;
+      height: 2rem;
+      overflow: hidden;
+      line-height: 2rem;
+      text-align: end;
+      white-space: normal;
+    }
+    .appbar :is(.tally-count, .cheer) {
+      display: inline-block;
+      line-height: inherit;
+      white-space: nowrap;
+    }
+    :root[data-page="tonight"] .appbar .tally {
+      text-align: center;
     }
     .tabbar {
       position: fixed;

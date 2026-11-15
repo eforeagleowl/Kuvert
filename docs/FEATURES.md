@@ -155,7 +155,8 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
 
 - App bar: horse + name (back to Tonight; not shown on Tonight itself), tally with a Swedish cheer ("Förseglat", "Bra start",
   "På god väg", "Över halvvägs", "Nästan där", "Klart!"), tabs, progress line. Bottom tabs in the
-  installed app.
+  installed app. On a phone the cheer steps aside when the name and the count need the room: the name is
+  only cut short when it is an envelope's name too long for the screen.
 - Toast with Undo (every change can be undone once), optional action, swipe to dismiss, pauses on hover.
 - Save state line: "Saved in this browser · 12 watched", "Saving to kuvert-progress.json", warnings.
 - Leaving with unsaved changes asks first.

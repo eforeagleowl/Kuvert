@@ -50,12 +50,14 @@ async function fullTmdb(context) {
   await context.route("https://image.tmdb.org/**", (route) => route.fulfill({ status: 200, contentType: "image/png", headers: CORS, body: PNG }));
 }
 
+// Under reduced motion every change is still a transition, a hundredth of a millisecond long, and a box
+// measured in the frame of the change has its old size: an envelope's long name, set a moment ago, is
+// still at the size of the short one and runs off the screen for that one frame. Nothing in transition,
+// then measure.
+const calm = (page) => page.waitForFunction(() => document.getAnimations().every((a) => a.constructor.name !== "CSSTransition" || a.playState !== "running"));
+
 async function widest(page) {
-  // Under reduced motion every change is still a transition, a hundredth of a millisecond long, and a box
-  // measured in the frame of the change has its old size: an envelope's long name, set a moment ago, is
-  // still at the size of the short one and runs off the screen for that one frame. Nothing in transition,
-  // then measure.
-  await page.waitForFunction(() => document.getAnimations().every((a) => a.constructor.name !== "CSSTransition" || a.playState !== "running"));
+  await calm(page);
   return page.evaluate(() => {
     for (const el of document.querySelectorAll("main, .appbar")) el.style.setProperty("overflow-x", "visible", "important");
     // Past the right edge, and not inside a strip that's meant to be swiped sideways.
@@ -138,6 +140,89 @@ test("on phones, no page is wider than the screen", async () => {
     assert.deepEqual(await problems(page), []);
     await context.close();
   }
+});
+
+// The bar on a phone: the horse and the name, then the tally. What the bar shows of each: the name whole or
+// cut short; the count and the cheer on the bar's one line ("shown"), dropped below it where the bar
+// doesn't show ("aside"), or not there at all.
+async function bar(page) {
+  await calm(page);
+  return page.evaluate(() => {
+    const q = (sel) => document.querySelector(sel),
+      name = q(".brand-name"),
+      tally = q("#tally").getBoundingClientRect();
+    const placed = (el) => {
+      if (!el || getComputedStyle(el).display === "none") return "hidden";
+      const r = el.getBoundingClientRect();
+      if (r.top >= tally.bottom - 1) return "aside";
+      return r.left >= tally.left - 1 && r.right <= Math.min(tally.right, document.documentElement.clientWidth) + 1 && (r.top + r.bottom) / 2 < tally.bottom ? "shown" : "cut";
+    };
+    return { name: getComputedStyle(q(".brand")).display === "none" ? "hidden" : name.scrollWidth <= name.clientWidth + 1 ? "whole" : "cut", count: placed(q(".tally-count")), cheer: placed(q("#tally .cheer")) };
+  });
+}
+
+test("on a phone the bar keeps the name whole: the cheer after the count steps aside first", async () => {
+  const context = await env.browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, serviceWorkers: "block", reducedMotion: "reduce" });
+  await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
+  await context.addInitScript(() => localStorage.setItem("kuvert:welcomed", "1"));
+  const page = await openPage(context, "/");
+  const watched = async (n) => {
+    await page.evaluate((n) => window.kuvert.app.catalog.films.slice(0, n).forEach((f) => window.kuvert.app.store.markSeen(f.id, true)), n);
+    await page.waitForFunction((n) => document.getElementById("tally").textContent.startsWith(n + " of "), n);
+  };
+  const at = async (width, where) => {
+    await page.setViewportSize({ width, height: 844 });
+    await page.evaluate((w) => window.kuvert.app.router.show(w), where);
+    return bar(page);
+  };
+  // "5 of 275 watched" and "Bra start" fit beside the name.
+  await watched(5);
+  assert.deepEqual(await at(390, "library"), { name: "whole", count: "shown", cheer: "shown" });
+  // "112 of 275 watched" and "På god väg" don't: the cheer goes, the name stays. Tonight's bar has no name
+  // in it, so the cheer is there; so is it on a wider phone.
+  await watched(112);
+  assert.deepEqual(await at(390, "library"), { name: "whole", count: "shown", cheer: "aside" });
+  assert.deepEqual(await at(390, "stats"), { name: "whole", count: "shown", cheer: "aside" });
+  assert.deepEqual(await at(390, "tonight"), { name: "hidden", count: "shown", cheer: "shown" });
+  assert.deepEqual(await at(430, "library"), { name: "whole", count: "shown", cheer: "shown" });
+  // The longest tally there is, "200 of 275 watched" and "Över halvvägs", on every size of phone.
+  await watched(200);
+  for (const width of [320, 360, 375, 390, 412, 430]) {
+    const seen = await at(width, "library");
+    assert.deepEqual([seen.name, seen.count, seen.cheer === "shown" || seen.cheer === "cut"], ["whole", "shown", false], width + "px: " + JSON.stringify(seen));
+  }
+  assert.deepEqual(await at(480, "library"), { name: "whole", count: "shown", cheer: "shown" });
+  // An envelope with a name too long for any phone: the name still trails off, but only once the cheer has gone.
+  const hitchcock = CURATED_COLLECTIONS.find((c) => c.id === "curated-hitchcock");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await Promise.all([page.waitForEvent("load"), page.evaluate((pack) => window.kuvert.app.journeys.start(pack), hitchcock)]);
+  await page.waitForFunction(() => window.kuvert?.app?.list.id === "curated-hitchcock");
+  await page.evaluate(() => document.fonts.ready);
+  assert.deepEqual(await at(390, "library"), { name: "cut", count: "shown", cheer: "aside" });
+  assert.deepEqual(await problems(page), []);
+  await context.close();
+});
+
+test("SEAGAL, with no cheer to give up and a wider face, still fits its name beside a three-digit count", async () => {
+  const context = await env.browser.newContext({ viewport: { width: 320, height: 700 }, isMobile: true, hasTouch: true, serviceWorkers: "block", reducedMotion: "reduce" });
+  await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
+  await context.addInitScript(() => {
+    localStorage.setItem("kuvert:welcomed", "1");
+    localStorage.setItem("kuvert:mode", "seagal");
+  });
+  const page = await openPage(context, "/");
+  await page.evaluate(() => {
+    window.kuvert.app.catalog.films.slice(0, 112).forEach((f) => window.kuvert.app.store.markSeen(f.id, true));
+    window.kuvert.app.router.show("library");
+  });
+  await page.waitForFunction(() => document.getElementById("tally").textContent.startsWith("112 of "));
+  await page.evaluate(() => document.fonts.ready);
+  for (const width of [320, 360, 390]) {
+    await page.setViewportSize({ width, height: 700 });
+    assert.deepEqual(await bar(page), { name: "whole", count: "shown", cheer: "hidden" }, width + "px");
+  }
+  assert.deepEqual(await problems(page), []);
+  await context.close();
 });
 
 test("Kuvert is set in Playfair Display, Familjen Grotesk and Courier Prime, from its own files", async () => {

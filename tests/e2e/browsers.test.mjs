@@ -55,6 +55,30 @@ for (const [name, type] of Object.entries({ chromium, firefox, webkit })) {
       await page.waitForFunction(() => window.kuvert?.app?.store.p.seen.size === 1);
       await page.evaluate(() => window.kuvert.app.router.show("journeys"));
       if (process.env.KUVERT_SCREENSHOT_DIR) await page.screenshot({ path: process.env.KUVERT_SCREENSHOT_DIR + "/kuvert-" + name + "-mobile.png", fullPage: true });
+      // The bar with a long tally: beside the name the cheer steps aside and the name stays whole; on Tonight,
+      // where the bar has no name in it, the cheer is back on the line.
+      await page.evaluate(() => window.kuvert.app.catalog.films.slice(0, 112).forEach((f) => window.kuvert.app.store.markSeen(f.id, true)));
+      await page.waitForFunction(() => /^11\d of /.test(document.getElementById("tally").textContent));
+      await page.evaluate(() => document.fonts.ready);
+      const bar = async (where) => {
+        await page.evaluate((w) => window.kuvert.app.router.show(w), where);
+        await page.waitForFunction(() => document.getAnimations().every((a) => a.constructor.name !== "CSSTransition" || a.playState !== "running"));
+        return page.evaluate(() => {
+          const box = (sel) => document.querySelector(sel).getBoundingClientRect(),
+            nameEl = document.querySelector(".brand-name"),
+            tally = box("#tally"),
+            count = box(".tally-count"),
+            cheer = box("#tally .cheer");
+          return {
+            // A pixel of slack: the engines round a text's width and its box differently.
+            name: !nameEl.clientWidth ? "hidden" : nameEl.scrollWidth <= nameEl.clientWidth + 1 ? "whole" : "cut",
+            count: count.left >= tally.left - 1 && count.right <= innerWidth && count.bottom > tally.top && count.top < tally.bottom ? "shown" : "cut",
+            cheer: cheer.top >= tally.bottom - 1 ? "aside" : cheer.right <= tally.right + 1 && (cheer.top + cheer.bottom) / 2 < tally.bottom ? "shown" : "cut",
+          };
+        });
+      };
+      assert.deepEqual(await bar("library"), { name: "whole", count: "shown", cheer: "aside" });
+      assert.deepEqual(await bar("tonight"), { name: "hidden", count: "shown", cheer: "shown" });
       assert.deepEqual(errors, []);
       await context.close();
     } finally {

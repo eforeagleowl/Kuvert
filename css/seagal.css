@@ -114,6 +114,13 @@
       text-align: center;
     }
   }
+  /* There is no cheer here to step aside, and on the narrowest phones the wide face is three pixels short
+     of fitting the name beside a three-digit count: the two stand a little closer, and the name stays whole. */
+  @media (max-width: 350px) {
+    html[data-mode="seagal"] .appbar-in {
+      gap: var(--s-2);
+    }
+  }
   html[data-mode="seagal"] .brand-name {
     font-size: 1.05rem;
     letter-spacing: 0.2em;

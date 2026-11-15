@@ -401,6 +401,36 @@
     width: 100%;
     perspective: 1600px;
   }
+  /* The poster lights the room (js/ui/light.js sets --light-a and --light-b on the page): while a
+     ticket is out on Tonight, two of its colours glow from the corners of the screen, one from the upper
+     left and one from the lower right, and along the ticket's sides (not under it, where the page has
+     words to read). The light stays put as the page scrolls; the bars, the envelope and the ticket's
+     paper keep their own colours. */
+  :root {
+    transition:
+      --light-a 1.4s var(--ease),
+      --light-b 1.4s var(--ease);
+  }
+  .room-light {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(84vmin 62vmin at 8% 18%, color-mix(in oklab, var(--light-a) 50%, transparent), transparent 66%),
+      radial-gradient(84vmin 62vmin at 92% 86%, color-mix(in oklab, var(--light-b) 44%, transparent), transparent 66%);
+    opacity: 0;
+    transition: opacity 1.4s var(--ease);
+  }
+  :root[data-page="tonight"] .room-light[data-state="open"] {
+    opacity: 1;
+  }
+  .stage[data-state="open"] .paper {
+    box-shadow:
+      var(--shadow-3),
+      -16px -22px 56px -18px color-mix(in oklab, var(--light-a) 58%, transparent),
+      16px -22px 56px -18px color-mix(in oklab, var(--light-b) 50%, transparent);
+  }
   .nixie {
     display: flex;
     align-items: center;
@@ -625,6 +655,128 @@
   .case-no {
     display: none;
   }
+  /* The envelope collects a mark for each milestone earned (js/ui/marks.js), each in its own place on
+     the front: labels on the left, ink and a gold seal on the right. Sized with the envelope. */
+  .env-marks {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    font-size: calc(var(--w) / 33);
+    transition: opacity var(--t-2) var(--ease);
+  }
+  .stage[data-state="open"] .env-marks,
+  .stage.flap-open .env-marks {
+    opacity: 0;
+  }
+  .mark {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    font: 700 1em / 1 var(--font-ui);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  /* The first ticket: the wavy lines of a cancellation, running into the postmark. */
+  .mark-waves {
+    left: 60%;
+    top: 61%;
+    width: 4.8em;
+    height: 2.2em;
+    transform: rotate(-12deg);
+    opacity: 0.7;
+  }
+  .mark-waves svg {
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: color-mix(in oklab, var(--blue) 80%, var(--ink));
+    stroke-width: 1.4;
+    stroke-linecap: round;
+  }
+  /* 25 films: registered mail. */
+  .mark-rek {
+    left: 6%;
+    top: 43%;
+    grid-template-columns: auto auto;
+    gap: 0.45em;
+    padding: 0.28em 0.5em 0.28em 0.3em;
+    border: 1px solid color-mix(in oklab, var(--blue) 70%, var(--ink));
+    border-radius: 1px;
+    background: color-mix(in oklab, var(--paper) 55%, white);
+    color: color-mix(in oklab, var(--blue) 75%, var(--ink));
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+    font: 500 0.62em / 1.25 var(--font-mono);
+    letter-spacing: 0.06em;
+    text-align: left;
+    transform: rotate(-3deg);
+  }
+  .mark-rek b {
+    padding: 0 0.22em;
+    border-right: 1px solid currentColor;
+    font: 700 2.5em / 1 var(--font-display);
+    letter-spacing: 0;
+  }
+  /* 50 films: by air. */
+  .mark-flyg {
+    left: 6%;
+    top: 29%;
+    gap: 0.1em;
+    padding: 0.32em 0.7em 0.28em;
+    background: color-mix(in oklab, var(--blue) 86%, var(--ink));
+    color: color-mix(in oklab, var(--paper) 92%, white);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+    font-size: 0.72em;
+    transform: rotate(2deg);
+  }
+  .mark-flyg small {
+    font-size: 0.72em;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    text-indent: 0.3em;
+  }
+  /* 100 films: express, stamped in red ink. */
+  .mark-express {
+    left: 62%;
+    top: 43%;
+    padding: 0.3em 0.6em 0.24em;
+    border: 0.16em solid currentColor;
+    border-radius: 2px;
+    color: color-mix(in oklab, var(--velvet) 88%, var(--ink));
+    font-size: 0.86em;
+    letter-spacing: 0.2em;
+    text-indent: 0.2em;
+    transform: rotate(5deg);
+    opacity: 0.82;
+  }
+  /* Ten winners: a gold seal. */
+  .mark-crown {
+    right: 6%;
+    top: 21%;
+    width: 4em;
+    height: 4em;
+    gap: 0.1em;
+    align-content: center;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 34% 28%, color-mix(in oklab, var(--brass) 55%, white), transparent 46%),
+      radial-gradient(circle, var(--brass) 56%, color-mix(in oklab, var(--brass) 62%, var(--ink)) 100%);
+    box-shadow:
+      0 1px 3px rgb(0 0 0 / 0.35),
+      inset 0 0 0 0.14em color-mix(in oklab, var(--brass) 60%, var(--ink)),
+      inset 0 0 0 0.3em color-mix(in oklab, var(--brass) 80%, white);
+    color: color-mix(in oklab, var(--brass) 30%, var(--ink));
+    transform: rotate(8deg);
+  }
+  .mark-crown svg {
+    width: 1.7em;
+    height: 1.4em;
+    fill: currentColor;
+  }
+  .mark-crown b {
+    font: 700 0.9em / 1 var(--font-display);
+    letter-spacing: 0.04em;
+  }
   /* The flap closes down over the pocket and carries the seal on its tip. Opening, it lifts toward
      you and fades as it turns edge-on, so it never folds up over the dial. */
   .env-flap {
@@ -765,21 +917,103 @@
     container: ticket / inline-size;
     outline: none;
   }
+  /* Ticket stock by decade (js/views/stage.js sets data-stock): each decade has its own light paper, and
+     a strong colour for the engraved band and the foot of the ticket. The thirties are the plain cream
+     with blue; a winner's band is brass in any decade. */
+  .ticket {
+    --stock: var(--paper);
+    --band: var(--blue);
+  }
+  .ticket[data-stock="1920"] {
+    --stock: #ecdcc0;
+    --band: #6f4e2c;
+  }
+  .ticket[data-stock="1940"] {
+    --stock: #f6e3da;
+    --band: #a44a3c;
+  }
+  .ticket[data-stock="1950"] {
+    --stock: #e1eedd;
+    --band: #2c7a5e;
+  }
+  .ticket[data-stock="1960"] {
+    --stock: #dde9f3;
+    --band: #2b5f9e;
+  }
+  .ticket[data-stock="1970"] {
+    --stock: #f3e6be;
+    --band: #a8641a;
+  }
+  .ticket[data-stock="1980"] {
+    --stock: #f1e3ea;
+    --band: #8a3a80;
+  }
+  .ticket[data-stock="1990"] {
+    --stock: #d8eeeb;
+    --band: #1e6c78;
+  }
+  .ticket[data-stock="2000"] {
+    --stock: #e6e8e6;
+    --band: #44566c;
+  }
+  .ticket[data-stock="2010"] {
+    --stock: #e7e3f5;
+    --band: #54469a;
+  }
+  .ticket[data-stock="2020"] {
+    --stock: #e8eec8;
+    --band: #667a1c;
+  }
+  .ticket.win {
+    --band: var(--brass);
+  }
   .paper {
     position: relative;
+    isolation: isolate; /* the engraving sits behind the ticket's words, over its paper */
     padding: 20px clamp(16px, 4cqi, 28px) 18px;
     border-radius: 4px;
-    border-top: 6px solid var(--blue);
-    border-bottom: 4px solid var(--blue);
-    background-color: var(--paper);
+    border-top: 6px solid var(--band);
+    border-bottom: 4px solid var(--band);
+    background-color: var(--stock);
     background-image: linear-gradient(180deg, rgb(255 255 255 / 0.35), transparent 30%), var(--paper-texture);
     background-size: auto, 384px;
     background-blend-mode: multiply;
     color: var(--ink);
     box-shadow: var(--shadow-3);
   }
-  .ticket.win .paper {
-    border-top-color: var(--brass);
+  /* The film's engraving (js/ui/engraving.js): a rosette in the paper, behind the words, and a band of
+     woven lines under the ticket's head, both in the stock's colour. */
+  .t-engrave {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .t-engrave path,
+  .t-band path {
+    fill: none;
+    vector-effect: non-scaling-stroke;
+  }
+  .t-rosette {
+    position: absolute;
+    top: 58px;
+    right: -54px;
+    width: 250px;
+    height: 250px;
+    stroke: color-mix(in oklab, var(--band) 60%, var(--ink));
+    stroke-width: 0.6px;
+    opacity: 0.2;
+  }
+  .t-band {
+    height: 11px;
+  }
+  .t-band svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    stroke: color-mix(in oklab, var(--band) 72%, var(--ink));
+    stroke-width: 0.8px;
   }
   .paper::before {
     content: "";
@@ -793,8 +1027,7 @@
     display: flex;
     align-items: center;
     gap: var(--s-3);
-    padding: 2px 44px 12px 0;
-    border-bottom: 1.5px dashed var(--paper-line);
+    padding: 2px 44px 9px 0;
     color: var(--ink-3);
     font: 500 12px / 1.2 var(--font-mono);
     letter-spacing: 0.2em;

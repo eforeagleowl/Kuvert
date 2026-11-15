@@ -208,6 +208,21 @@ export function computeMilestones(p, catalog) {
   }
   return cards;
 }
+/**
+ * The marks the envelope has collected (js/ui/marks.js): one for each of these milestones, once earned.
+ * A short list has fewer milestones, so its envelope collects fewer marks.
+ */
+const ENVELOPE_MARKS = [
+  ["watched-1", "waves"],
+  ["watched-25", "rek"],
+  ["watched-50", "flyg"],
+  ["watched-100", "express"],
+  ["winners", "crown"],
+];
+export function envelopeMarks(p, catalog) {
+  const cards = new Map(computeMilestones(p, catalog).map((c) => [c.id, c]));
+  return ENVELOPE_MARKS.filter(([id]) => cards.get(id)?.complete).map(([id, kind]) => ({ kind, title: cards.get(id).title, n: cards.get(id).target }));
+}
 export const earnedIds = (p, catalog) => new Set(computeMilestones(p, catalog).filter((c) => c.complete).map((c) => c.id));
 
 export const allWatched = (p, catalog) => catalog.films.every((f) => p.seen.has(f.id));

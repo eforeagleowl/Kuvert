@@ -6,6 +6,9 @@
 @property --p { syntax: "<percentage>"; inherits: true; initial-value: 0%; }
 @property --lit { syntax: "<number>"; inherits: true; initial-value: 0; }
 @property --flap { syntax: "<angle>"; inherits: true; initial-value: 0deg; }
+/* The two colours a poster lends the room (js/ui/light.js): registered, so one film's light fades into the next. */
+@property --light-a { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --light-b { syntax: "<color>"; inherits: true; initial-value: transparent; }
 
 @layer tokens {
   :root {

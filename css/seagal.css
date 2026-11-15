@@ -319,6 +319,14 @@
   html[data-mode="seagal"] .ticket.special .paper {
     border-top-color: var(--velvet);
   }
+  /* A case file carries no engraving, no decade stock and no marks from the post. */
+  html[data-mode="seagal"] :is(.t-engrave, .t-band, .env-marks, .room-light) {
+    display: none;
+  }
+  html[data-mode="seagal"] .t-head {
+    padding-bottom: 12px;
+    border-bottom: 1.5px dashed var(--paper-line);
+  }
   html[data-mode="seagal"] .ticket.special .t-eyebrow {
     color: var(--brass);
     animation: sg-blink 1.4s steps(1) infinite;

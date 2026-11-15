@@ -3,11 +3,14 @@
 // A draw is choreographed: the seal cracks, the year dial rolls to the film's year, the flap lifts and
 // the ticket rises out of the envelope, which settles under it as a pocket. Tap anywhere to skip ahead.
 // The same ticket turns into your stub when you mark the film watched: SEDD is stamped on, and you rate it.
-import { $, h, reduceMotion, setText } from "../ui/dom.js";
+import { $, h, s, reduceMotion, setText } from "../ui/dom.js";
+import { posterLight } from "../ui/light.js";
+import { engraving } from "../ui/engraving.js";
+import { envelopeMark } from "../ui/marks.js";
 import { StarSlider } from "../ui/stars.js";
 import { Nixie } from "./nixie.js";
 import { imageUrl, fmtMoney } from "../tmdb/client.js";
-import { starText, ratingWord, allWatched, finaleData, plural } from "../state/stats.js";
+import { starText, ratingWord, allWatched, finaleData, plural, envelopeMarks } from "../state/stats.js";
 import { fmtDay, dayLong, dateFull, defaultWatchDate } from "../state/dates.js";
 import { t, decimal } from "../i18n/index.js";
 import { titleParts } from "../i18n/titles.js";
@@ -89,6 +92,8 @@ export class Stage {
     on("finaleStats", () => this.app.router.show("stats"));
     on("finaleClose", () => this.close());
     on("poster", () => this.app.dialogs.lightbox($("poster")));
+    // The poster lights the room once it has loaded, and stops if it can't be shown.
+    for (const type of ["load", "error"]) $("poster").addEventListener(type, () => this.light());
     on("backdropBtn", () => this.app.dialogs.lightbox($("backdrop")));
     $("wpShould").addEventListener("change", (e) => this.shown && this.store.setSnub(this.shown.id, e.target.value));
     // Tap anywhere on the stage (or press a key) to skip the rest of a draw's animation.
@@ -147,7 +152,7 @@ export class Stage {
     });
   }
   setOpen(open) {
-    this.stageEl.dataset.state = open ? "open" : "closed";
+    this.stageEl.dataset.state = $("roomLight").dataset.state = open ? "open" : "closed";
     this.ticket.hidden = !open;
     $("drawBtn").setAttribute("aria-expanded", String(open));
     // Now, not on the next frame: the envelope's animations measure the finished layout right after
@@ -413,6 +418,7 @@ export class Stage {
     $("stubNo").textContent = "Nr " + catalog.ticketNumber(f);
     $("pickTitle").replaceChildren(...titleParts(f));
     $("pickMeta").textContent = f.y + (catalog.shelfOf(f) ? " · " + t(catalog.shelfOf(f).label) : "");
+    this.engrave(f);
     $("watchLink").href = whereToWatch(f, this.store.settings.country);
     const line = catalog.oscarLine(f);
     setText("oscarLine", this.app.seagal ? line.replace(/^Lost to /, "Outgunned by ").replace(/^Beat /, "Took out ") : line);
@@ -916,6 +922,7 @@ export class Stage {
     this.infoController = new AbortController();
     const signal = this.infoController.signal;
     for (const id of ["poster", "backdropBtn", "pickTag", "pickFacts", "pickCredits", "pickMoney", "pickProv", "lbxBtn", "changeMatch", "retryInfo", "matchChoices", "tmdbHint"]) $(id).hidden = true;
+    this.light();
     $("matchChoices").replaceChildren();
     $("infoStatus").textContent = "";
     this.ticket.classList.remove("loading", "no-details");
@@ -1009,6 +1016,30 @@ export class Stage {
       $("retryInfo").hidden = false;
     }
   }
+  /**
+   * The poster lights the room: while its ticket is out, two of its colours glow from the corners of the
+   * screen and around the ticket (css/tonight.css). No poster, or one the page may not read, leaves the
+   * room as it was.
+   */
+  light() {
+    const colours = this.app.seagal ? null : posterLight($("poster")),
+      root = document.documentElement;
+    root.toggleAttribute("data-lit", !!colours);
+    // Without a poster the two colours go back to none, and the light fades out with them.
+    for (const [i, name] of ["--light-a", "--light-b"].entries()) colours ? root.style.setProperty(name, colours[i]) : root.style.removeProperty(name);
+  }
+  /**
+   * The ticket's paper stock, by the film's decade, and its engraving: a band of woven lines under the
+   * head and a rosette in the paper, drawn from the film's id (js/ui/engraving.js). Each film has its own.
+   */
+  engrave(f) {
+    this.ticket.dataset.stock = String(Math.max(1920, Math.floor(f.y / 10) * 10));
+    if (this.engraved === f.id) return;
+    this.engraved = f.id;
+    const { band, rosette } = engraving(f.id);
+    $("ticketBand").replaceChildren(s("svg", { viewBox: "0 0 600 12", preserveAspectRatio: "none" }, ...band.map((d) => s("path", { d }))));
+    $("ticketEngrave").replaceChildren(s("svg", { class: "t-rosette", viewBox: "0 0 200 200" }, ...rosette.map((d) => s("path", { d }))));
+  }
   image(el, path, size, label) {
     if (!path) {
       el.hidden = true;
@@ -1068,6 +1099,13 @@ export class Stage {
       other = units.some((u) => u.film.id !== cur?.id),
       open = this.open,
       all = allWatched(p, catalog);
+    // The envelope keeps a mark for each milestone earned.
+    const marks = seagal ? [] : envelopeMarks(p, catalog),
+      marked = marks.map((m) => m.kind + m.n).join();
+    if (marked !== this.marked) {
+      this.marked = marked;
+      $("envMarks").replaceChildren(...marks.map(envelopeMark));
+    }
     // Draw button, envelope and ticket actions.
     const draw = $("drawBtn");
     draw.hidden = open;

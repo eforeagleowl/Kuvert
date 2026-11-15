@@ -1,6 +1,7 @@
 // The collection: every film, filters and a forgiving search, decade coverage, the shelf, skipped and
 // recent views, and the watched archive with its poster wall.
 import { $, h, check, mark, emptyState, keepFocus } from "../ui/dom.js";
+import { seedOf } from "../ui/engraving.js";
 import { imageUrl } from "../tmdb/client.js";
 import { byYear, decadeOf } from "../state/catalog.js";
 import { fmtWhen } from "../state/dates.js";
@@ -14,6 +15,19 @@ import { metadataFor } from "./journeys.js";
 const forReaders = (text) => h("span", { class: "sr-only", text });
 
 const ARCHIVES = ["skipped", "recent", "missing", "shelf"];
+
+// The watched wall is a stamp album: each film a stamp, its stars the value printed on it, and the day
+// you watched it struck across a corner as a postmark. What a stamp shows is print, not words to read out:
+// it is drawn by the stylesheet from these values (css/pages.css), and the tile's name says it in full.
+const stampValue = (rating) => (Math.floor(rating) || "") + (rating % 1 ? "½" : "");
+function strike(cancel, date, id) {
+  const [year, month, day] = /^\d{4}-\d\d-\d\d$/.test(date) ? date.split("-") : [];
+  if (!year) return void cancel.removeAttribute("data-day");
+  cancel.dataset.day = day + "." + month;
+  cancel.dataset.year = year;
+  // Struck by hand: each at its own angle, the same every time for the same film.
+  cancel.style.setProperty("--turn", (seedOf(id) % 37) - 18 + "deg");
+}
 
 export class Library {
   constructor(app) {
@@ -523,7 +537,13 @@ export class Library {
         tile = h(
           "button",
           { class: "wall-film", type: "button", dataset: { film: f.id, key: "wall-" + f.id }, on: { click: () => this.app.stage.openFilm(f.id) } },
-          h("span", { class: "wall-art", attrs: { "aria-hidden": "true" } }, mark("dala-mark", "poster-mark"), h("span", { class: "wall-rank" })),
+          h(
+            "span",
+            { class: "stamp" },
+            h("span", { class: "wall-art", attrs: { "aria-hidden": "true" } }, mark("dala-mark", "poster-mark"), h("span", { class: "wall-rank" })),
+            h("span", { class: "stamp-foot", attrs: { "aria-hidden": "true" } }, h("b", { class: "stamp-value" })),
+          ),
+          h("span", { class: "stamp-cancel", attrs: { "aria-hidden": "true" } }),
           h("span", { class: "wall-caption", text: f.t }),
           // A space between them, so the title and year read as two words (the label repeats them).
           " ",
@@ -533,6 +553,8 @@ export class Library {
       const r = p.reviews[f.id]?.rating,
         at = ranked.indexOf(f.id);
       tile.querySelector(".wall-year").textContent = (r ? starText(r) + " · " : "") + f.y;
+      tile.querySelector(".stamp-value").dataset.value = r ? stampValue(r) : "";
+      strike(tile.querySelector(".stamp-cancel"), p.dates[f.id] || "", f.id);
       const badge = tile.querySelector(".wall-rank");
       badge.textContent = at >= 0 ? "#" + (at + 1) : "";
       badge.hidden = store.settings.wallSort !== "rank" || at < 0;

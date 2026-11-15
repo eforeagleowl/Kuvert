@@ -27,10 +27,20 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
 
 - Masthead with the list name and the dala horse; subtitle from the list.
 - Envelope with wax seal (three crowns), flap, pocket, "KUVERT FILMKVÄLL" edition mark and "BIO" postmark.
+  It collects a mark for each of these milestones once earned: the first ticket (the wavy lines of a
+  cancellation), 25 films (a registered-mail label), 50 (an airmail label), 100 (an express stamp) and
+  ten winners (a gold seal). The marks step aside while a ticket is out.
+- The poster lights the room: while a ticket is out, two colours taken from its poster glow from the
+  corners of the screen and along the ticket's sides (a black-and-white poster gives silver). The light
+  is held to a brightness that leaves the page's words as readable as before. No poster, no light.
 - Draw: "Öppna kuvertet". Series count as one ticket and play in order (the first unwatched part is drawn).
   Set-aside films are out of the draw. Draw again never repeats the film on the ticket when another is eligible.
   "This is the only eligible ticket" when nothing else qualifies. Finale when every film is watched.
 - Opening animation: seal breaks, flap lifts, ticket slides out. The horse nods at every draw.
+- Every ticket is engraved for its film: a band of woven lines under its head and a rosette in the paper,
+  drawn from the film's id, so no two films share one. The paper is the film's decade's stock (cream
+  thirties, salmon forties, mint fifties, sky sixties, mustard seventies, pink eighties, aqua nineties,
+  silver 2000s, lavender 2010s, pistachio 2020s), with the band in the decade's colour; a winner's is brass.
 - Ticket: "Kuvert · Biobiljett" header, ticket number, weekly streak punch holes (up to 8) with what they
   count in words ("26 weeks in a row"),
   eyebrow "Kvällens film" / "Kvällens vinnare" / "Nästa del" / "Sedd", title, year and shelf,
@@ -91,6 +101,9 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
 - Rows: watched toggle, poster thumbnail when TMDB is connected (lazy, two at a time, stops after three
   failures), title opens the film, shelf chip, year.
 - Shelf view: search offers "Add to shelf"; Remove. Skipped / Recent / Missing views with hints and Open.
+- The watched wall is a stamp album: each film a perforated stamp with its poster, your stars as the
+  value printed on it ("4½"), and the day you watched it struck across a corner as a postmark. A film
+  with no date has no postmark.
 - Watched films archive: poster wall sortable by Recent, Rank, Stars, Year with rank badges, posters
   fetched while open (two workers), Retry missing posters; list with unwatch toggle, date button,
   note / rating button.
@@ -100,6 +113,9 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
 
 - Headline sentence: pace ("27 films in 12 weeks, about 2 a week"), finish estimate month.
 - Reel: one mark per film in year order, watched and tonight's ticket highlighted.
+- A kurbits garland (Dalarna folk painting) under the heading: eleven flowers, each painted in four steps
+  (stem, leaves, petals, heart) as you watch. On screens wide enough for flowers down the margins, those
+  carry the painting instead.
 - Facts: Watched, Watch time, Average length, Your average stars.
 - Jump bar: Ranking, Verdicts, Watch days, Milestones, Award shelves, Decades.
 - Ranking ("Min topplista"): the top ten, with "Show all n" for the rest (a film moved below the ten

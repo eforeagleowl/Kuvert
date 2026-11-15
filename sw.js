@@ -8,7 +8,7 @@
 // small on purpose: no libraries, and nothing but the app and its posters is ever cached.
 
 // <stamp> written by tools/stamp.mjs (npm run stamp); do not edit by hand.
-const VERSION = "2880aa600d40";
+const VERSION = "f060f456e7b9";
 const FILES = [
   "./",
   "./manifest.webmanifest",

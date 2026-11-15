@@ -219,6 +219,9 @@ test("Kuvert's own posters: used while fresh, in every list that has the film, a
   const now = new Date("2026-10-01T12:00:00Z");
   assert.equal(freshPosters(posters, "2026-09-29", now), posters);
   assert.deepEqual(freshPosters(posters, "2026-03-01", now), {}, "older than six months: not used");
+  // The line is at 180 days, a day inside the shortest six months there are.
+  assert.equal(freshPosters(posters, "2026-04-05", now), posters, "179 days and a half: still used");
+  assert.deepEqual(freshPosters(posters, "2026-04-03", now), {}, "181 days and a half: not used");
   assert.deepEqual(freshPosters(posters, null, now), {});
   const storage = new MemoryStorage();
   const list = resolveList(storage);

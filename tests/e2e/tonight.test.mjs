@@ -504,3 +504,23 @@ test("the Library shows the list as rows or as posters, and remembers which", as
   assert.deepEqual(await problems(page), []);
   await context.close();
 });
+
+test("a tab is lit only on the page you are on: Envelopes looks like the others until you open it", async () => {
+  for (const [make, nav] of [[() => phone(), ".tabbar"], [() => newContext(), ".appbar .tabs"]]) {
+    const context = await make();
+    const page = await openPage(context, "/");
+    const colors = () =>
+      page.evaluate((nav) => Object.fromEntries([...document.querySelectorAll(nav + " a[data-route]")].map((a) => [a.dataset.route, getComputedStyle(a.querySelector(".icon")).color])), nav);
+    const lit = async (route) => {
+      await page.waitForFunction(([nav, route]) => document.querySelector(nav + ' a[data-route="' + route + '"]').getAttribute("aria-current") === "page", [nav, route]);
+      await settled(page);
+      const c = await colors();
+      return Object.keys(c).filter((r) => c[r] !== c[route === "library" ? "stats" : "library"]);
+    };
+    assert.deepEqual(await lit("tonight"), ["tonight"], nav + " on Tonight");
+    await page.evaluate(() => window.kuvert.app.router.show("journeys"));
+    assert.deepEqual(await lit("journeys"), ["journeys"], nav + " on Envelopes");
+    assert.deepEqual(await problems(page), []);
+    await context.close();
+  }
+});

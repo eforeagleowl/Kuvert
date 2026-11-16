@@ -692,6 +692,26 @@
     }
   }
 
+  /* ---------------------------------------------------------------- the small drawings
+     One pen and one weight (index.html, #d-…). The lines take the colour of the words around them; a place
+     that sets --spot-accent has one detail of each drawing picked out in it. */
+  svg.spot {
+    overflow: visible;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* These two are matched inside each copy of a drawing, where the sprite around the original is not. */
+  .d-a {
+    stroke: var(--spot-accent, currentColor);
+  }
+  .d-f {
+    fill: currentColor;
+    stroke: none;
+  }
+
   /* ---------------------------------------------------------------- empty states */
   .empty {
     display: grid;
@@ -706,10 +726,12 @@
     color: var(--text);
     font: 600 var(--fs-5) / 1.2 var(--font-display);
   }
-  .empty svg {
-    width: 56px;
-    height: 50px;
-    fill: color-mix(in oklab, var(--velvet) 55%, transparent);
+  .empty .spot {
+    --spot-accent: var(--brass);
+    width: 64px;
+    height: 64px;
+    margin-bottom: var(--s-1);
+    color: var(--faint);
   }
   .empty .btn {
     margin-top: var(--s-2);

@@ -107,7 +107,9 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
 - Watched films archive: poster wall sortable by Recent, Rank, Stars, Year with rank badges, posters
   fetched while open (two workers), Retry missing posters; list with unwatch toggle, date button,
   note / rating button.
-- Empty states with the horse and a next step.
+- Empty states with a small drawing and a next step: a magnifier over a search that finds nothing, a coffee
+  cup when everything that matches is watched, a cinema seat where the watched films will be, and a
+  ticket, a disc, a projector or an hourglass for the side lists.
 
 ## Stats ("Your watchthrough")
 
@@ -124,12 +126,25 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
   (placed after films rated the same or higher), Start from my stars, Copy for group chat (clipboard with
   a selectable fallback), Share as image.
 - Verdicts on watched winners: Yes / Unsure / No, "Should have won", summary line. Three at a time, the
-  ones still to judge first, with "Show all n".
+  ones still to judge first, with "Show all n". Each winner is a ballot slip ("Valsedel"): paper, a printed
+  head with the prize and the year, and three boxes to cross. The boxes are the same three buttons; the
+  one chosen gets a cross in blue ink, and "Should have won" is the line to write a name on.
 - Watch days: 26-week (17 on phones) Monday-first heat strip with month labels, tap a day with one film to
   open it; evening facts: longest run, favorite night, busiest week.
+- The weekly streak as a klippkort (a punch card): ten numbered rings to a card, a hole punched for each
+  week in a row with a film, the card's number once a streak fills more than one, and the next ring marked
+  while this week is still open. Under the holes, in words: "12 weeks in a row", and whether this week is
+  punched.
 - Milestones: 1, 25, 50, 100 and the whole list; Across the decades; Winner's circle; Beyond the ballot;
-  one per series. Stamps with ERA / HM / SERIE words.
-- By award shelf (bars with average stars) and by decade (table with averages).
+  one per series. In each stamp, a small drawing (a ticket, an envelope, an hourglass, a trophy, a rosette,
+  a clapperboard) or, for 25, 50 and 100, the number.
+- By award shelf (bars with average stars) and by decade (table with averages). Under each decade's
+  numbers, its strip of film: a frame per film in year order, lit once the film is watched, with the
+  film's name on the frame for whoever points at it. The decade with the most films spans the column and
+  the others are as long as their films make them. A list with more than 48 films in a decade puts
+  several films in a frame.
+- The small drawings (twelve, in index.html) are all in one hand: one pen, one weight, with one detail
+  picked out in brass.
 - "Open your final ticket" once complete.
 
 ## Settings
@@ -166,6 +181,11 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
   (75%), gold details (100%), "Nymålad!" when a coat lands. Tap: knock, hop and a word ("Hej!", "Fika?",
   "En film till?", "Gnägg!", "Popcorn?", "Tjena!"); five taps in two seconds: it runs off and trots back
   ("Tillbaka!"). Four stars or more: hop ("Ja!", "Bravo!"); one or less: droop ("Usch…").
+- The horse keeps the Swedish calendar: a crown of candles on Lucia (13 December), a tomte's cap from
+  Christmas Eve to the day after Christmas, a crown of flowers on Midsummer Eve and Midsummer Day. Every
+  horse on the page wears it (masthead, bar, station), its tooltip says so, and the first pat of the day
+  gets the day's greeting ("Glad Lucia!", "God jul!", "Glad midsommar!"). A day lasts until 04:00, as
+  everywhere in Kuvert.
 - Offline service worker, install as an app. New versions arrive in the background: an untouched page
   restarts on the new one, a page in use offers Reload. About shows the release a device is running, and
   links to the issue page for reports.
@@ -179,7 +199,8 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
   (54 films and one album) with the Natt palette, and switches to it. "Stand down" is denied the first time.
 - Green-phosphor terminal skin: Michroma small caps, scanlines, vignette, blinking cursor, red accent,
   a case file folder instead of the envelope, "TOP SECRET // EYES ONLY", case number or working title,
-  Russian flag sticker, reticle instead of the horse, title un-redacts.
+  Russian flag sticker, reticle instead of the horse, title un-redacts. Stats keeps its plain verdict
+  buttons, decade table and lettered stamps, with no klippkort, film strips or small drawings.
 - Words rewritten throughout (Mission, Dossier, Debrief, Loadout, Deploy, Neutralized, Cowardice…).
 - Set aside takes three tries ("You cannot go back now.", "We have been over this."), redeploying three
   times calls in the body double, Konami code: "Aikido engaged", every deployment jolts the screen.

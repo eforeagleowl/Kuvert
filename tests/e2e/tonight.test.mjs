@@ -330,6 +330,9 @@ test("Restore from a file takes a whole-library backup as well as a progress fil
 test("on a phone the ticket comes up under the bar: the poster large, its buttons on screen, the streak in words", async () => {
   const context = await phone();
   const page = await openPage(context, "/");
+  // A Wednesday evening, whenever the test runs. By the clock on the wall this failed for four hours a week:
+  // in the small hours of a Monday Kuvert's evening is still Sunday's, so "today" was a week ahead of it.
+  await page.clock.setFixedTime(new Date("2026-11-18T20:00:00"));
   // A film last week and one this week: two weeks in a row.
   await page.evaluate(() => {
     const { store } = window.kuvert.app;

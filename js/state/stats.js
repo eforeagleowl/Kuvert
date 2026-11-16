@@ -150,17 +150,47 @@ export function eveningFacts(byDay) {
 
 // Weeks in a row (Monday to Sunday) with a dated watch. The current week is still in play:
 // an empty one doesn't break the streak until it's over. One punched hole per week.
-export function weekStreak(p, catalog, now = new Date()) {
+function streakWeeks(p, catalog, now) {
   const weeks = new Set();
   for (const f of catalog.films) if (p.seen.has(f.id) && validDate(p.dates[f.id])) weeks.add(isoDay(mondayOf(isoToDate(p.dates[f.id]))));
-  const week = mondayOf(isoToDate(defaultWatchDate(now)));
-  if (!weeks.has(isoDay(week))) week.setDate(week.getDate() - 7);
+  const week = mondayOf(isoToDate(defaultWatchDate(now))),
+    thisWeek = weeks.has(isoDay(week));
+  if (!thisWeek) week.setDate(week.getDate() - 7);
   let n = 0;
   while (weeks.has(isoDay(week))) {
     n++;
     week.setDate(week.getDate() - 7);
   }
-  return n;
+  return { n, thisWeek };
+}
+export const weekStreak = (p, catalog, now = new Date()) => streakWeeks(p, catalog, now).n;
+
+// The klippkort on Stats, the punch card every Swedish swimming hall sells: ten clips to a card, one for
+// each week of the streak. A long streak shows the card in hand (`cut` of its ten holes punched) and its
+// number, the full ones being behind it. `open` says this week has no film yet: its hole is the next to punch.
+export const CLIPS = 10;
+export function punchCard(p, catalog, now = new Date()) {
+  const { n, thisWeek } = streakWeeks(p, catalog, now),
+    card = Math.max(1, Math.ceil(n / CLIPS));
+  return { streak: n, card, cut: n - (card - 1) * CLIPS, open: !thisWeek };
+}
+
+// A strip of film for each decade on Stats: a frame per film in year order, exposed (lit 1) once the film
+// is watched. A list with more films in a decade than a strip holds puts `per` films in each frame; such
+// a frame is exposed when all of its films are watched, and half exposed (lit 0.5) when some are.
+export const FRAMES_MAX = 48;
+export function decadeStrips(p, catalog, max = FRAMES_MAX) {
+  const reels = catalog.decades.map((decade) => catalog.films.filter((f) => decadeOf(f) === decade).sort(byYear)),
+    per = Math.max(1, Math.ceil(Math.max(0, ...reels.map((films) => films.length)) / max));
+  const strips = reels.map((films, i) => ({
+    decade: catalog.decades[i],
+    frames: Array.from({ length: Math.ceil(films.length / per) }, (_, k) => {
+      const group = films.slice(k * per, (k + 1) * per),
+        seen = group.filter((f) => p.seen.has(f.id)).length;
+      return { films: group, lit: seen === group.length ? 1 : seen ? 0.5 : 0 };
+    }),
+  }));
+  return { per, longest: Math.max(0, ...strips.map((s) => s.frames.length)), strips };
 }
 
 // Milestones are passive keepsakes. They never change draw tickets or odds.
@@ -168,8 +198,10 @@ export function computeMilestones(p, catalog) {
   const { films } = catalog;
   const watched = films.filter((f) => p.seen.has(f.id)),
     cards = [];
-  const add = (id, title, description, n, target, stamp) =>
-    cards.push({ id, title, description, n: Math.min(n, target), target, complete: target > 0 && n >= target, stamp });
+  // `stamp` is what the milestone's stamp says in letters or numbers; `art` names its small drawing
+  // (index.html, #d-…), for the ones that have one.
+  const add = (id, title, description, n, target, stamp, art = null) =>
+    cards.push({ id, title, description, n: Math.min(n, target), target, complete: target > 0 && n >= target, stamp, art });
   // Counting stamps scale with the list: 1, 25, 50, 100 (when smaller than the list) and the whole list.
   const total = films.length,
     steps = [...new Set([1, 25, 50, 100].filter((n) => n < total).concat(total))];
@@ -182,10 +214,11 @@ export function computeMilestones(p, catalog) {
       watched.length,
       n,
       String(n),
+      n === 1 ? "ticket" : n === total ? "envelope" : null,
     );
   const decades = new Set(films.map((f) => Math.floor(f.y / 10))),
     visited = new Set(watched.map((f) => Math.floor(f.y / 10)));
-  add("decades", t("Across the decades"), t("Watch a film from every decade in the collection."), visited.size, decades.size, "ERA");
+  add("decades", t("Across the decades"), t("Watch a film from every decade in the collection."), visited.size, decades.size, "ERA", "hourglass");
   const winners = films.filter(catalog.isWinner),
     winnerGoal = Math.min(10, winners.length);
   if (winnerGoal)
@@ -198,13 +231,14 @@ export function computeMilestones(p, catalog) {
       winners.filter((f) => p.seen.has(f.id)).length,
       winnerGoal,
       String(winnerGoal),
+      "trophy",
     );
   const mentions = films.filter((f) => f.s === "H" && catalog.shelves.H);
   if (mentions.length)
-    add("mentions", t("Beyond the ballot"), t("Watch every honorable mention."), mentions.filter((f) => p.seen.has(f.id)).length, mentions.length, "HM");
+    add("mentions", t("Beyond the ballot"), t("Watch every honorable mention."), mentions.filter((f) => p.seen.has(f.id)).length, mentions.length, "HM", "rosette");
   for (const [key, title] of Object.entries(catalog.series)) {
     const parts = films.filter((f) => f.tri === key);
-    if (parts.length) add("series-" + key, title, t("Watch every part of the series."), parts.filter((f) => p.seen.has(f.id)).length, parts.length, "SERIE");
+    if (parts.length) add("series-" + key, title, t("Watch every part of the series."), parts.filter((f) => p.seen.has(f.id)).length, parts.length, "SERIE", "clapper");
   }
   return cards;
 }

@@ -44,6 +44,32 @@ const fit = (page) =>
     };
   });
 
+/**
+ * The horse's speech bubble as the screen shows it: all of it on the screen, and its own paper showing down
+ * its left edge, which is only so when nothing is drawn over it. (On a phone it stands in front of the bar.)
+ */
+async function bubble(page) {
+  await page.waitForFunction(() => document.getElementById("horseSay").getAnimations().every((a) => a.playState !== "running"));
+  const box = await page.evaluate(() => {
+    const say = document.getElementById("horseSay"),
+      r = say.getBoundingClientRect();
+    return { x: r.x, y: r.y, width: r.width, height: r.height, screen: innerWidth, seen: getComputedStyle(say).visibility === "visible", paper: getComputedStyle(document.documentElement).getPropertyValue("--paper").trim() };
+  });
+  const sliver = await page.screenshot({ clip: { x: box.x + 5, y: box.y + 5, width: 2, height: box.height - 10 }, scale: "css" });
+  const colours = await page.evaluate(async (png) => {
+    const picture = new Image();
+    picture.src = "data:image/png;base64," + png;
+    await picture.decode();
+    const canvas = Object.assign(document.createElement("canvas"), { width: picture.width, height: picture.height }),
+      ctx = canvas.getContext("2d");
+    ctx.drawImage(picture, 0, 0);
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    return Array.from({ length: data.length / 4 }, (_, i) => [data[i * 4], data[i * 4 + 1], data[i * 4 + 2]]);
+  }, sliver.toString("base64"));
+  const paper = [1, 3, 5].map((i) => parseInt(box.paper.slice(i, i + 2), 16));
+  return { onScreen: box.seen && box.x >= 0 && box.x + box.width <= box.screen && box.y >= 0, readable: colours.length > 10 && colours.every((c) => c.every((v, i) => Math.abs(v - paper[i]) <= 14)) };
+}
+
 // One evening of each occasion in 2026: what the horse wears, what its tooltip says of it, how it greets.
 const DAYS = [
   ["2026-04-04T19:00:00", "pask", "Today it wears an Easter witch's kerchief, for Easter.", "Glad påsk!"],
@@ -66,9 +92,12 @@ test("the horse keeps the calendar: a kerchief at Easter, candles on Lucia, a ca
     assert.deepEqual(await on(page, when), { horses: 3, wear: id, worn: "w-" + id, says }, id);
     // It sits on the horse's head, in its own colours, and pushes nothing off the screen.
     assert.deepEqual(await fit(page), { onTheHead: true, painted: true, page: true }, id);
-    // The first pat of the day gets the day's greeting.
+    // The first pat of the day gets the day's greeting: in a bubble over its head that can be read, long
+    // greeting or short, though the bar is right above the horse on a phone. A screen reader hears it too.
     await page.click("#hast");
     assert.equal(await page.textContent("#horseSay"), greeting, id);
+    assert.deepEqual(await bubble(page), { onScreen: true, readable: true }, id + ": " + greeting);
+    assert.equal(await page.textContent("#announcement"), greeting, id);
   }
   // Kuvert's day lasts until four in the morning: the candles are still lit at two, and out by nine.
   assert.equal((await on(page, "2026-12-14T02:00:00")).wear, "lucia");
@@ -76,9 +105,30 @@ test("the horse keeps the calendar: a kerchief at Easter, candles on Lucia, a ca
   // Easter moves with the year: the kerchief is on in late March 2027, a week before 2026's Easter date.
   assert.equal((await on(page, "2027-03-28T12:00:00")).wear, "pask");
   assert.equal((await on(page, "2027-04-04T12:00:00")).wear, "nothing");
-  // The horse in the bar wears the day's outfit on the other pages too.
+  // A horse that is out of sight says nothing anyone can see: scrolled off the top of the screen, or left
+  // on Tonight when another page opens while it is still speaking.
   await on(page, "2026-06-19T18:00:00");
+  // (Read once things are still: under reduced motion a change is still a transition, a frame or so long.)
+  const said = async () => {
+    await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+    await page.waitForFunction(() => document.getAnimations().every((a) => a.constructor.name !== "CSSTransition" || a.playState !== "running"));
+    return page.evaluate(() => {
+      const say = document.getElementById("horseSay"),
+        style = getComputedStyle(say);
+      return say.hidden || style.display === "none" ? "nothing" : style.visibility === "hidden" ? "unseen" : "shown";
+    });
+  };
+  await page.evaluate(() => scrollTo(0, 500));
+  assert.ok(await page.evaluate(() => document.getElementById("hast").getBoundingClientRect().bottom < 0), "the horse is off the top of the screen");
+  await page.evaluate(() => window.kuvert.app.horse.speak("Bravo!"));
+  assert.equal(await said(), "unseen");
+  await page.evaluate(() => scrollTo(0, 0));
+  await page.evaluate(() => window.kuvert.app.horse.speak("Hej!"));
+  assert.equal(await said(), "shown");
+  // The horse in the bar wears the day's outfit on the other pages too.
   await page.evaluate(() => window.kuvert.app.router.show("library"));
+  await page.waitForFunction(() => document.documentElement.dataset.page === "library");
+  assert.equal(await said(), "nothing");
   assert.deepEqual(await page.evaluate(() => [document.querySelector(".brand-horse svg").dataset.wear, document.querySelectorAll(".brand-horse .h-wear.w-midsommar").length]), ["midsommar", 1]);
   // The day after Midsummer Day it is put away.
   assert.equal((await on(page, "2026-06-21T12:00:00")).wear, "nothing");

@@ -291,10 +291,15 @@
       --zzz-x: 4px;
     }
   }
+  /* What the horse says: a bubble over its head. On a phone the masthead sits so close under the bar that
+     the bubble has to stand in front of it, so it is not part of the page: it is put on the screen where
+     the horse is (js/ui/horse.js sets --say-left and --say-top, and --say-tail, how far along the bubble
+     the horse stands). --say-x on the horse is how far the bubble leans: half and half, or inwards. */
   .horse-say {
-    position: absolute;
-    left: 50%;
-    bottom: calc(100% + 6px);
+    position: fixed;
+    left: var(--say-left, 0);
+    top: var(--say-top, 0);
+    z-index: 45;
     padding: 5px 12px 6px;
     border-radius: 12px;
     background: var(--paper);
@@ -302,13 +307,20 @@
     font: italic 500 1.15rem / 1 var(--font-display);
     white-space: nowrap;
     box-shadow: var(--shadow-2);
-    transform: translateX(var(--say-x));
     pointer-events: none;
+  }
+  /* A horse that is out of sight says nothing anyone can see: scrolled away, or left behind on Tonight
+     when another page is opened while it is still speaking. */
+  .horse-say.unseen {
+    visibility: hidden;
+  }
+  :root:not([data-page="tonight"]) .horse-say {
+    display: none;
   }
   .horse-say::after {
     content: "";
     position: absolute;
-    left: calc(-1 * var(--say-x)); /* the tail stays over the horse */
+    left: var(--say-tail, 50%); /* the tail stays over the horse */
     top: 100%;
     border: 6px solid transparent;
     border-top-color: var(--paper);
@@ -323,13 +335,13 @@
   @keyframes say-in {
     from {
       opacity: 0;
-      transform: translate(var(--say-x), 8px) scale(0.8);
+      transform: translateY(8px) scale(0.8);
     }
   }
   @keyframes say-out {
     to {
       opacity: 0;
-      transform: translate(var(--say-x), -6px);
+      transform: translateY(-6px);
     }
   }
   .horse-zzz {

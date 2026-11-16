@@ -186,7 +186,9 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
 - The painted dala horse: bare wood, red coat (first film), harness (25%), saddle (50%), saddle flowers
   (75%), gold details (100%), "Nymålad!" when a coat lands. Tap: knock, hop and a word ("Hej!", "Fika?",
   "En film till?", "Gnägg!", "Popcorn?", "Tjena!"); five taps in two seconds: it runs off and trots back
-  ("Tillbaka!"). Four stars or more: hop ("Ja!", "Bravo!"); one or less: droop ("Usch…").
+  ("Tillbaka!"). Four stars or more: hop ("Ja!", "Bravo!"); one or less: droop ("Usch…"). What it says
+  shows in a bubble over its head, in front of the top bar and all of it on the screen; the answer to a
+  tap is read out to a screen reader too.
 - The horse keeps the Swedish calendar, and dresses for nine occasions in it (`js/state/calendar.js`, drawn
   in `js/ui/outfits.js`):
 

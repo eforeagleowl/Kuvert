@@ -86,6 +86,8 @@ export class Horse {
     this.el.addEventListener("pointerenter", () => !reduceMotion() && !this.el.classList.contains("nod") && this.el.classList.add("rock"));
     this.el.addEventListener("click", () => this.tap());
     this.say.addEventListener("animationend", () => this.say.classList.remove("say"));
+    // While it is speaking, the bubble stays over the horse as the page moves under it.
+    for (const type of ["scroll", "resize"]) addEventListener(type, () => !this.say.hidden && this.place(), { passive: true });
     setInterval(() => {
       this.sleepy();
       this.dress();
@@ -137,12 +139,29 @@ export class Horse {
     this.say.textContent = text;
     this.say.hidden = false;
     this.say.classList.remove("bye", "say");
+    this.place();
     void this.say.offsetWidth;
     this.say.classList.add("say");
     this.sayTimer = setTimeout(() => {
       this.say.classList.add("bye");
       this.sayTimer = setTimeout(() => (this.say.hidden = true), 260);
     }, 1700);
+  }
+  /**
+   * Puts the bubble over the horse's head, where the horse is on the screen: in front of the bar, which on
+   * a phone sits right above the masthead, leaning inwards where the stylesheet says so (--say-x), and
+   * all of it on the screen.
+   */
+  place() {
+    const horse = this.el.getBoundingClientRect(),
+      { offsetWidth: width, offsetHeight: height } = this.say,
+      centre = horse.left + horse.width / 2,
+      lean = parseFloat(getComputedStyle(this.el).getPropertyValue("--say-x")) / 100 || -0.5,
+      left = Math.max(6, Math.min(centre + width * lean, innerWidth - width - 6));
+    this.say.classList.toggle("unseen", !horse.width || horse.bottom < 0 || horse.top > innerHeight);
+    this.say.style.setProperty("--say-left", Math.round(left) + "px");
+    this.say.style.setProperty("--say-top", Math.round(Math.max(4, horse.top - height - 6)) + "px");
+    this.say.style.setProperty("--say-tail", Math.round(Math.max(14, Math.min(centre - left, width - 14))) + "px");
   }
   nod() {
     if (this.seagal || reduceMotion() || this.el.classList.contains("nod")) return;
@@ -165,11 +184,14 @@ export class Horse {
     this.hop();
     // On a day it keeps, the first pat gets the day's greeting, and the greeting stays among what it says.
     const words = this.today ? [...WORDS, this.today.greeting] : WORDS;
+    let word = words[Math.floor(Math.random() * words.length)];
     if (this.today && this.greeted !== this.today.id) {
       this.greeted = this.today.id;
-      return this.speak(this.today.greeting);
+      word = this.today.greeting;
     }
-    this.speak(words[Math.floor(Math.random() * words.length)]);
+    this.speak(word);
+    // The bubble is a picture of what it said; a screen reader hears the pat answered.
+    this.announce(word);
   }
   // Five quick taps: it gallops off the right edge and trots back in.
   runAway() {

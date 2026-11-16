@@ -119,6 +119,8 @@
 <body>
 <!-- The poster lights the room: two of its colours, while its ticket is out (js/ui/light.js). -->
 <div class="room-light" id="roomLight" aria-hidden="true"></div>
+<!-- What the dala horse says: a bubble over its head, in front of the bar (js/ui/horse.js puts it there). -->
+<span class="horse-say" id="horseSay" aria-hidden="true" hidden></span>
 <!-- Icons: Lucide (https://lucide.dev), ISC License. Copyright (c) 2026 Lucide Icons and Contributors. Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies. THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE. -->
 <svg class="sprite" aria-hidden="true" focusable="false">
 <symbol id="i-mail" viewBox="0 0 24 24"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" /><rect x="2" y="4" width="20" height="16" rx="2" /></symbol>
@@ -211,7 +213,6 @@
       <button class="hast" id="hast" type="button" title="Dalahäst">
         <span class="sr-only">The dala horse</span>
         <span class="hast-art" data-horse="masthead" aria-hidden="true"></span>
-        <span class="horse-say" id="horseSay" hidden></span>
         <span class="horse-zzz" aria-hidden="true"><i>z</i><i>z</i><i>Z</i></span>
       </button>
       <p class="marquee-sub" data-subtitle>Best Picture winners, nominees and honorable mentions, drawn at random</p>

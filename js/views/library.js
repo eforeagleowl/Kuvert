@@ -345,10 +345,10 @@ export class Library {
     if (!rows.length) {
       $("list").replaceChildren(
         q
-          ? emptyState(t("No title matches “{q}”", { q }), t("Try part of the title, a year, a nickname like lotr, or a word for what the film is about."))
+          ? emptyState("magnifier", t("No title matches “{q}”", { q }), t("Try part of the title, a year, a nickname like lotr, or a word for what the film is about."))
           : st.filter === "unseen"
-            ? emptyState(t("Nothing left here"), t("Every film that matches these filters is watched or set aside."), { label: t("Show all films"), run: () => store.set({ filter: "all" }) })
-            : emptyState(t("Nothing matches these filters")),
+            ? emptyState("fika", t("Nothing left here"), t("Every film that matches these filters is watched or set aside."), { label: t("Show all films"), run: () => store.set({ filter: "all" }) })
+            : emptyState("magnifier", t("Nothing matches these filters")),
       );
       return;
     }
@@ -436,6 +436,7 @@ export class Library {
     if (!ids.length && !addable.length) {
       list.replaceChildren(
         emptyState(
+          q ? "magnifier" : { skipped: "projector", recent: "ticket", shelf: "disc" }[st.filter] || "hourglass",
           t(
             q
             ? "No titles match your search."
@@ -487,7 +488,7 @@ export class Library {
     const watched = watchedFilms(p, catalog);
     $("seenCount").textContent = String(watched.length);
     if (!watched.length) {
-      $("seenList").replaceChildren(emptyState(t("Nothing watched yet"), this.app.sg("Films you mark watched collect here, like stubs in a shoebox.", "Films you mark watched collect here.")));
+      $("seenList").replaceChildren(emptyState("seat", t("Nothing watched yet"), this.app.sg("Films you mark watched collect here, like stubs in a shoebox.", "Films you mark watched collect here.")));
       return;
     }
     $("seenList").replaceChildren(

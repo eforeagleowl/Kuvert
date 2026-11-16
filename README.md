@@ -15,7 +15,9 @@ to your home screen, and it works offline after your first visit.
 - **A look of its own.** The poster lights the room while its ticket is out. Every ticket is engraved
   for its film and printed on its decade's paper. The envelope collects a postmark or a label for each
   milestone, the films you've watched fill a stamp album with your stars and the date struck on each,
-  and a kurbits garland on Stats is painted in as you go.
+  and a kurbits garland on Stats is painted in as you go. Stats is paper and film too: winners are judged
+  on ballot slips, the weekly streak is a punch card (a klippkort), and each decade is a strip of film
+  with a frame per film. The dala horse dresses for Lucia, Christmas and Midsummer.
 - **Tonight's filters.** Draw only films that fit the time you have, suit a mood, are on your streaming
   services, or are discs on your shelf.
 - **The station.** A split-flap departure board makes the same draw: the board flips, a chime rings, and

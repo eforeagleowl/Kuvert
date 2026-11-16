@@ -48,6 +48,8 @@ export function mark(id, cls, viewBox = "0 0 100 90") {
   return s("svg", { class: cls, viewBox, "aria-hidden": "true" }, s("use", { href: "#" + id }));
 }
 export const check = () => s("svg", { viewBox: "0 0 24 24", "aria-hidden": "true" }, s("path", { d: "M20 6 9 17l-5-5" }));
+// One of the small drawings at the top of the page (#d-ticket, #d-seat, …): all in one hand.
+export const spot = (name) => s("svg", { class: "spot", viewBox: "0 0 48 48", "aria-hidden": "true" }, s("use", { href: "#d-" + name }));
 
 export function setText(id, text) {
   const el = typeof id === "string" ? $(id) : id;
@@ -55,12 +57,13 @@ export function setText(id, text) {
   el.hidden = !text;
 }
 
-// Lists with nothing in them say what's missing and offer the next step.
-export function emptyState(title, text = "", action = null, { horse = true } = {}) {
+// Lists with nothing in them say what's missing and offer the next step, under one of the small drawings
+// (`art`: "seat", "magnifier", …). SEAGAL does without the drawing.
+export function emptyState(art, title, text = "", action = null) {
   return h(
     "li",
     { class: "empty" },
-    horse && document.documentElement.dataset.mode !== "seagal" ? mark("dala-mark", "empty-horse") : null,
+    art && document.documentElement.dataset.mode !== "seagal" ? spot(art) : null,
     h("strong", { text: title }),
     text ? h("span", { text }) : null,
     action ? h("button", { class: "btn", type: "button", text: action.label, on: { click: action.run } }) : null,

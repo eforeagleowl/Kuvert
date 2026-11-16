@@ -1,11 +1,13 @@
 // Your watchthrough: a sentence that sums it up, the LED board (one light per film), facts, your ranking,
-// verdicts on winners, watch days, milestones, and progress by shelf and decade.
-import { $, h, s, icon, emptyState, keepFocus, copyText, reduceMotion } from "../ui/dom.js";
+// verdicts on winners, watch days, milestones, and progress by shelf and decade. Some of it is paper and
+// film: each winner to judge is a ballot slip, the weekly streak a klippkort, each decade a strip of film.
+// SEAGAL keeps its own look and takes none of the three.
+import { $, h, s, icon, spot, emptyState, keepFocus, copyText, reduceMotion } from "../ui/dom.js";
 import { byYear } from "../state/catalog.js";
 import { dayShort, isoDay, isoToDate, defaultWatchDate } from "../state/dates.js";
 import { t, LOCALE, swedish, decimal, listOf } from "../i18n/index.js";
 import { titleParts } from "../i18n/titles.js";
-import { plural, starText, statsData, paceData, paceText, computeMilestones, rankedFilms, unrankedFilms, watchDayCounts, eveningFacts, watchedFilms, ratingOf } from "../state/stats.js";
+import { plural, starText, statsData, paceData, paceText, computeMilestones, rankedFilms, unrankedFilms, watchDayCounts, eveningFacts, watchedFilms, ratingOf, punchCard, CLIPS, decadeStrips } from "../state/stats.js";
 
 // A 5×7 dot font for the LED board.
 const GLYPHS = {
@@ -120,6 +122,7 @@ export class Stats {
       this.verdicts();
     });
     this.watchDays();
+    this.klippkort();
     this.milestones();
     // By shelf and by decade.
     $("shelfSection").hidden = !catalog.hasShelves;
@@ -136,12 +139,25 @@ export class Stats {
           ),
         ),
     );
+    // Under each decade's numbers, its strip of film: a frame per film, lit once the film is watched. The
+    // strips are pictures of the numbers above them, so they are kept from screen readers.
+    const reels = this.app.seagal ? null : decadeStrips(p, catalog);
+    $("decadeSummary").textContent = !reels ? "" : reels.per === 1 ? t("One frame per film, oldest first") : t("One frame for every {n} films, oldest first", { n: reels.per });
     $("statsDecades").replaceChildren(
-      ...d.decades.map((row) =>
+      ...d.decades.flatMap((row, i) => [
         h("tr", {}, h("td", { text: t("{decade}s", { decade: row.decade }) }), h("td", { text: row.watched + " / " + row.total }), h("td", { text: row.average === null ? "—" : decimal(row.average) + " / 5" })),
-      ),
+        reels ? h("tr", { class: "strip-row", attrs: { "aria-hidden": "true" } }, h("td", { colSpan: 3 }, this.strip(reels.strips[i], reels.longest))) : null,
+      ]).filter(Boolean),
     );
     this.app.seagalStats?.();
+  }
+  // The longest decade's strip spans the column, and the others are as long as their films make them.
+  strip(reel, longest) {
+    return h(
+      "div",
+      { class: "strip", style: { "--n": reel.frames.length, "--max": longest } },
+      reel.frames.map(({ films, lit }) => h("i", { class: lit === 1 ? "on" : lit ? "part" : "", title: films.length === 1 ? films[0].t + " (" + films[0].y + ")" : films[0].y + "–" + films.at(-1).y })),
+    );
   }
 
   fact(label, value, detail = "") {
@@ -277,8 +293,8 @@ export class Stats {
     if (!ranked.length)
       list.replaceChildren(
         watchedFilms(p, catalog).length
-          ? emptyState(t("Nothing ranked yet"), t("Give a film stars and it takes its place here."))
-          : emptyState(t("No ranking yet"), this.app.sg("It starts with your first watched film. The horse is keeping the top spot warm.", "It starts with your first watched film.")),
+          ? emptyState("podium", t("Nothing ranked yet"), t("Give a film stars and it takes its place here."))
+          : emptyState("podium", t("No ranking yet"), this.app.sg("It starts with your first watched film. The horse is keeping the top spot warm.", "It starts with your first watched film.")),
       );
     else
       list.replaceChildren(
@@ -439,7 +455,7 @@ export class Stats {
         ? t("Winners you'd keep: {n} of {total}", { n: keep, total: decided.length }) + (handed ? t(" · you'd hand {trophies} to another film", { trophies: plural(handed, catalog.award?.trophy || "award") }) : "") + (toJudge ? t(" · {n} to judge", { n: toJudge }) : "")
         : t("{winners} to judge", { winners: plural(toJudge, "winner") });
     if (!winners.length) $("verdictMore").hidden = true;
-    if (!winners.length) return $("verdictList").replaceChildren(emptyState(t("No winners watched yet"), catalog.prize ? t("Watch a {prize} winner to judge it here.", { prize: catalog.prize }) : t("Watch a winner to judge it here.")));
+    if (!winners.length) return $("verdictList").replaceChildren(emptyState("trophy", t("No winners watched yet"), catalog.prize ? t("Watch a {prize} winner to judge it here.", { prize: catalog.prize }) : t("Watch a winner to judge it here.")));
     // Three at a time: the first still to judge, and they stay put while you judge them.
     const more = $("verdictMore"),
       long = winners.length > VERDICTS_SHOWN + 1;
@@ -476,9 +492,28 @@ export class Stats {
           snub = h("label", { class: "should-won" }, t("Should have won "), select);
           this.app.fillShouldHaveWon(select, snub, f);
         }
-        return h("li", {}, library.thumb(f), h("span", { class: "verdict-title", text: f.t + " (" + f.y + ")" }), group, snub);
+        // A ballot slip: its head is print, the boxes under the title are the three buttons.
+        const head = this.app.seagal ? null : h("span", { class: "ballot-head", attrs: { "aria-hidden": "true" } }, h("b", { lang: "sv", text: "Valsedel" }), h("span", { text: (catalog.prize || t("Winner")) + " · " + f.y }));
+        return h("li", { class: this.app.seagal ? "" : "ballot" }, head, library.thumb(f), h("span", { class: "verdict-title", text: f.t + " (" + f.y + ")" }), group, snub);
       }),
     );
+  }
+
+  // ---------------------------------------------------------------- the klippkort
+  // The weekly streak as a punch card: ten holes to a card, one punched for every week in a row with a film.
+  klippkort() {
+    $("klippkort").hidden = this.app.seagal;
+    if (this.app.seagal) return;
+    const k = punchCard(this.app.store.p, this.app.catalog);
+    $("kkNo").textContent = "Nr " + String(k.card).padStart(3, "0");
+    $("kkHoles").replaceChildren(...Array.from({ length: CLIPS }, (_, i) => h("li", { class: i < k.cut ? "cut" : i === k.cut && k.open ? "due" : "", text: i < k.cut ? "" : String(i + 1) })));
+    $("kkStreak").textContent = !k.streak ? t("No streak yet") : k.streak === 1 ? t("1 week so far") : t("{weeks} in a row", { weeks: plural(k.streak, "week") });
+    $("kkNote").textContent = [
+      !k.streak ? t("A film this week punches the first hole.") : k.open ? t("This week's hole is still to punch.") : t("This week is punched."),
+      k.card > 1 ? t("{cards} full before this one.", { cards: plural(k.card - 1, "card") }) : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
   }
 
   // ---------------------------------------------------------------- watch days
@@ -591,7 +626,8 @@ export class Stats {
         h(
           "article",
           { class: "milestone" + (c.complete ? " earned" : "") },
-          h("span", { class: "milestone-stamp", attrs: { "aria-hidden": "true" } }, h("b", { class: /^\d+$/.test(c.stamp) ? "" : "word", text: c.stamp })),
+          // In the stamp: the milestone's drawing, or the number it counts to. SEAGAL keeps to numbers and letters.
+          h("span", { class: "milestone-stamp", attrs: { "aria-hidden": "true" } }, c.art && !this.app.seagal ? spot(c.art) : h("b", { class: /^\d+$/.test(c.stamp) ? "" : "word", text: c.stamp })),
           h("h3", { text: c.title }),
           h("p", { text: c.description }),
           h("p", { class: "milestone-count", text: c.complete ? t("Earned") : t("{n} of {total}", { n: c.n, total: c.target }) }),

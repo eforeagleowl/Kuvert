@@ -26,6 +26,8 @@ const leftovers = (page) =>
 
 test("in Swedish: every page, the ticket and both boards, and back to English from Settings", async () => {
   const context = await newContext();
+  // A fixed evening: the films below are dated back from it, and the pages say the same on any day.
+  await context.clock.setFixedTime(new Date("2026-11-18T20:00:00"));
   await context.addInitScript(() => localStorage.getItem("kuvert:lang") ?? localStorage.setItem("kuvert:lang", "sv"));
   const page = await openPage(context, "/");
   assert.equal(await page.getAttribute("html", "lang"), "sv");

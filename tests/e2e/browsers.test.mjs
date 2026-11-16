@@ -5,6 +5,10 @@ import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 import { chromium, firefox, webkit } from "playwright";
 import { serve } from "../../tools/serve.mjs";
+import { onTestDay } from "./day.mjs";
+
+// A PNG of one red dot.
+const RED_DOT = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==";
 
 for (const [name, type] of Object.entries({ chromium, firefox, webkit })) {
   const installed = existsSync(type.executablePath());
@@ -13,7 +17,7 @@ for (const [name, type] of Object.entries({ chromium, firefox, webkit })) {
     let browser;
     try {
       browser = await type.launch();
-      const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce", serviceWorkers: "block" });
+      const context = await onTestDay(await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce", serviceWorkers: "block" }));
       const page = await context.newPage(),
         errors = [];
       page.on("pageerror", (e) => errors.push(e.message));
@@ -79,6 +83,31 @@ for (const [name, type] of Object.entries({ chromium, firefox, webkit })) {
       };
       assert.deepEqual(await bar("library"), { name: "whole", count: "shown", cheer: "aside" });
       assert.deepEqual(await bar("tonight"), { name: "hidden", count: "shown", cheer: "shown" });
+      // The pictures to share use the canvas's finer tools (lines laid through a matrix, holes cut out of a
+      // stamp, a poster read for its colours): every engine draws the engraving and the stamps. One film
+      // has a poster here, a single red dot served in TMDB's place.
+      await context.route("https://image.tmdb.org/**/smoke.png*", (route) => route.fulfill({ status: 200, contentType: "image/png", headers: { "access-control-allow-origin": "*" }, body: Buffer.from(RED_DOT, "base64") }));
+      const pictures = await page.evaluate(async () => {
+        const { share, catalog, store } = window.kuvert.app,
+          { rankedFilms } = await import("./js/state/stats.js");
+        const film = catalog.films[0];
+        store.recordDetails(film.id, { posterPath: "/smoke.png" });
+        store.rate(film.id, 4);
+        const light = (data, i) => data[i] + data[i + 1] + data[i + 2];
+        // The ticket: ink in the strip under its head, where the engraved band runs.
+        const ticket = await share.ticketCanvas(film),
+          band = ticket.getContext("2d").getImageData(146, 262, 788, 28).data;
+        let ink = 0;
+        for (let i = 0; i < band.length; i += 4) if (light(band, 0) - light(band, i) > 90) ink++;
+        // The ranking: its first stamp, a hole at the corner and paper beside the poster, which is red.
+        const ranking = await share.rankingCanvas(),
+          stamps = Math.min(3, rankedFilms(store.p, catalog).length),
+          x = (1080 - stamps * 280 - (stamps - 1) * 40) / 2,
+          at = (dx, dy) => [...ranking.getContext("2d").getImageData(x + dx, 374 + dy, 1, 1).data];
+        const [hole, paper, poster] = [at(0, 0), at(9, 222), at(140, 260)];
+        return { ticket: [ticket.width, ticket.height], engraved: ink > 500, hole: light(hole, 0) < 200, paper: light(paper, 0) > 600, poster: poster[0] > 200 && poster[1] < 60 && poster[2] < 60 };
+      });
+      assert.deepEqual(pictures, { ticket: [1080, 1350], engraved: true, hole: true, paper: true, poster: true });
       assert.deepEqual(errors, []);
       await context.close();
     } finally {

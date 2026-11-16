@@ -5,6 +5,8 @@ import { validDate, isoToDate, isoDay, defaultWatchDate, mondayOf } from "./date
 import { t, decimal } from "../i18n/index.js";
 export { plural } from "../i18n/index.js";
 export const starText = (r) => "★".repeat(Math.floor(r)) + (r % 1 ? "½" : "");
+/** Stars as the value printed on a stamp: "4", "3½", "½". */
+export const stampValue = (r) => (Math.floor(r) || "") + (r % 1 ? "½" : "");
 export const ratingLabel = (r) => starText(r) + " " + decimal(r);
 export const ratingOf = (p, id) => p.reviews[id]?.rating ?? null;
 

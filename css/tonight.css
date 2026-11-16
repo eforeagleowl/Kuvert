@@ -201,79 +201,10 @@
   .dala.p5 .h-saddle {
     stroke: var(--brass);
   }
-  /* What the horse wears on the days it keeps (js/state/calendar.js): one of the three, on its day. Their
-     colours are their own, whatever the palette: candle white, flame, lingon green, the tomte's red. */
+  /* What the horse wears on the days it keeps (js/ui/outfits.js) may stand above its head, out of its box:
+     a flag on its pole, a row of candles. */
   .dala {
     overflow: visible;
-  }
-  .dala .h-wear {
-    display: none;
-  }
-  .dala[data-wear="lucia"] .w-lucia,
-  .dala[data-wear="jul"] .w-jul,
-  .dala[data-wear="midsommar"] .w-midsommar {
-    display: inline;
-  }
-  /* The two crowns are drawn a size too large for the head, so they still read on a horse forty pixels wide. */
-  .dala :is(.w-lucia, .w-midsommar) {
-    transform: scale(1.32);
-    transform-origin: 22.5px 17px;
-  }
-  .dala .w-green {
-    fill: none;
-    stroke: #3a7a3c;
-    stroke-width: 3.8;
-    stroke-linecap: round;
-  }
-  .dala .w-leaf {
-    fill: #5c9c46;
-  }
-  .dala .w-berry {
-    fill: #d23a32;
-  }
-  .dala .w-candle {
-    fill: none;
-    stroke: #fbf5e6;
-    stroke-width: 2.8;
-  }
-  .dala .w-flame {
-    fill: #ffc94f;
-  }
-  .dala .w-cap {
-    fill: #cf332c;
-    stroke: #8d1f1b;
-    stroke-width: 0.7;
-    stroke-linejoin: round;
-  }
-  .dala path.w-trim {
-    fill: none;
-    stroke: #fbf5e6;
-    stroke-width: 4.4;
-    stroke-linecap: round;
-  }
-  .dala circle.w-trim {
-    fill: #fbf5e6;
-  }
-  .dala .w-bloom.w {
-    fill: #fdfaf0;
-  }
-  .dala .w-bloom.b {
-    fill: #4f7fe0;
-  }
-  .dala .w-bloom.y {
-    fill: #f7cf4d;
-  }
-  .dala .w-bloom.r {
-    fill: #ee6a86;
-  }
-  .dala .w-heart {
-    fill: #fdfaf0;
-  }
-  .dala .w-heart.w {
-    fill: #f2b93b;
-  }
-  .dala .w-heart.y {
-    fill: #e07f24;
   }
   .hast.nod svg {
     animation: horse-nod 0.75s var(--ease) both;
@@ -360,10 +291,15 @@
       --zzz-x: 4px;
     }
   }
+  /* What the horse says: a bubble over its head. On a phone the masthead sits so close under the bar that
+     the bubble has to stand in front of it, so it is not part of the page: it is put on the screen where
+     the horse is (js/ui/horse.js sets --say-left and --say-top, and --say-tail, how far along the bubble
+     the horse stands). --say-x on the horse is how far the bubble leans: half and half, or inwards. */
   .horse-say {
-    position: absolute;
-    left: 50%;
-    bottom: calc(100% + 6px);
+    position: fixed;
+    left: var(--say-left, 0);
+    top: var(--say-top, 0);
+    z-index: 45;
     padding: 5px 12px 6px;
     border-radius: 12px;
     background: var(--paper);
@@ -371,13 +307,20 @@
     font: italic 500 1.15rem / 1 var(--font-display);
     white-space: nowrap;
     box-shadow: var(--shadow-2);
-    transform: translateX(var(--say-x));
     pointer-events: none;
+  }
+  /* A horse that is out of sight says nothing anyone can see: scrolled away, or left behind on Tonight
+     when another page is opened while it is still speaking. */
+  .horse-say.unseen {
+    visibility: hidden;
+  }
+  :root:not([data-page="tonight"]) .horse-say {
+    display: none;
   }
   .horse-say::after {
     content: "";
     position: absolute;
-    left: calc(-1 * var(--say-x)); /* the tail stays over the horse */
+    left: var(--say-tail, 50%); /* the tail stays over the horse */
     top: 100%;
     border: 6px solid transparent;
     border-top-color: var(--paper);
@@ -392,13 +335,13 @@
   @keyframes say-in {
     from {
       opacity: 0;
-      transform: translate(var(--say-x), 8px) scale(0.8);
+      transform: translateY(8px) scale(0.8);
     }
   }
   @keyframes say-out {
     to {
       opacity: 0;
-      transform: translate(var(--say-x), -6px);
+      transform: translateY(-6px);
     }
   }
   .horse-zzz {

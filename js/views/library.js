@@ -1,11 +1,11 @@
 // The collection: every film, filters and a forgiving search, decade coverage, the shelf, skipped and
 // recent views, and the watched archive with its poster wall.
 import { $, h, check, mark, emptyState, keepFocus } from "../ui/dom.js";
-import { seedOf } from "../ui/engraving.js";
+import { strikeTurn } from "../ui/engraving.js";
 import { imageUrl } from "../tmdb/client.js";
 import { byYear, decadeOf } from "../state/catalog.js";
 import { fmtWhen } from "../state/dates.js";
-import { plural, starText, wallFilms, watchedFilms } from "../state/stats.js";
+import { plural, stampValue, starText, wallFilms, watchedFilms } from "../state/stats.js";
 import { t, listOf, decimal } from "../i18n/index.js";
 import { titleParts } from "../i18n/titles.js";
 import { metadataFor } from "./journeys.js";
@@ -19,14 +19,13 @@ const ARCHIVES = ["skipped", "recent", "missing", "shelf"];
 // The watched wall is a stamp album: each film a stamp, its stars the value printed on it, and the day
 // you watched it struck across a corner as a postmark. What a stamp shows is print, not words to read out:
 // it is drawn by the stylesheet from these values (css/pages.css), and the tile's name says it in full.
-const stampValue = (rating) => (Math.floor(rating) || "") + (rating % 1 ? "½" : "");
 function strike(cancel, date, id) {
   const [year, month, day] = /^\d{4}-\d\d-\d\d$/.test(date) ? date.split("-") : [];
   if (!year) return void cancel.removeAttribute("data-day");
   cancel.dataset.day = day + "." + month;
   cancel.dataset.year = year;
   // Struck by hand: each at its own angle, the same every time for the same film.
-  cancel.style.setProperty("--turn", (seedOf(id) % 37) - 18 + "deg");
+  cancel.style.setProperty("--turn", strikeTurn(id) + "deg");
 }
 
 export class Library {

@@ -1,11 +1,15 @@
 // Share images for the group chat: a ticket, your ranking and your film year, drawn on a canvas in
-// Kuvert's style and sent through the phone's share sheet, or saved as a PNG on desktop.
+// Kuvert's style and sent through the phone's share sheet, or saved as a PNG on desktop. They carry the
+// look of the app itself: the ticket is on its decade's paper with the film's own engraving, in the light
+// of its poster; the best of a ranking or a year are stamps from the album, postmarked on the day.
 import { imageUrl } from "../tmdb/client.js";
 import { STAR_PATH } from "../ui/stars.js";
 import { HORSE_BODY } from "../ui/horse.js";
+import { engraving, stockOf, strikeTurn } from "../ui/engraving.js";
+import { lightOf } from "../ui/light.js";
 import { slugify } from "../data/lists.js";
 import { dayLong } from "../state/dates.js";
-import { rankedFilms, ratingOf } from "../state/stats.js";
+import { rankedFilms, ratingOf, stampValue } from "../state/stats.js";
 import { download } from "../storage/files.js";
 import { t, plural, LOCALE } from "../i18n/index.js";
 import { exportLibrary } from "../storage/library-backup.js";
@@ -22,10 +26,10 @@ const loadImage = (src) =>
     img.onerror = reject;
     img.src = src;
   });
-async function loadPoster(path) {
+async function loadPoster(path, size = "w500") {
   if (!path) return null;
   try {
-    const r = await fetch(imageUrl("w500", path), { mode: "cors" });
+    const r = await fetch(imageUrl(size, path), { mode: "cors" });
     if (!r.ok) return null;
     return await createImageBitmap(await r.blob());
   } catch {
@@ -72,9 +76,9 @@ function spaced(ctx, text, x, y, spacing, align = "left") {
   ctx.fillText(text, x, y);
   if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
 }
-function drawStars(ctx, x, y, size, rating, fill, empty) {
+function drawStars(ctx, x, y, size, rating, fill, empty, count = 5) {
   const path = new Path2D(STAR_PATH);
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < count; i++) {
     const part = Math.max(0, Math.min(1, rating - i));
     ctx.save();
     ctx.translate(x + i * size * 1.12, y);
@@ -99,6 +103,142 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.arcTo(x, y + h, x, y, r);
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
+}
+/** The paper and the band of a film's ticket, as the stylesheet has them: its decade's stock, brass for a winner. */
+function ticketStock(f, winner, c) {
+  const probe = Object.assign(document.createElement("div"), { className: "ticket" + (winner ? " win" : ""), hidden: true });
+  probe.dataset.stock = stockOf(f.y);
+  document.body.append(probe);
+  const style = getComputedStyle(probe),
+    stock = { paper: style.getPropertyValue("--stock").trim() || c.paper, band: style.getPropertyValue("--band").trim() || (winner ? c.brass : c.blue) };
+  probe.remove();
+  return stock;
+}
+/** Strokes lines drawn in a box of their own (bw by bh) into a place on the canvas, the pen's width unscaled. */
+function strokeIn(ctx, lines, x, y, w, h, bw, bh) {
+  const place = new DOMMatrix().translateSelf(x, y).scaleSelf(w / bw, h / bh);
+  for (const d of lines) {
+    const path = new Path2D();
+    path.addPath(new Path2D(d), place);
+    ctx.stroke(path);
+  }
+}
+/**
+ * A stamp from the watched wall's album (css/pages.css, .stamp): perforated paper, the poster, and a foot
+ * with Kuvert's name and the stamp's value, which is your stars. Drawn apart from the picture, so that
+ * its holes are holes when it is laid on.
+ */
+function stampCanvas({ w, poster, value, rank, c, F }) {
+  const pad = Math.round(w * 0.05),
+    aw = w - 2 * pad,
+    ah = Math.round(aw * 1.5),
+    foot = Math.round(w * 0.115),
+    under = Math.round(w * 0.028),
+    h = pad + ah + Math.round(w * 0.022) + foot + under;
+  const canvas = Object.assign(document.createElement("canvas"), { width: w, height: h }),
+    ctx = canvas.getContext("2d");
+  const paper = ctx.createLinearGradient(0, 0, w * 0.18, h);
+  paper.addColorStop(0, mixHex(c.paper, "#ffffff", 0.94));
+  paper.addColorStop(1, mixHex(c.paper, c.ink, 0.92));
+  ctx.fillStyle = paper;
+  ctx.fillRect(0, 0, w, h);
+  // The poster, or the horse on a dark ground where there is none.
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(pad, pad, aw, ah);
+  ctx.clip();
+  if (poster) {
+    const sc = Math.max(aw / poster.width, ah / poster.height);
+    ctx.drawImage(poster, pad + (aw - poster.width * sc) / 2, pad + (ah - poster.height * sc) / 2, poster.width * sc, poster.height * sc);
+  } else {
+    const ground = ctx.createLinearGradient(pad, pad, pad + aw * 0.4, pad + ah);
+    ground.addColorStop(0, mixHex(c.house, c.paper, 0.87));
+    ground.addColorStop(1, c.deep);
+    ctx.fillStyle = ground;
+    ctx.fillRect(pad, pad, aw, ah);
+    const scale = (aw * 0.5) / 100;
+    ctx.translate(pad + aw * 0.25, pad + (ah - 90 * scale) / 2);
+    ctx.scale(scale, scale);
+    ctx.fillStyle = mixHex(c.house, c.paper, 0.76);
+    ctx.fill(new Path2D(HORSE_BODY));
+  }
+  ctx.restore();
+  // Its place in the ranking, on a brass tab in the corner.
+  if (rank) {
+    ctx.font = "700 " + Math.round(w * 0.086) + "px " + F.mono;
+    const label = "#" + rank,
+      at = pad + Math.round(w * 0.043),
+      bh = Math.round(w * 0.125);
+    ctx.fillStyle = c.brass;
+    roundRect(ctx, at, at, ctx.measureText(label).width + w * 0.1, bh, w * 0.028);
+    ctx.fill();
+    ctx.fillStyle = c.ink;
+    ctx.textBaseline = "middle";
+    spaced(ctx, label, at + w * 0.05, at + bh / 2 + 1, 0);
+    ctx.textBaseline = "alphabetic";
+  }
+  // The foot is print: Kuvert's name, and the value. In the album the value is a bare number; here it has
+  // a star beside it, for the people in the chat who have never seen the album.
+  const base = h - under - Math.round(foot * 0.2);
+  ctx.fillStyle = mixHex(c.ink, c.paper, 0.8);
+  ctx.font = "600 " + Math.round(w * 0.057) + "px " + F.body;
+  spaced(ctx, "KUVERT", pad + 1, base, w * 0.057 * 0.22);
+  if (value) {
+    const star = w * 0.074;
+    ctx.fillStyle = c.ink;
+    ctx.font = "700 " + Math.round(w * 0.107) + "px " + F.display;
+    spaced(ctx, value, w - pad - star - w * 0.018, base, 0, "right");
+    drawStars(ctx, w - pad - star, base - star * 0.93, star, 1, c.ink, c.ink, 1);
+  }
+  // The perforation: a row of holes bitten out of each edge, a whole number of them to a side.
+  const hole = w * 0.0215,
+    across = Math.round(w / (hole * 3.4)),
+    down = Math.round(h / (hole * 3.4));
+  ctx.globalCompositeOperation = "destination-out";
+  ctx.beginPath();
+  const bite = (x, y) => {
+    ctx.moveTo(x + hole, y);
+    ctx.arc(x, y, hole, 0, Math.PI * 2);
+  };
+  for (let i = 0; i <= across; i++) for (const y of [0, h]) bite((i * w) / across, y);
+  for (let j = 1; j < down; j++) for (const x of [0, w]) bite(x, (j * h) / down);
+  ctx.fill();
+  return canvas;
+}
+/**
+ * The day a film was watched, struck across the corner of its stamp (css/pages.css, .stamp-cancel): two
+ * rings and the date, in dark ink with a pale edge, so it reads on the paper, on a dark poster and on the
+ * dark of the picture beside it. `d` is the mark's width.
+ */
+function postmark(ctx, cx, cy, d, date, id, c, F) {
+  const [year, month, day] = /^\d{4}-\d\d-\d\d$/.test(date || "") ? date.split("-") : [];
+  if (!year) return;
+  const k = d / 46,
+    pale = (alpha) => "rgba(" + hexRgb(c.paper).join(",") + "," + alpha + ")";
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate((strikeTurn(id) * Math.PI) / 180);
+  for (const [radius, width] of [[d / 2 - 0.65 * k, 1.3 * k], [d / 2 - 5.7 * k, 0.8 * k]]) {
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.lineWidth = width + 1.6 * k;
+    ctx.strokeStyle = pale(0.5);
+    ctx.stroke();
+    ctx.lineWidth = width;
+    ctx.strokeStyle = c.postmark;
+    ctx.stroke();
+  }
+  ctx.font = "700 " + (8.4 * k).toFixed(1) + "px " + F.mono;
+  ctx.textAlign = "center";
+  ctx.lineJoin = "round";
+  for (const [text, y] of [[day + "." + month, -1.9 * k], [year, 7.9 * k]]) {
+    ctx.lineWidth = 2.2 * k;
+    ctx.strokeStyle = pale(0.9);
+    ctx.strokeText(text, 0, y);
+    ctx.fillStyle = c.postmark;
+    ctx.fillText(text, 0, y);
+  }
+  ctx.restore();
 }
 
 export class Share {
@@ -140,6 +280,7 @@ export class Share {
       ink,
       velvet: cssVar("--velvet", "#9A3E39"),
       blue,
+      postmark: cssVar("--deep", "#081320"),
     };
   }
   async horse(c) {
@@ -163,6 +304,58 @@ export class Share {
     r.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = r;
     ctx.fillRect(0, 0, W, H);
+  }
+  /**
+   * The poster lights the room, as it does on Tonight while a ticket is out (css/tonight.css, .room-light):
+   * one of its two colours glows from the upper left, the other from the lower right.
+   */
+  roomLight(ctx, W, H, lights) {
+    const flat = 62 / 84,
+      reach = Math.min(W, H) * 0.84;
+    for (const [i, [r, g, b]] of lights.entries()) {
+      const cx = W * (i ? 0.92 : 0.08),
+        cy = H * (i ? 0.86 : 0.18);
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(1, flat);
+      const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, reach);
+      glow.addColorStop(0, "rgba(" + r + "," + g + "," + b + "," + (i ? 0.44 : 0.5) + ")");
+      glow.addColorStop(0.66, "rgba(" + r + "," + g + "," + b + ",0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(-reach, -reach, reach * 2, reach * 2);
+      ctx.restore();
+    }
+  }
+  /**
+   * Films as stamps, each with its poster where one can be had: [{ f, stamp, date }]. Null in SEAGAL, whose
+   * files carry no marks from the post, and when not one poster came: the plain list says more than a row
+   * of blanks would. `about` gives a film's value, date and place.
+   */
+  async stamps(films, w, about) {
+    if (this.app.seagal || !films.length) return null;
+    const posters = await Promise.all(films.map((f) => loadPoster(this.app.store.posterPath(f.id), "w342")));
+    if (!posters.some(Boolean)) return null;
+    const c = this.colors(),
+      F = this.fonts();
+    return films.map((f, i) => ({ f, date: about(f, i).date, stamp: stampCanvas({ w, poster: posters[i], c, F, ...about(f, i) }) }));
+  }
+  /** Lays a stamp on the picture, its shadow under it and its postmark across the corner. */
+  layStamp(ctx, { f, stamp, date }, x, y, c, F) {
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,.5)";
+    ctx.shadowBlur = stamp.width * 0.09;
+    ctx.shadowOffsetY = stamp.width * 0.035;
+    ctx.drawImage(stamp, x, y);
+    ctx.restore();
+    const d = stamp.width * 0.33;
+    postmark(ctx, x + stamp.width + d * 0.2 - d / 2, y - d * 0.15 + d / 2, d, date, f.id, c, F);
+  }
+  /** A film's name under its stamp, centred, on two lines at most. */
+  caption(ctx, text, cx, y, width, size, F) {
+    ctx.fillStyle = "#E1E6EB";
+    ctx.font = "400 " + size + "px " + F.body;
+    ctx.textAlign = "center";
+    wrapLines(ctx, text, width, 2).forEach((line, i) => ctx.fillText(line, cx, y + i * Math.round(size * 1.26)));
   }
   // The horse and the list name, centered as one mark.
   brand(ctx, W, baseline, horse, c, F) {
@@ -190,18 +383,37 @@ export class Share {
     canvas.height = H;
     const ctx = canvas.getContext("2d");
     if (this.app.seagal && "fontVariantCaps" in ctx) ctx.fontVariantCaps = "small-caps";
-    this.backdrop(ctx, W, H, c);
     const [poster, paper, horse] = await Promise.all([loadPoster(this.app.store.posterPath(f.id)), loadImage("assets/paper.webp").catch(() => null), this.horse(c)]);
+    // As on Tonight: the ticket is printed on its decade's paper and engraved for its film, and its poster
+    // lights the room. SEAGAL's case file is none of that.
+    const dressed = !this.app.seagal,
+      won = catalog.isWinner(f),
+      stock = dressed ? ticketStock(f, won, c) : { paper: c.paper, band: won ? c.brass : c.blue },
+      marks = dressed ? engraving(f.id) : null,
+      lights = dressed && poster ? lightOf(poster) : null;
+    this.backdrop(ctx, W, H, c);
+    if (lights) this.roomLight(ctx, W, H, lights);
     const x = 90,
       y = 150,
       w = W - 180,
       h = 1020;
+    // The poster's light along the ticket's upper sides.
+    for (const [i, [r, g, b]] of (lights || []).entries()) {
+      ctx.save();
+      ctx.shadowColor = "rgba(" + r + "," + g + "," + b + "," + (i ? 0.5 : 0.58) + ")";
+      ctx.shadowBlur = 110;
+      ctx.shadowOffsetX = i ? 32 : -32;
+      ctx.shadowOffsetY = -44;
+      ctx.fillStyle = stock.paper;
+      ctx.fillRect(x + 36, y + 36, w - 72, h - 72);
+      ctx.restore();
+    }
     // The ticket card, its paper and its bands.
     ctx.save();
     ctx.shadowColor = "rgba(0,0,0,.45)";
     ctx.shadowBlur = 50;
     ctx.shadowOffsetY = 18;
-    ctx.fillStyle = c.paper;
+    ctx.fillStyle = stock.paper;
     roundRect(ctx, x, y, w, h, 6);
     ctx.fill();
     ctx.restore();
@@ -215,9 +427,17 @@ export class Share {
       ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = "source-over";
     }
-    ctx.fillStyle = catalog.isWinner(f) ? c.brass : c.blue;
+    if (marks) {
+      // The film's rosette in the paper, behind the words, running off the ticket's edge.
+      ctx.globalAlpha = 0.2;
+      ctx.strokeStyle = mixHex(stock.band, c.ink, 0.6);
+      ctx.lineWidth = 1.1;
+      strokeIn(ctx, marks.rosette, x + w - 350, y + 140, 440, 440, 200, 200);
+      ctx.globalAlpha = 1;
+    }
+    ctx.fillStyle = stock.band;
     ctx.fillRect(x, y, w, 12);
-    ctx.fillStyle = c.blue;
+    ctx.fillStyle = dressed ? stock.band : c.blue;
     ctx.fillRect(x, y + h - 8, w, 8);
     ctx.restore();
     ctx.strokeStyle = "rgba(23,38,58,.18)";
@@ -228,13 +448,20 @@ export class Share {
     ctx.font = F.f("500 24px " + F.mono);
     spaced(ctx, this.sg("KUVERT · BIOBILJETT", "SEAGAL · CASE FILE"), x + 56, y + 96, 4);
     spaced(ctx, catalog.ticketNumber(f) + " / " + catalog.films.length, x + w - 56, y + 96, 2, "right");
-    ctx.setLineDash([8, 8]);
-    ctx.strokeStyle = "#8C785F";
-    ctx.beginPath();
-    ctx.moveTo(x + 56, y + 126);
-    ctx.lineTo(x + w - 56, y + 126);
-    ctx.stroke();
-    ctx.setLineDash([]);
+    if (marks) {
+      // Its band of woven lines under the head.
+      ctx.strokeStyle = mixHex(stock.band, c.ink, 0.72);
+      ctx.lineWidth = 1.4;
+      strokeIn(ctx, marks.band, x + 56, y + 115, w - 112, 22, 600, 12);
+    } else {
+      ctx.setLineDash([8, 8]);
+      ctx.strokeStyle = "#8C785F";
+      ctx.beginPath();
+      ctx.moveTo(x + 56, y + 126);
+      ctx.lineTo(x + w - 56, y + 126);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
     // Poster, or the horse where it's missing.
     const px = x + 56,
       py = y + 170,
@@ -268,7 +495,7 @@ export class Share {
     const tx = px + pw + 44,
       tw = x + w - 56 - tx;
     const watched = p.seen.has(f.id),
-      winner = catalog.isWinner(f);
+      winner = won;
     ctx.fillStyle = winner ? "#74551F" : "#7a3530";
     ctx.font = F.f("600 24px " + F.body);
     spaced(
@@ -357,11 +584,16 @@ export class Share {
     const all = rankedFilms(p, catalog),
       films = all.slice(0, 100),
       total = all.length;
-    const cols = films.length > 36 ? 2 : 1,
-      perCol = Math.ceil(films.length / cols),
+    // The first three are stamps from the album, where their posters can be had; the rest are the list.
+    const podium = await this.stamps(films.slice(0, 3), 280, (f, i) => ({ value: stampValue(ratingOf(p, f.id) || 0), rank: i + 1, date: p.dates[f.id] })),
+      rows = films.slice(podium ? podium.length : 0),
+      first = films.length - rows.length;
+    const cols = rows.length > 36 ? 2 : 1,
+      perCol = Math.ceil(rows.length / cols),
       rowH = cols === 2 ? 50 : 64;
     const W = 1080,
-      top = 356,
+      stampsTop = 374,
+      top = podium ? stampsTop + podium[0].stamp.height + 128 : 356,
       H = Math.max(900, top + perCol * rowH + 170 + (total > films.length ? 50 : 0));
     const canvas = document.createElement("canvas");
     canvas.width = W;
@@ -385,10 +617,20 @@ export class Share {
     ctx.moveTo(80, 330);
     ctx.lineTo(W - 80, 330);
     ctx.stroke();
+    if (podium) {
+      const gap = 40,
+        x0 = (W - podium.length * 280 - (podium.length - 1) * gap) / 2;
+      podium.forEach((one, i) => {
+        const x = x0 + i * (280 + gap);
+        this.layStamp(ctx, one, x, stampsTop, c, F);
+        this.caption(ctx, one.f.t, x + 140, stampsTop + one.stamp.height + 46, 300, 27, F);
+      });
+    }
     const colW = (W - 160 - (cols - 1) * 40) / cols;
-    films.forEach((f, i) => {
-      const col = Math.floor(i / perCol),
-        row = i % perCol,
+    rows.forEach((f, at) => {
+      const i = at + first,
+        col = Math.floor(at / perCol),
+        row = at % perCol,
         x = 80 + col * (colW + 40),
         y = top + row * rowH;
       ctx.strokeStyle = "rgba(83,103,126,.45)";
@@ -482,7 +724,14 @@ export class Share {
     ctx.font = "500 24px " + F.mono;
     spaced(ctx, t(r.rated ? "The year's best" : "Latest films").toUpperCase(), 80, 690, 5);
     const rowH = 72;
-    r.top.forEach((f, i) => {
+    // The best five are stamps from the album, where their posters can be had; a list where they can't.
+    const best = await this.stamps(r.top, 168, (f) => ({ value: Number.isFinite(f.rating) ? stampValue(f.rating) : "", date: f.date }));
+    (best || []).forEach((one, i) => {
+      const x = 80 + i * 188;
+      this.layStamp(ctx, one, x, 730, c, F);
+      this.caption(ctx, one.f.t, x + 84, 730 + one.stamp.height + 40, 182, 23, F);
+    });
+    (best ? [] : r.top).forEach((f, i) => {
       const y = 716 + i * rowH;
       ctx.fillStyle = c.brass;
       ctx.font = "700 40px " + F.display;

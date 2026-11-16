@@ -43,8 +43,8 @@ js/tmdb/          posters, runtimes and streaming from TMDB (optional)
 js/views/         Tonight (stage, nixie, evening), the station, Library, Stats, Settings, rails
 js/station/       the station's timetable, split-flap board, sounds, and the three stations' profiles
 js/i18n/          Swedish mode: t() and the Swedish dictionary (sv.js), keyed by the English text
-js/ui/            DOM helpers, toast, dialogs, stars, sounds, the horse
-js/share/         ticket and ranking images, drawn on a canvas
+js/ui/            DOM helpers, toast, dialogs, stars, sounds, the horse and what it wears
+js/share/         ticket, ranking and film-year images, drawn on a canvas in the app's own look
 js/fun/           SEAGAL
 sw.js             offline: precaches every file under a version stamped from their contents
 js/update.js      restarts a page whose scripts couldn't run it, once the new version has taken over
@@ -105,6 +105,17 @@ npm run test:e2e    # browser: the evening end to end, Classic's saves and codes
                     # and accessibility (axe-core, WCAG 2.2 AA, every page and dialog)
 npm run check       # all of the above, plus the service worker stamp
 npm run serve       # http://127.0.0.1:8123/
+npm run pictures    # retakes the README's pictures (docs/pictures/), with stand-in posters
+```
+
+Much of Kuvert goes by the calendar: an evening lasts until four, a week starts on Monday, an envelope
+has its season, the horse its days, and the list's posters their six months. A browser test that is
+about a day sets its own clock, and one about posters starts from fresh ones (`withFreshPosters`), so
+none of them fails for the day it happens to run on. To see that for yourself, run them all as if on
+another day (`tests/e2e/day.mjs`):
+
+```
+KUVERT_TEST_NOW=2027-06-25T18:00:00 npm run test:e2e    # Midsummer Eve, with the posters long expired
 ```
 
 `tests/fixtures/golden.json` was recorded by driving Kuvert Classic (`tests/classic/`) in a browser

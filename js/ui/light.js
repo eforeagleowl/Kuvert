@@ -69,19 +69,25 @@ export function asLight([r, g, b]) {
 
 let canvas = null;
 /**
- * The light of a poster that has loaded: two CSS colours, or null when there is no picture or the page
- * may not read it (an image served without permission to).
+ * The light of a picture a canvas can draw (an image that has loaded, a bitmap): two colours as
+ * [r, g, b], or null when there is nothing to see or the page may not read it (an image served without
+ * permission to).
  */
-export function posterLight(img) {
-  if (!img || img.hidden || !img.complete || !img.naturalWidth) return null;
+export function lightOf(picture) {
   try {
     canvas ??= Object.assign(document.createElement("canvas"), { width: 24, height: 36 });
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     ctx.clearRect(0, 0, 24, 36);
-    ctx.drawImage(img, 0, 0, 24, 36);
+    ctx.drawImage(picture, 0, 0, 24, 36);
     const picked = pickColours(ctx.getImageData(0, 0, 24, 36).data);
-    return picked && picked.map(asLight).map(([r, g, b]) => "rgb(" + r + " " + g + " " + b + ")");
+    return picked && picked.map(asLight);
   } catch {
     return null;
   }
+}
+/** The light of a poster on the page, once it has loaded: two CSS colours, or null. */
+export function posterLight(img) {
+  if (!img || img.hidden || !img.complete || !img.naturalWidth) return null;
+  const lights = lightOf(img);
+  return lights && lights.map(([r, g, b]) => "rgb(" + r + " " + g + " " + b + ")");
 }

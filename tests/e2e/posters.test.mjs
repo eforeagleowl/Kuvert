@@ -129,9 +129,12 @@ test("when TMDB turns lookups away, the poster wall says so, and carries on by i
 });
 
 test("with no TMDB key, the list's own posters show on the wall, in the rows and on the ticket, until they're too old", async () => {
-  const day = (ago) => new Date(Date.now() - ago * 86400000).toISOString().slice(0, 10);
+  // A fixed evening, and the posters fetched three days before it, or two hundred.
+  const NOW = new Date("2026-11-18T20:00:00");
+  const day = (ago) => new Date(NOW.getTime() - ago * 86400000).toISOString().slice(0, 10);
   for (const [at, fresh] of [[day(3), true], [day(200), false]]) {
     const context = await newContext();
+    await context.clock.setFixedTime(NOW);
     const images = [],
       api = [];
     await context.route("https://image.tmdb.org/**", (route) => {

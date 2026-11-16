@@ -3,6 +3,7 @@
 import { after, before } from "node:test";
 import { chromium } from "playwright";
 import { serve, CLASSIC } from "../../tools/serve.mjs";
+import { onTestDay, testNow } from "./day.mjs";
 
 export const env = { url: "", server: null, browser: null };
 
@@ -10,6 +11,9 @@ before(async () => {
   // Retired Kuvert Classic is back at /classic/ here, so the tests can check Kuvert still reads its saves.
   Object.assign(env, await serve(0, { mounts: CLASSIC }));
   env.browser = await chromium.launch();
+  // Every context a test opens, however it opens it, is on the test's day.
+  const open = env.browser.newContext.bind(env.browser);
+  env.browser.newContext = async (options) => onTestDay(await open(options));
 });
 after(async () => {
   await env.browser?.close();
@@ -37,6 +41,39 @@ export async function newContext({ serviceWorkers = "block", viewport = { width:
  */
 export const withoutShippedPosters = (context) =>
   context.route("**/js/data/posters.js", (route) => route.fulfill({ status: 200, contentType: "text/javascript", body: "export const POSTERS_AT = null;\nexport const POSTERS = {};\n" }));
+
+/**
+ * Kuvert's own posters, as fresh as if the monthly refresh had just run. Kuvert stops using them once they
+ * are 180 days old (TMDB's terms), so a test about what posters look like starts from here: it would
+ * otherwise begin to fail on the day the file it ships with turned too old. A test that sets its own clock
+ * says when that is (`at`): posters fetched after the page's day are no fresher than ones too old.
+ */
+export const withFreshPosters = (context, at = null) =>
+  context.route("**/js/data/posters.js", async (route) => {
+    const response = await route.fetch();
+    route.fulfill({ response, body: (await response.text()).replace(/POSTERS_AT = "[^"]*"/, 'POSTERS_AT = "' + (at || testNow()).toISOString().slice(0, 10) + '"') });
+  });
+
+/** A poster for a test, as a PNG: the left 60% red, the rest blue, with a black bar across the top. */
+export async function redBluePoster() {
+  const context = await env.browser.newContext({ viewport: { width: 120, height: 180 } });
+  const page = await context.newPage();
+  await page.setContent('<body style="margin:0;background:linear-gradient(90deg,#d21e28 60%,#1e3cc8 60%)"><div style="height:24px;background:#000"></div></body>');
+  const png = await page.screenshot();
+  await context.close();
+  return png;
+}
+/**
+ * TMDB's picture server for a test: the films named get the poster given, every other picture is refused.
+ * Call it before the page opens, and name the films once it has: `only.add(posterPath)`.
+ */
+export async function servePosters(context, png) {
+  const only = new Set();
+  await context.route("https://image.tmdb.org/**", (route) =>
+    [...only].some((path) => new URL(route.request().url()).pathname.endsWith(path)) ? route.fulfill({ status: 200, contentType: "image/png", headers: { "access-control-allow-origin": "*" }, body: png }) : route.abort(),
+  );
+  return only;
+}
 
 /** Opens a page and collects everything that went wrong on it. */
 export async function openPage(context, path) {

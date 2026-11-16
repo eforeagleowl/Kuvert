@@ -6,6 +6,16 @@ Best Picture winner and selected nominees, plus a few honorable mentions: 275 fi
 **Use it at https://eforeagleowl.github.io/Kuvert/**. There is nothing to install, though you can add it
 to your home screen, and it works offline after your first visit.
 
+<p align="center">
+  <img src="docs/pictures/envelope.jpg" width="24%" alt="Tonight: the sealed envelope under the year dial, with the dala horse beside the name">
+  <img src="docs/pictures/ticket.jpg" width="24%" alt="The ticket for Casablanca, out of the envelope: engraved, on the forties' paper, with what the film is about">
+  <img src="docs/pictures/album.jpg" width="24%" alt="The Library's album of watched films: every film a perforated stamp, postmarked on the day it was watched">
+  <img src="docs/pictures/stats.jpg" width="24%" alt="Stats: 44 films in 25 weeks, a kurbits garland, and a board with one light for every film">
+</p>
+
+<sub>The posters in these pictures are stand-ins drawn for them; in the app you see the films' own, from
+TMDB.</sub>
+
 ## What it does
 
 - **The draw.** Break the seal, watch the year dial roll, and pull out tonight's ticket: the film, one
@@ -17,7 +27,8 @@ to your home screen, and it works offline after your first visit.
   milestone, the films you've watched fill a stamp album with your stars and the date struck on each,
   and a kurbits garland on Stats is painted in as you go. Stats is paper and film too: winners are judged
   on ballot slips, the weekly streak is a punch card (a klippkort), and each decade is a strip of film
-  with a frame per film. The dala horse dresses for Lucia, Christmas and Midsummer.
+  with a frame per film. The dala horse keeps the Swedish calendar and dresses for it: a kerchief at
+  Easter, a student's cap on Valborg, a crown of candles on Lucia.
 - **Tonight's filters.** Draw only films that fit the time you have, suit a mood, are on your streaming
   services, or are discs on your shelf.
 - **The station.** A split-flap departure board makes the same draw: the board flips, a chime rings, and
@@ -30,7 +41,7 @@ to your home screen, and it works offline after your first visit.
   you tick off films you'd seen before Kuvert without a date, so they never skew your pace. Its search
   finds a film by its title, its year, a nickname, or a word for what it's about ("boxer", "shark").
   Stats show your pace, streaks and milestones, and give you your film year as a picture to share: the
-  year's films, hours and best five. The dala horse gets painted as you go.
+  year's films, hours and best five, as postmarked stamps. The dala horse gets painted as you go.
 - **Group night.** Add your friends' friend codes (one short line each, saying only which films they've
   watched), and the draw only picks films none of you has seen.
 - **Your own lists.** Import any film list, or bring your history in from Letterboxd.
@@ -82,6 +93,7 @@ npm ci
 npm run serve    # static-only, http://127.0.0.1:8123/
 # or: npm run serve:club   # same site plus private club API
 npm run check    # service worker stamp, unit tests and browser tests
+npm run pictures # retake the pictures at the top of this page (docs/pictures/)
 ```
 
 How it's built: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Every feature:

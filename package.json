@@ -11,7 +11,8 @@
     "stamp": "node tools/stamp.mjs",
     "serve": "node tools/serve.mjs",
     "serve:club": "node server/server.mjs",
-    "check:catalogue": "node tools/catalogue-check.mjs"
+    "check:catalogue": "node tools/catalogue-check.mjs",
+    "pictures": "node tools/pictures.mjs"
   },
   "devDependencies": {
     "axe-core": "4.14.0",

@@ -23,6 +23,11 @@ function sequence(seed) {
 }
 const n = (v) => Math.round(v * 100) / 100;
 
+/** The paper stock a film's ticket is printed on: its decade's (css/tonight.css, .ticket[data-stock]). */
+export const stockOf = (year) => String(Math.max(1920, Math.floor(year / 10) * 10));
+/** How far a film's postmark is turned, in degrees: struck by hand, the same every time for the same film. */
+export const strikeTurn = (id) => (seedOf(id) % 37) - 18;
+
 /**
  * The engraving for one film: SVG path data for the band (a 600 × 12 box, stretched to the ticket's
  * width) and for the rosette (a 200 × 200 box), with the numbers they were drawn from.

@@ -2,11 +2,12 @@
 // film, the harness at a quarter, the saddle at half, its flowers at three quarters, gold details at the end.
 // It nods at every draw, hops and talks when tapped, runs off after five quick taps, reacts to your stars,
 // gallops across the screen when a milestone lands, and gets sleepy after midnight. It also keeps the
-// Swedish calendar: candles on Lucia, a tomte's cap over Christmas, flowers at Midsummer.
+// Swedish calendar (js/state/calendar.js), and dresses for its days: candles on Lucia, flowers at Midsummer.
 import { $, s, reduceMotion } from "./dom.js";
 import { paintStage, nextPaint, PAINT_NAMES, plural } from "../state/stats.js";
 import { isLateNight } from "../state/dates.js";
 import { occasion } from "../state/calendar.js";
+import { OUTFITS } from "./outfits.js";
 import { t } from "../i18n/index.js";
 
 export const HORSE_BODY =
@@ -21,54 +22,17 @@ function flower(x, y, r) {
   parts.push(s("circle", { class: "heart", cx: x, cy: y, r: (r * 0.55).toFixed(2) }));
   return parts;
 }
-// What the horse wears on the days it keeps (js/state/calendar.js). Each sits on the brow, a line from the
-// forehead to behind the ear, and is drawn large for its size: on a phone the whole horse is some fifty
-// pixels wide. All three are in every horse; CSS shows the one worn today (.dala[data-wear]).
-const BROW = { x: 15.2, y: 14.8, dx: 15.4, dy: -4.6 };
-/** A point along the brow (0 at the forehead, 1 behind the ear), raised `up` above it. */
-function brow(at, up = 0) {
-  const len = Math.hypot(BROW.dx, BROW.dy);
-  return [BROW.x + BROW.dx * at + (BROW.dy / len) * up, BROW.y + BROW.dy * at - (BROW.dx / len) * up].map((v) => +v.toFixed(2));
-}
-function wear() {
-  const band = "M" + brow(0) + " L" + brow(1),
-    candles = [0.12, 0.38, 0.64, 0.9],
-    blooms = [["w", 0.02], ["b", 0.26], ["y", 0.5], ["r", 0.74], ["w", 0.98]],
-    slope = (Math.atan2(BROW.dy, BROW.dx) * 180) / Math.PI;
-  const dot = (cls, [cx, cy], r) => s("circle", { class: cls, cx, cy, r });
-  const leaf = (at, up, turn) => s("ellipse", { class: "w-leaf", cx: brow(at, up)[0], cy: brow(at, up)[1], rx: 2.5, ry: 1.15, transform: "rotate(" + (slope + turn).toFixed(1) + " " + brow(at, up).join(" ") + ")" });
-  return [
-    // Lucia: a crown of lingon sprigs, berries and all, and four lit candles.
-    s(
-      "g",
-      { class: "h-wear w-lucia" },
-      s("path", { class: "w-green", d: band }),
-      [0.25, 0.51, 0.77].map((at) => dot("w-berry", brow(at, -0.3), 0.95)),
-      candles.map((at) => s("path", { class: "w-candle", d: "M" + brow(at, 1.4) + " L" + brow(at, 9.6) })),
-      candles.map((at) => dot("w-flame", brow(at, 11.8), 2)),
-    ),
-    // Christmas: the tomte's red cap, its tip fallen back over the neck.
-    s(
-      "g",
-      { class: "h-wear w-jul" },
-      s("path", { class: "w-cap", d: "M" + brow(-0.05, 0.4) + " C16 2 21.5 -4.5 28 -2.5 C33 -1 37.5 3 39.8 8 C36.5 6.8 33.5 7.6 " + brow(1.05, 0.4) + " Z" }),
-      s("path", { class: "w-trim", d: "M" + brow(-0.06) + " L" + brow(1.06) }),
-      s("circle", { class: "w-trim", cx: 40.2, cy: 8.8, r: 3.1 }),
-    ),
-    // Midsummer: a crown of flowers.
-    s(
-      "g",
-      { class: "h-wear w-midsommar" },
-      s("path", { class: "w-green", d: band }),
-      [0.14, 0.38, 0.62, 0.86].map((at, i) => [leaf(at, 3.4, i % 2 ? 50 : -50), leaf(at, -0.2, i % 2 ? -40 : 40)]),
-      blooms.map(([colour, at]) => [dot("w-bloom " + colour, brow(at, 1.3), 2.9), dot("w-heart " + colour, brow(at, 1.3), 1.1)]),
-    ),
-  ];
-}
+// What it wears on each day it keeps, as its tooltip tells it. The drawings are in ./outfits.js.
 const WEARS = {
+  pask: () => t("Today it wears an Easter witch's kerchief, for Easter."),
+  valborg: () => t("Today it wears a student's cap, for Valborg."),
+  nationaldag: () => t("Today it flies the flag, for the National Day."),
+  midsommar: () => t("Today it wears a crown of flowers, for Midsummer."),
+  kraftskiva: () => t("Today it wears a paper hat, for the crayfish season."),
+  kanelbulle: () => t("Today it carries a cinnamon bun, for Cinnamon Bun Day."),
+  birgitta: () => t("Today it wears a Bridgettine crown, for Saint Bridget."),
   lucia: () => t("Today it wears a crown of candles, for Lucia."),
   jul: () => t("Today it wears a tomte's cap, for Christmas."),
-  midsommar: () => t("Today it wears a crown of flowers, for Midsummer."),
 };
 // Layers, bottom to top; CSS (.dala.p1 … .p5) shows each once it's earned.
 export function paintedHorse() {
@@ -94,7 +58,6 @@ export function paintedHorse() {
       s("path", { d: "M38 80.5 H48.6 L49 84 H38 Z M72.8 80.5 H83.5 L84 84 H73 Z" }),
       s("path", { fill: "none", d: "M84.8 39 L89.2 44 L86.4 50.5" }),
     ),
-    wear(),
   );
 }
 export const reticle = () => s("svg", { viewBox: "0 0 100 90", "aria-hidden": "true" }, s("use", { href: "#reticle" }));
@@ -123,6 +86,8 @@ export class Horse {
     this.el.addEventListener("pointerenter", () => !reduceMotion() && !this.el.classList.contains("nod") && this.el.classList.add("rock"));
     this.el.addEventListener("click", () => this.tap());
     this.say.addEventListener("animationend", () => this.say.classList.remove("say"));
+    // While it is speaking, the bubble stays over the horse as the page moves under it.
+    for (const type of ["scroll", "resize"]) addEventListener(type, () => !this.say.hidden && this.place(), { passive: true });
     setInterval(() => {
       this.sleepy();
       this.dress();
@@ -154,11 +119,17 @@ export class Horse {
   sleepy() {
     this.el.classList.toggle("sleepy", !this.seagal && isLateNight());
   }
-  // Every horse on the page wears what the day calls for, and nothing on an ordinary day.
+  // Every horse on the page wears what the day calls for, and nothing on an ordinary day. The outfit is
+  // drawn on top of the paint, the last thing in the picture, and taken off when the day is over. The
+  // horse on the cinema passport stays as it is: that is a journal to print and keep, not the day's page.
   dress(svgs = document.querySelectorAll("svg.dala")) {
     this.today = this.seagal ? null : occasion();
+    const id = this.today?.id || "";
     for (const svg of svgs) {
-      if (this.today) svg.dataset.wear = this.today.id;
+      if ((svg.dataset.wear || "") === id || svg.closest(".passport")) continue;
+      svg.querySelector(".h-wear")?.remove();
+      if (id) svg.append(s("g", { class: "h-wear w-" + id }, OUTFITS[id]()));
+      if (id) svg.dataset.wear = id;
       else delete svg.dataset.wear;
     }
   }
@@ -168,12 +139,29 @@ export class Horse {
     this.say.textContent = text;
     this.say.hidden = false;
     this.say.classList.remove("bye", "say");
+    this.place();
     void this.say.offsetWidth;
     this.say.classList.add("say");
     this.sayTimer = setTimeout(() => {
       this.say.classList.add("bye");
       this.sayTimer = setTimeout(() => (this.say.hidden = true), 260);
     }, 1700);
+  }
+  /**
+   * Puts the bubble over the horse's head, where the horse is on the screen: in front of the bar, which on
+   * a phone sits right above the masthead, leaning inwards where the stylesheet says so (--say-x), and
+   * all of it on the screen.
+   */
+  place() {
+    const horse = this.el.getBoundingClientRect(),
+      { offsetWidth: width, offsetHeight: height } = this.say,
+      centre = horse.left + horse.width / 2,
+      lean = parseFloat(getComputedStyle(this.el).getPropertyValue("--say-x")) / 100 || -0.5,
+      left = Math.max(6, Math.min(centre + width * lean, innerWidth - width - 6));
+    this.say.classList.toggle("unseen", !horse.width || horse.bottom < 0 || horse.top > innerHeight);
+    this.say.style.setProperty("--say-left", Math.round(left) + "px");
+    this.say.style.setProperty("--say-top", Math.round(Math.max(4, horse.top - height - 6)) + "px");
+    this.say.style.setProperty("--say-tail", Math.round(Math.max(14, Math.min(centre - left, width - 14))) + "px");
   }
   nod() {
     if (this.seagal || reduceMotion() || this.el.classList.contains("nod")) return;
@@ -196,11 +184,14 @@ export class Horse {
     this.hop();
     // On a day it keeps, the first pat gets the day's greeting, and the greeting stays among what it says.
     const words = this.today ? [...WORDS, this.today.greeting] : WORDS;
+    let word = words[Math.floor(Math.random() * words.length)];
     if (this.today && this.greeted !== this.today.id) {
       this.greeted = this.today.id;
-      return this.speak(this.today.greeting);
+      word = this.today.greeting;
     }
-    this.speak(words[Math.floor(Math.random() * words.length)]);
+    this.speak(word);
+    // The bubble is a picture of what it said; a screen reader hears the pat answered.
+    this.announce(word);
   }
   // Five quick taps: it gallops off the right edge and trots back in.
   runAway() {

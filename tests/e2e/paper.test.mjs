@@ -189,18 +189,24 @@ test("a list with nothing in it has a small drawing over its words, and a milest
   await page.fill("#search", "zzzzqq");
   await page.waitForSelector("#list .empty");
   assert.deepEqual(await art("#list .empty"), ["#d-magnifier"]);
+  // Kuvert draws a change on the next frame. Two changes inside one frame are drawn once, for the list that
+  // is then on screen, and a list that has just been hidden keeps what it last showed: so each step here
+  // waits for its frame, and looks only at what is on screen.
+  const frame = () => page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+  const onScreen = () => page.locator("#page-library .empty:visible svg.spot use").evaluateAll((uses) => uses.map((u) => u.getAttribute("href")));
   await page.fill("#search", "");
+  await frame();
+  assert.equal(await page.locator("#list .empty").count(), 0, "the list is back once the search is cleared");
   assert.deepEqual(await art("#seenList .empty"), ["#d-seat"]);
   for (const [filter, drawing] of [["recent", "#d-ticket"], ["shelf", "#d-disc"], ["skipped", "#d-projector"]]) {
     await page.evaluate((filter) => window.kuvert.app.store.set({ filter }), filter);
-    await page.waitForFunction((d) => document.querySelector("#page-library .empty svg.spot use")?.getAttribute("href") === d, drawing);
-    assert.equal(await page.locator("#page-library .empty:visible").count(), 1, filter);
+    await frame();
+    assert.deepEqual(await onScreen(), [drawing], filter);
   }
   // Each is a picture of the words under it, kept from screen readers; it copies a drawing that is in the
   // page, takes the colour of the words around it, and has one detail picked out in brass.
-  const drawn = await page.evaluate(() => {
-    const svg = document.querySelector("#page-library .empty svg.spot"),
-      symbol = document.querySelector(svg.querySelector("use").getAttribute("href"));
+  const drawn = await page.locator("#page-library .empty:visible svg.spot").first().evaluate((svg) => {
+    const symbol = document.querySelector(svg.querySelector("use").getAttribute("href"));
     return {
       hidden: svg.getAttribute("aria-hidden"),
       size: Math.round(svg.getBoundingClientRect().width),

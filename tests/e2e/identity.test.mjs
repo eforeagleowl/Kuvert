@@ -2,7 +2,7 @@
 // the envelope collects marks, the watched wall is a stamp album, and a kurbits garland grows on Stats.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { env, newContext, openPage, problems } from "./helpers.mjs";
+import { newContext, openPage, problems, redBluePoster, servePosters, withFreshPosters } from "./helpers.mjs";
 
 const opened = (page) => page.waitForFunction(() => !window.kuvert.app.stage.busy && window.kuvert.app.stage.open);
 // Under reduced motion a change is still a transition, a hundredth of a millisecond long: a colour read in
@@ -12,27 +12,17 @@ const hue = (css) => {
   const [r, g, b] = css.match(/\d+/g).map(Number);
   return r > g && r > b ? "red" : g > b ? "green" : "blue";
 };
-/** A poster for the test: the left 60% red, the rest blue, with a black bar at the top. */
-async function poster() {
-  const context = await env.browser.newContext({ viewport: { width: 120, height: 180 } });
-  const page = await context.newPage();
-  await page.setContent('<body style="margin:0;background:linear-gradient(90deg,#d21e28 60%,#1e3cc8 60%)"><div style="height:24px;background:#000"></div></body>');
-  const png = await page.screenshot();
-  await context.close();
-  return png;
-}
 
 test("the poster lights the room while its ticket is out, and a film with no poster leaves it dark", async () => {
-  const png = await poster();
   const context = await newContext();
-  // Only Rocky has a poster the page can read; every other request to TMDB is refused, as in the other tests.
-  let rocky = "";
-  await context.route("https://image.tmdb.org/**", (route) =>
-    rocky && new URL(route.request().url()).pathname.endsWith(rocky) ? route.fulfill({ status: 200, contentType: "image/png", headers: { "access-control-allow-origin": "*" }, body: png }) : route.abort(),
-  );
+  await withFreshPosters(context);
+  // Only Rocky has a poster the page can read (red on the left, blue on the right); every other request to
+  // TMDB is refused, as in the other tests.
+  const posters = await servePosters(context, await redBluePoster());
   const page = await openPage(context, "/");
-  rocky = await page.evaluate(() => window.kuvert.app.store.posterPath("1976-rocky"));
+  const rocky = await page.evaluate(() => window.kuvert.app.store.posterPath("1976-rocky"));
   assert.match(rocky, /^\/.+\.jpg$/, "Kuvert ships a poster for Rocky");
+  posters.add(rocky);
   const light = () =>
     page.evaluate(() => {
       const root = document.documentElement;

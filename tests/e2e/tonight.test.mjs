@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { devices } from "playwright";
-import { env, newContext, openPage, problems } from "./helpers.mjs";
+import { env, newContext, openPage, problems, withFreshPosters } from "./helpers.mjs";
 
 const opened = (page) => page.waitForFunction(() => !window.kuvert.app.stage.busy && window.kuvert.app.stage.open);
 // Tonight at rest: under reduced motion every change is a transition of a hundredth of a millisecond, and
@@ -469,6 +469,8 @@ test("on a phone the ranking's arrows step aside for the title, and stay there f
 
 test("the Library shows the list as rows or as posters, and remembers which", async () => {
   const context = await newContext();
+  // The switch is only there while the list has posters to show.
+  await withFreshPosters(context);
   const page = await openPage(context, "/");
   await page.evaluate(() => window.kuvert.app.router.show("library"));
   await page.waitForSelector("#list > li");

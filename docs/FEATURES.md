@@ -41,6 +41,12 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
   drawn from the film's id, so no two films share one. The paper is the film's decade's stock (cream
   thirties, salmon forties, mint fifties, sky sixties, mustard seventies, pink eighties, aqua nineties,
   silver 2000s, lavender 2010s, pistachio 2020s), with the band in the decade's colour; a winner's is brass.
+- The pictures to share (`js/share/images.js`) carry the same look. The ticket image is printed on the
+  film's decade's paper with its band and rosette, in the light of its poster (one colour from the upper
+  left, one from the lower right). The ranking image shows the first three as stamps from the album,
+  perforated, with the poster, the place on a brass tab, the stars as the stamp's value and the watch day
+  as a postmark, and lists the rest; the film-year image shows the year's best five the same way. A stamp
+  needs at least one poster to be had: with none, both images are the plain lists. SEAGAL's stay plain.
 - Ticket: "Kuvert · Biobiljett" header, ticket number, weekly streak punch holes (up to 8) with what they
   count in words ("26 weeks in a row"),
   eyebrow "Kvällens film" / "Kvällens vinnare" / "Nästa del" / "Sedd", title, year and shelf,
@@ -181,11 +187,24 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
   (75%), gold details (100%), "Nymålad!" when a coat lands. Tap: knock, hop and a word ("Hej!", "Fika?",
   "En film till?", "Gnägg!", "Popcorn?", "Tjena!"); five taps in two seconds: it runs off and trots back
   ("Tillbaka!"). Four stars or more: hop ("Ja!", "Bravo!"); one or less: droop ("Usch…").
-- The horse keeps the Swedish calendar: a crown of candles on Lucia (13 December), a tomte's cap from
-  Christmas Eve to the day after Christmas, a crown of flowers on Midsummer Eve and Midsummer Day. Every
-  horse on the page wears it (masthead, bar, station), its tooltip says so, and the first pat of the day
-  gets the day's greeting ("Glad Lucia!", "God jul!", "Glad midsommar!"). A day lasts until 04:00, as
-  everywhere in Kuvert.
+- The horse keeps the Swedish calendar, and dresses for nine occasions in it (`js/state/calendar.js`, drawn
+  in `js/ui/outfits.js`):
+
+  | When | What it wears | What it says |
+  |---|---|---|
+  | Easter, Maundy Thursday to Easter Monday | An Easter witch's kerchief, and a rosy cheek | "Glad påsk!" |
+  | Valborg, 30 April | A student's cap | "Glad Valborg!" |
+  | The National Day, 6 June | The flag, on a pole | "Glad nationaldag!" |
+  | Midsummer Eve and Midsummer Day | A crown of flowers | "Glad midsommar!" |
+  | The crayfish season, 7 to 31 August | A paper hat with a crayfish on it | "Skål!" |
+  | Cinnamon bun day, 4 October | A cinnamon bun | "Kanelbulle?" |
+  | Saint Bridget's day, 7 October | The Bridgettine crown, over a veil | "Grattis, Birgitta!" |
+  | Lucia, 13 December | A crown of candles | "Glad Lucia!" |
+  | Christmas Eve to the day after Christmas | A tomte's cap | "God jul!" |
+
+  Every horse on the page wears it (masthead, bar, station), its tooltip says so, and the first pat of the
+  day gets the day's greeting. Easter and Midsummer are worked out for the year. A day lasts until 04:00,
+  as everywhere in Kuvert. SEAGAL has no horse, so none of this.
 - Offline service worker, install as an app. New versions arrive in the background: an untouched page
   restarts on the new one, a page in use offers Reload. About shows the release a device is running, and
   links to the issue page for reports.

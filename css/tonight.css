@@ -201,79 +201,10 @@
   .dala.p5 .h-saddle {
     stroke: var(--brass);
   }
-  /* What the horse wears on the days it keeps (js/state/calendar.js): one of the three, on its day. Their
-     colours are their own, whatever the palette: candle white, flame, lingon green, the tomte's red. */
+  /* What the horse wears on the days it keeps (js/ui/outfits.js) may stand above its head, out of its box:
+     a flag on its pole, a row of candles. */
   .dala {
     overflow: visible;
-  }
-  .dala .h-wear {
-    display: none;
-  }
-  .dala[data-wear="lucia"] .w-lucia,
-  .dala[data-wear="jul"] .w-jul,
-  .dala[data-wear="midsommar"] .w-midsommar {
-    display: inline;
-  }
-  /* The two crowns are drawn a size too large for the head, so they still read on a horse forty pixels wide. */
-  .dala :is(.w-lucia, .w-midsommar) {
-    transform: scale(1.32);
-    transform-origin: 22.5px 17px;
-  }
-  .dala .w-green {
-    fill: none;
-    stroke: #3a7a3c;
-    stroke-width: 3.8;
-    stroke-linecap: round;
-  }
-  .dala .w-leaf {
-    fill: #5c9c46;
-  }
-  .dala .w-berry {
-    fill: #d23a32;
-  }
-  .dala .w-candle {
-    fill: none;
-    stroke: #fbf5e6;
-    stroke-width: 2.8;
-  }
-  .dala .w-flame {
-    fill: #ffc94f;
-  }
-  .dala .w-cap {
-    fill: #cf332c;
-    stroke: #8d1f1b;
-    stroke-width: 0.7;
-    stroke-linejoin: round;
-  }
-  .dala path.w-trim {
-    fill: none;
-    stroke: #fbf5e6;
-    stroke-width: 4.4;
-    stroke-linecap: round;
-  }
-  .dala circle.w-trim {
-    fill: #fbf5e6;
-  }
-  .dala .w-bloom.w {
-    fill: #fdfaf0;
-  }
-  .dala .w-bloom.b {
-    fill: #4f7fe0;
-  }
-  .dala .w-bloom.y {
-    fill: #f7cf4d;
-  }
-  .dala .w-bloom.r {
-    fill: #ee6a86;
-  }
-  .dala .w-heart {
-    fill: #fdfaf0;
-  }
-  .dala .w-heart.w {
-    fill: #f2b93b;
-  }
-  .dala .w-heart.y {
-    fill: #e07f24;
   }
   .hast.nod svg {
     animation: horse-nod 0.75s var(--ease) both;

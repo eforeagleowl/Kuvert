@@ -5,7 +5,7 @@
 // The same ticket turns into your stub when you mark the film watched: SEDD is stamped on, and you rate it.
 import { $, h, s, reduceMotion, setText } from "../ui/dom.js";
 import { posterLight } from "../ui/light.js";
-import { engraving } from "../ui/engraving.js";
+import { engraving, stockOf } from "../ui/engraving.js";
 import { envelopeMark } from "../ui/marks.js";
 import { StarSlider } from "../ui/stars.js";
 import { Nixie } from "./nixie.js";
@@ -1033,7 +1033,7 @@ export class Stage {
    * head and a rosette in the paper, drawn from the film's id (js/ui/engraving.js). Each film has its own.
    */
   engrave(f) {
-    this.ticket.dataset.stock = String(Math.max(1920, Math.floor(f.y / 10) * 10));
+    this.ticket.dataset.stock = stockOf(f.y);
     if (this.engraved === f.id) return;
     this.engraved = f.id;
     const { band, rosette } = engraving(f.id);

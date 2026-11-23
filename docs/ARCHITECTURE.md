@@ -129,6 +129,22 @@ After changing any file of the app, run `npm run stamp` so browsers pick up the 
 when the stamp is stale. The stamp also writes the page's preload list (every module `js/main.js`
 starts with), so a first visit fetches them together.
 
+A slow first visit. On a slow phone (measured as Lighthouse does: 1.6 Mbit/s, 150 ms, a processor four
+times slower) the page is painted about a second and a half in, and the app answers at about five and a
+half, once some 600 KB of scripts, styles and type are down. No single file is slow; the wait is the
+size of the whole, and the preload list already fetches it all at once. Two things make the wait kinder
+(`js/boot.js`, a classic script that runs before the first paint, and `tests/e2e/start.test.mjs`):
+
+- What is painted is where it will stay. The returning visitor's smaller masthead is set before the
+  first paint, and the horse, the year dial's tubes, the default filter chip and the count's line have
+  their room from the start.
+- A tap on the envelope's button before the app is up is kept: the button stays pressed, and the
+  envelope opens as soon as the app has started.
+
+Loading each page's code when the page is first opened (the station, Envelopes, Stats, Settings: some
+150 KB of the 600) would take most of a second off that wait, at the cost of a start-up that is no longer
+one list of modules. Not done.
+
 How a release reaches a device: the worker serves the page and its scripts from one version, so a
 visit opens on the version the device has. The new one is fetched in the background and takes over
 when it is complete. A page nobody has touched then restarts on it; a page in use says "A new version

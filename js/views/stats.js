@@ -4,7 +4,7 @@
 // SEAGAL keeps its own look and takes none of the three.
 import { $, h, s, icon, spot, emptyState, keepFocus, copyText, reduceMotion } from "../ui/dom.js";
 import { byYear } from "../state/catalog.js";
-import { dayShort, isoDay, isoToDate, defaultWatchDate } from "../state/dates.js";
+import { dayShort, dateFull, isoDay, isoToDate, defaultWatchDate } from "../state/dates.js";
 import { t, LOCALE, swedish, decimal, listOf } from "../i18n/index.js";
 import { titleParts } from "../i18n/titles.js";
 import { plural, starText, statsData, paceData, paceText, computeMilestones, rankedFilms, unrankedFilms, watchDayCounts, eveningFacts, watchedFilms, ratingOf, punchCard, CLIPS, decadeStrips } from "../state/stats.js";
@@ -630,7 +630,11 @@ export class Stats {
           h("span", { class: "milestone-stamp", attrs: { "aria-hidden": "true" } }, c.art && !this.app.seagal ? spot(c.art) : h("b", { class: /^\d+$/.test(c.stamp) ? "" : "word", text: c.stamp })),
           h("h3", { text: c.title }),
           h("p", { text: c.description }),
-          h("p", { class: "milestone-count", text: c.complete ? t("Earned") : t("{n} of {total}", { n: c.n, total: c.target }) }),
+          h("p", { class: "milestone-count", text: c.complete ? (c.earned ? t("Earned {day}", { day: dateFull(c.earned) }) : t("Earned")) : t("{n} of {total}", { n: c.n, total: c.target }) }),
+          // An earned one can be shown off: a picture of it, with the films that got you there.
+          c.complete
+            ? h("button", { class: "link milestone-share", type: "button", attrs: { "aria-label": t("Share {title} as an image", { title: c.title }) }, on: { click: () => this.app.share.milestone(c.id) } }, icon("share"), t("Share"))
+            : null,
         ),
       ),
     );

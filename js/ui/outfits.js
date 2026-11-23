@@ -115,6 +115,18 @@ export const OUTFITS = {
     line("M" + brow(0.5, 0.8) + " L" + brow(0.5, 7.2), C.white, 2),
     [brow(0.04, 0.5), brow(0.5, 0.3), brow(0.98, 0.5), brow(0.5, 7.3)].map((at) => dot(C.berry, at, 1.05)),
   ],
+  // A day of its own, the day your first film here comes round (js/state/memory.js): a paper crown, and
+  // a balloon on a string.
+  kalas: () => [
+    line("M" + brow(0.92, 1) + " C34 9 36.5 9.5 " + [40.6, 6.4], C.wood, 0.7),
+    s("ellipse", { cx: 41.4, cy: 0.4, rx: 5.2, ry: 6.2, fill: C.red, stroke: C.redDeep, "stroke-width": 0.5 }),
+    shape("M40.2 6.2 L41.6 6.5 L41.4 7.9 L40 7.6 Z", C.redDeep),
+    s("ellipse", { cx: 39.4, cy: -2.2, rx: 1.1, ry: 1.9, fill: C.cream, opacity: 0.55, transform: "rotate(24 39.4 -2.2)" }),
+    larger(
+      shape("M" + [brow(0.04), brow(0.02, 5.6), brow(0.19, 2.4), brow(0.35, 6.6), brow(0.5, 2.4), brow(0.65, 6.6), brow(0.81, 2.4), brow(0.98, 5.6), brow(0.96)].join(" L") + " Z", C.gold, C.ochre, 0.5),
+      [[0.2, C.berry], [0.5, C.blue], [0.8, C.berry]].map(([at, colour]) => dot(colour, brow(at, 1.1), 0.9)),
+    ),
+  ],
   // Lucia, the thirteenth of December: a crown of lingon sprigs, berries and all, and four lit candles.
   lucia: () =>
     larger(

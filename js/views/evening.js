@@ -6,8 +6,9 @@ import { MOODS } from "../data/catalogue.js";
 import { KEYS } from "../compat/keys.js";
 import { clockLabel, defaultWatchDate, drawnDayLabel, isLateNight } from "../state/dates.js";
 import { baseDrawFilms, missingForDraw, remainingMinutes, preferenceChips, hasActiveFilters } from "../state/draw.js";
-import { allWatched } from "../state/stats.js";
-import { t, plural } from "../i18n/index.js";
+import { allWatched, starText } from "../state/stats.js";
+import { onThisDay } from "../state/memory.js";
+import { t, plural, decimal } from "../i18n/index.js";
 
 export class Evening {
   constructor(app) {
@@ -226,6 +227,26 @@ export class Evening {
       $("resumeLabel").textContent = seagal ? "A mission assigned " + day + " is still open · neutralized, or still a go tonight?" : t("A ticket drawn {day} is still sealed · watched it, or still on for tonight?", { day });
     }
     $("sleepyNote").hidden = seagal || !isLateNight() || stage.open || allWatched(p, catalog);
+    this.remember(seagal || stage.open || stage.busy ? null : onThisDay(p, catalog));
+  }
+  /**
+   * On this day: a line under the envelope when the evening is one you watched a film on in an earlier
+   * year. The film's name opens its ticket. Written again only when what it says changes, so the name
+   * keeps the focus through the page's other renders.
+   */
+  remember(memory) {
+    const line = $("onThisDay");
+    line.hidden = !memory;
+    const key = memory ? [memory.film.id, memory.years, memory.rating, memory.more, document.documentElement.lang].join() : "";
+    if (!memory || this.remembered === key) return;
+    this.remembered = key;
+    const { film, years, rating, more } = memory;
+    line.replaceChildren(
+      t(years === 1 ? "A year ago tonight you watched" : "{n} years ago tonight you watched", { n: years }) + " ",
+      h("button", { class: "link", type: "button", text: film.t, on: { click: () => this.app.stage.openFilm(film.id) } }),
+      ...(rating ? [" ", h("span", { class: "memory-stars", attrs: { "aria-hidden": "true" }, text: starText(rating) }), h("span", { class: "sr-only", text: t(", {n} stars", { n: decimal(rating) }) })] : []),
+      more ? t(", and {n} more", { n: more }) : "",
+    );
   }
 
   // "Check missing movie details": three at a time, stopping after three failures.

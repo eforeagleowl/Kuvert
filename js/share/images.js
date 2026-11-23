@@ -8,8 +8,8 @@ import { HORSE_BODY } from "../ui/horse.js";
 import { engraving, stockOf, strikeTurn } from "../ui/engraving.js";
 import { lightOf } from "../ui/light.js";
 import { slugify } from "../data/lists.js";
-import { dayLong } from "../state/dates.js";
-import { rankedFilms, ratingOf, stampValue } from "../state/stats.js";
+import { dayLong, dateFull } from "../state/dates.js";
+import { computeMilestones, rankedFilms, ratingOf, stampValue } from "../state/stats.js";
 import { download } from "../storage/files.js";
 import { t, plural, LOCALE } from "../i18n/index.js";
 import { exportLibrary } from "../storage/library-backup.js";
@@ -774,6 +774,126 @@ export class Share {
     });
     this.brand(ctx, W, H - 46, horse, c, F);
     return canvas;
+  }
+  /** A milestone's small drawing (index.html, #d-…) as a picture, in the pen and the accent given. */
+  async drawing(art, pen, accent) {
+    const symbol = document.getElementById("d-" + art);
+    if (!symbol) return null;
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="480" height="480" fill="none" stroke="' + pen + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      "<style>.d-a{stroke:" + accent + "}.d-f{fill:" + pen + ";stroke:none}</style>" +
+      symbol.innerHTML +
+      "</svg>";
+    return loadImage("data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg)).catch(() => null);
+  }
+  /**
+   * A milestone you've earned, as a picture: its stamp with its drawing (or the number it counts to), what
+   * it is, the day you earned it, and the films that got you there, the last five of them, as stamps from
+   * the album where their posters can be had and as a list where they can't.
+   */
+  async milestoneCanvas(card) {
+    await this.ensureFonts();
+    const p = this.app.store.p,
+      c = this.colors(),
+      F = this.fonts(),
+      W = 1080,
+      H = 1350;
+    const canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    if (this.app.seagal && "fontVariantCaps" in ctx) ctx.fontVariantCaps = "small-caps";
+    this.backdrop(ctx, W, H, c);
+    const last = card.films.slice(-5);
+    const [horse, art, stamps] = await Promise.all([
+      this.horse(c),
+      card.art && !this.app.seagal ? this.drawing(card.art, c.brass, c.paper) : null,
+      this.stamps(last, 168, (f) => ({ value: stampValue(ratingOf(p, f.id) || 0), date: p.dates[f.id] })),
+    ]);
+    ctx.fillStyle = c.brass;
+    ctx.font = F.f("500 24px " + F.mono);
+    spaced(ctx, this.sg("MILSTOLPE", "COMMENDATION"), W / 2, 132, 6, "center");
+    // The stamp, struck a little askew as on the Stats page: two brass rings, and the drawing inside.
+    ctx.save();
+    ctx.translate(W / 2, 330);
+    ctx.rotate((-8 * Math.PI) / 180);
+    ctx.shadowColor = "rgba(" + hexRgb(c.brass).join(",") + ",.45)";
+    ctx.shadowBlur = 44;
+    ctx.strokeStyle = c.brass;
+    for (const [radius, width] of [[148, 5], [136, 2]]) {
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.shadowColor = "transparent";
+    }
+    if (art) ctx.drawImage(art, -88, -88, 176, 176);
+    else {
+      const number = /^\d+$/.test(card.stamp);
+      ctx.fillStyle = c.brass;
+      ctx.font = this.sg(number ? "700 124px " : "700 44px ", number ? "400 76px " : "400 30px ") + F.display;
+      spaced(ctx, card.stamp, number ? 0 : 4, number ? 44 : 16, number ? 0 : 8, "center");
+    }
+    ctx.restore();
+    // What it is, in a line or two, and what it took.
+    ctx.fillStyle = c.paper;
+    ctx.font = this.sg("600 86px ", "400 46px ") + F.display;
+    const title = wrapLines(ctx, this.sg(card.title, card.title.toUpperCase()), W - 160, 2);
+    title.forEach((text, i) => spaced(ctx, text, W / 2, 596 + i * 92, 0, "center"));
+    let y = 596 + (title.length - 1) * 92 + 62;
+    ctx.fillStyle = "#B9C5D2";
+    ctx.font = F.f("400 30px " + F.body);
+    for (const text of wrapLines(ctx, card.description, W - 240, 2)) {
+      spaced(ctx, text, W / 2, y, 0, "center");
+      y += 42;
+    }
+    ctx.fillStyle = c.brass;
+    ctx.font = F.f("500 24px " + F.mono);
+    spaced(ctx, (card.earned ? t("Earned {day}", { day: dateFull(card.earned) }) : t("Earned")).toUpperCase(), W / 2, y + 22, 4, "center");
+    ctx.strokeStyle = "rgba(227,195,110,.55)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(80, y + 62);
+    ctx.lineTo(W - 80, y + 62);
+    ctx.stroke();
+    // The films that got you there: the last five to count.
+    const top = y + 124;
+    ctx.fillStyle = c.brass;
+    ctx.font = F.f("500 24px " + F.mono);
+    spaced(ctx, t(card.films.length > last.length ? "The last five that got you there" : last.length === 1 ? "The film that got you there" : "The films that got you there").toUpperCase(), W / 2, top, 5, "center");
+    if (stamps) {
+      const x0 = (W - stamps.length * 168 - (stamps.length - 1) * 20) / 2;
+      stamps.forEach((one, i) => {
+        const x = x0 + i * 188;
+        this.layStamp(ctx, one, x, top + 40, c, F);
+        this.caption(ctx, one.f.t, x + 84, top + 40 + one.stamp.height + 40, 182, 23, F);
+      });
+    } else {
+      ctx.fillStyle = "#E1E6EB";
+      ctx.font = F.f("400 32px " + F.body);
+      last.forEach((f, i) => {
+        let text = f.t + " (" + f.y + ")";
+        while (ctx.measureText(text).width > W - 200 && text.length > 8) text = text.slice(0, -2);
+        spaced(ctx, text === f.t + " (" + f.y + ")" ? text : text.trimEnd() + "…", W / 2, top + 76 + i * 56, 0, "center");
+      });
+    }
+    this.brand(ctx, W, H - 46, horse, c, F);
+    return canvas;
+  }
+  /** Shares (or saves) the picture of a milestone you've earned. */
+  async milestone(id) {
+    const card = computeMilestones(this.app.store.p, this.app.catalog).find((c) => c.id === id && c.complete);
+    if (this.sharing || !card) return;
+    this.sharing = true;
+    try {
+      const name = "kuvert-" + slugify(card.title) + ".png";
+      const out = await this.deliver(await this.milestoneCanvas(card), name, card.title + " · " + this.app.list.name);
+      if (out === "saved") this.app.toast.show(t("Milestone image saved as {file}.", { file: name }));
+    } catch (e) {
+      this.app.toast.show(t(e.message || "The milestone image couldn't be made."));
+    } finally {
+      this.sharing = false;
+    }
   }
   /** Shares (or saves) the picture of the film year: this year, or in January the one just ended. */
   async year(now = new Date()) {

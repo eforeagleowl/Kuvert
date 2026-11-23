@@ -9,7 +9,10 @@ import { newContext, openPage, problems, redBluePoster, servePosters, withFreshP
 // heading, the five under "The year's best".
 const CARD = { x: 90, y: 150, w: 900, h: 1020 },
   PODIUM = { x: 80, y: 374, w: 280, h: 438, step: 320 },
-  BEST = { x: 80, y: 730, w: 168, h: 264, step: 188 };
+  BEST = { x: 80, y: 730, w: 168, h: 264, step: 188 },
+  // A milestone earned by one film: its stamp, in the middle, under two lines of words.
+  MEDAL = { x: 540, y: 330, r: 148 },
+  FIRST = { x: 456, y: 864, w: 168, h: 264, step: 188 };
 
 const near = (pixel, colour, by = 3) => pixel.slice(0, 3).every((v, i) => Math.abs(v - colour[i]) <= by);
 const hex = (colour) => [1, 3, 5].map((i) => parseInt(colour.slice(i, i + 2), 16));
@@ -30,7 +33,15 @@ const draw = (page, kind, arg, points = {}, extra = null) =>
     async ([kind, arg, points, extra]) => {
       const { share, catalog } = window.kuvert.app;
       const { yearReview } = await import("./js/state/year.js");
-      const canvas = kind === "ticket" ? await share.ticketCanvas(catalog.byId.get(arg)) : kind === "ranking" ? await share.rankingCanvas() : await share.yearCanvas(yearReview(share.watched(), arg));
+      const { computeMilestones } = await import("./js/state/stats.js");
+      const canvas =
+        kind === "ticket"
+          ? await share.ticketCanvas(catalog.byId.get(arg))
+          : kind === "ranking"
+            ? await share.rankingCanvas()
+            : kind === "milestone"
+              ? await share.milestoneCanvas(computeMilestones(window.kuvert.app.store.p, catalog).find((c) => c.id === arg))
+              : await share.yearCanvas(yearReview(share.watched(), arg));
       const ctx = canvas.getContext("2d"),
         px = (x, y) => [...ctx.getImageData(x, y, 1, 1).data];
       const out = { size: [canvas.width, canvas.height], at: Object.fromEntries(Object.entries(points).map(([name, [x, y]]) => [name, px(x, y)])) };
@@ -163,6 +174,54 @@ test("the best of a ranking and of a film year are stamps from the album, their 
   assert.equal((await download).suggestedFilename(), "kuvert-ranking.png");
   assert.deepEqual(await problems(page), []);
   await context.close();
+});
+
+test("a milestone you've earned has a picture: its stamp, the day, and the films that got you there", async () => {
+  const context = await newContext();
+  await context.clock.setFixedTime(EVENING);
+  await withFreshPosters(context, EVENING);
+  const posters = await servePosters(context, await redBluePoster());
+  const page = await openPage(context, "/");
+  posters.add(await page.evaluate(() => window.kuvert.app.store.posterPath("1976-rocky")));
+  // One film watched: the first ticket is earned, on that day, by that film.
+  await page.evaluate(() => window.kuvert.app.store.markSeen("1976-rocky", true, { date: "2026-03-10" }));
+  const [paper, brass] = await page.evaluate(() => ["--paper", "--brass"].map((name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()));
+  const at = (S) => ({ hole: [S.x, S.y], edge: [S.x + 5, S.y + 135], left: [S.x + 42, S.y + 158], right: [S.x + 143, S.y + 158] });
+  const first = await draw(page, "milestone", "watched-1", { ...at(FIRST), ring: [MEDAL.x, MEDAL.y - MEDAL.r], inside: [MEDAL.x, MEDAL.y - MEDAL.r + 30] });
+  assert.deepEqual(first.size, [1080, 1350]);
+  // The stamp from the Stats page, in brass, with room inside for its drawing.
+  assert.ok(near(first.at.ring, hex(brass), 30) && first.at.inside.slice(0, 3).every((v) => v < 90), "the brass ring: " + JSON.stringify([first.at.ring, first.at.inside]));
+  // Rocky's stamp, perforated, with its poster.
+  const dark = (pixel) => pixel.slice(0, 3).every((v) => v < 70);
+  assert.ok(dark(first.at.hole) && near(first.at.edge, hex(paper), 12), "the film that got you there, as a stamp: " + JSON.stringify(first.at));
+  assert.ok(first.at.left[0] > 170 && first.at.left[2] < 90 && first.at.right[2] > 150 && first.at.right[0] < 90, "its poster: " + JSON.stringify(first.at));
+  // On Stats: the earned milestone says when, and offers its picture; the ones still to earn don't.
+  await page.evaluate(() => window.kuvert.app.router.show("stats"));
+  await page.click("#milestoneMore");
+  const cards = await page.evaluate(() => [...document.querySelectorAll("#milestoneGrid .milestone")].map((card) => [card.querySelector("h3").textContent, card.querySelector(".milestone-count").textContent, card.querySelector(".milestone-share")?.getAttribute("aria-label") ?? null]));
+  assert.deepEqual(cards[0], ["The first ticket", "Earned 10 Mar 2026", "Share The first ticket as an image"]);
+  assert.ok(cards.length > 4 && cards.slice(1).every(([, count, share]) => /^\d+ of \d+$/.test(count) && share === null), JSON.stringify(cards));
+  const download = page.waitForEvent("download");
+  await page.click(".milestone-share");
+  assert.equal((await download).suggestedFilename(), "kuvert-the-first-ticket.png");
+  await page.waitForFunction(() => /Milestone image saved as kuvert-the-first-ticket\.png/.test(document.getElementById("toast").textContent));
+  assert.deepEqual(await problems(page), []);
+  await context.close();
+  // With no poster to be had the film is named in a line; SEAGAL's commendation is drawn its own way.
+  for (const mode of ["", "seagal"]) {
+    const bare = await newContext();
+    await bare.clock.setFixedTime(EVENING);
+    await withoutShippedPosters(bare);
+    if (mode) await bare.addInitScript(() => localStorage.setItem("kuvert:mode", "seagal"));
+    const plain = await openPage(bare, "/");
+    await plain.evaluate(() => window.kuvert.app.store.markSeen("1976-rocky", true, { date: "2026-03-10" }));
+    const paperHere = await plain.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--paper").trim());
+    const drawn = await draw(plain, "milestone", "watched-1", { edge: [FIRST.x + 5, FIRST.y + 135] });
+    assert.deepEqual(drawn.size, [1080, 1350], mode);
+    assert.ok(!near(drawn.at.edge, hex(paperHere), 40), "no stamp " + mode + ": " + drawn.at.edge);
+    assert.deepEqual(await problems(plain), [], mode);
+    await bare.close();
+  }
 });
 
 test("with no poster to be had the two pictures keep their lists, and SEAGAL's stay plain", async () => {

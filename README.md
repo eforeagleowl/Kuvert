@@ -28,7 +28,8 @@ TMDB.</sub>
   and a kurbits garland on Stats is painted in as you go. Stats is paper and film too: winners are judged
   on ballot slips, the weekly streak is a punch card (a klippkort), and each decade is a strip of film
   with a frame per film. The dala horse keeps the Swedish calendar and dresses for it: a kerchief at
-  Easter, a student's cap on Valborg, a crown of candles on Lucia.
+  Easter, a student's cap on Valborg, a crown of candles on Lucia, and a paper crown on the day your first
+  film here comes round. On an evening you watched something in an earlier year, Tonight remembers it.
 - **Tonight's filters.** Draw only films that fit the time you have, suit a mood, are on your streaming
   services, or are discs on your shelf.
 - **The station.** A split-flap departure board makes the same draw: the board flips, a chime rings, and
@@ -41,7 +42,8 @@ TMDB.</sub>
   you tick off films you'd seen before Kuvert without a date, so they never skew your pace. Its search
   finds a film by its title, its year, a nickname, or a word for what it's about ("boxer", "shark").
   Stats show your pace, streaks and milestones, and give you your film year as a picture to share: the
-  year's films, hours and best five, as postmarked stamps. The dala horse gets painted as you go.
+  year's films, hours and best five, as postmarked stamps. Every milestone you earn has a picture of its
+  own as well. The dala horse gets painted as you go.
 - **Group night.** Add your friends' friend codes (one short line each, saying only which films they've
   watched), and the draw only picks films none of you has seen.
 - **Your own lists.** Import any film list, or bring your history in from Letterboxd.

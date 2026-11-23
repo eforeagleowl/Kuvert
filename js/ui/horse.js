@@ -7,6 +7,7 @@ import { $, s, reduceMotion } from "./dom.js";
 import { paintStage, nextPaint, PAINT_NAMES, plural } from "../state/stats.js";
 import { isLateNight } from "../state/dates.js";
 import { occasion } from "../state/calendar.js";
+import { ownDay } from "../state/memory.js";
 import { OUTFITS } from "./outfits.js";
 import { t } from "../i18n/index.js";
 
@@ -75,6 +76,8 @@ export class Horse {
     this.stage = null;
     this.taps = [];
     this.today = null; // the day's occasion, if it is one the horse keeps
+    this.own = null; // its own day: the day your first film here comes round
+    this.greeted = new Set(); // the days' greetings it has already given
     for (const slot of document.querySelectorAll("[data-horse]")) slot.replaceChildren(seagal ? reticle() : paintedHorse());
     if (seagal) {
       this.el.title = "Target acquired";
@@ -106,7 +109,8 @@ export class Horse {
       "Dalahäst · " +
       t(PAINT_NAMES[stage]) +
       (next ? t(". Next: the {paint} at {films}.", { paint: t(next.name), films: plural(next.need, "film") }) : t(". Fully painted.")) +
-      (this.today ? " " + WEARS[this.today.id]() : "");
+      (this.today ? " " + WEARS[this.today.id]() : this.own ? " " + t("Today it wears a paper crown, for a day of its own.") : "") +
+      (this.own ? " " + t("{years} ago today you watched your first film here.", { years: plural(this.own.years, "year") }) : "");
     if (this.stage !== null && stage > this.stage) {
       // A new coat of paint, earned just now.
       if (!reduceMotion()) this.el.classList.add("painted");
@@ -124,7 +128,9 @@ export class Horse {
   // horse on the cinema passport stays as it is: that is a journal to print and keep, not the day's page.
   dress(svgs = document.querySelectorAll("svg.dala")) {
     this.today = this.seagal ? null : occasion();
-    const id = this.today?.id || "";
+    // A day of the calendar's comes first for what it wears; its own day is still told, and greeted.
+    this.own = this.seagal ? null : ownDay(this.store.p, this.store.catalog);
+    const id = this.today?.id || (this.own ? "kalas" : "");
     for (const svg of svgs) {
       if ((svg.dataset.wear || "") === id || svg.closest(".passport")) continue;
       svg.querySelector(".h-wear")?.remove();
@@ -182,12 +188,15 @@ export class Horse {
       return this.runAway();
     }
     this.hop();
-    // On a day it keeps, the first pat gets the day's greeting, and the greeting stays among what it says.
-    const words = this.today ? [...WORDS, this.today.greeting] : WORDS;
+    // On a day it keeps, the first pat gets the day's greeting (its own day's first), and the greetings
+    // stay among what it says.
+    const days = [this.own?.greeting, this.today?.greeting].filter(Boolean),
+      words = [...WORDS, ...days],
+      fresh = days.find((greeting) => !this.greeted.has(greeting));
     let word = words[Math.floor(Math.random() * words.length)];
-    if (this.today && this.greeted !== this.today.id) {
-      this.greeted = this.today.id;
-      word = this.today.greeting;
+    if (fresh) {
+      this.greeted.add(fresh);
+      word = fresh;
     }
     this.speak(word);
     // The bubble is a picture of what it said; a screen reader hears the pat answered.

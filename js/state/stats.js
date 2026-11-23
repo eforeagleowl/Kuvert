@@ -197,13 +197,22 @@ export function decadeStrips(p, catalog, max = FRAMES_MAX) {
 
 // Milestones are passive keepsakes. They never change draw tickets or odds.
 export function computeMilestones(p, catalog) {
-  const { films } = catalog;
-  const watched = films.filter((f) => p.seen.has(f.id)),
+  const { films } = catalog,
+    dates = p.dates || {};
+  // The films you've watched in the order you watched them: those with no date first (seen before
+  // Kuvert), then by the day. A milestone is earned by the first films to reach its count.
+  const day = (f) => (validDate(dates[f.id]) ? dates[f.id] : "");
+  const watched = films.filter((f) => p.seen.has(f.id)).sort((a, b) => day(a).localeCompare(day(b))),
     cards = [];
   // `stamp` is what the milestone's stamp says in letters or numbers; `art` names its small drawing
-  // (index.html, #d-…), for the ones that have one.
-  const add = (id, title, description, n, target, stamp, art = null) =>
-    cards.push({ id, title, description, n: Math.min(n, target), target, complete: target > 0 && n >= target, stamp, art });
+  // (index.html, #d-…), for the ones that have one. `counted` is the watched films that count towards
+  // it, in the order they were watched. An earned milestone keeps the films that earned it (`films`) and
+  // the day the last of them was watched (`earned`; null when that film has no date).
+  const add = (id, title, description, counted, target, stamp, art = null) => {
+    const complete = target > 0 && counted.length >= target,
+      got = complete ? counted.slice(0, target) : [];
+    cards.push({ id, title, description, n: Math.min(counted.length, target), target, complete, stamp, art, films: got, earned: (got.length && day(got.at(-1))) || null });
+  };
   // Counting stamps scale with the list: 1, 25, 50, 100 (when smaller than the list) and the whole list.
   const total = films.length,
     steps = [...new Set([1, 25, 50, 100].filter((n) => n < total).concat(total))];
@@ -213,14 +222,16 @@ export function computeMilestones(p, catalog) {
       n === total ? "watched-all" : "watched-" + n,
       n === 1 ? t("The first ticket") : n === total ? t("The whole envelope") : t("{n} films watched", { n }),
       t(n === 1 ? "Every watchthrough begins with one film." : n === total ? "Every film in your collection, watched." : "Your cinema history, one film at a time."),
-      watched.length,
+      watched,
       n,
       String(n),
       n === 1 ? "ticket" : n === total ? "envelope" : null,
     );
+  // The first film you watched from each decade.
   const decades = new Set(films.map((f) => Math.floor(f.y / 10))),
-    visited = new Set(watched.map((f) => Math.floor(f.y / 10)));
-  add("decades", t("Across the decades"), t("Watch a film from every decade in the collection."), visited.size, decades.size, "ERA", "hourglass");
+    visited = new Map();
+  for (const f of watched) if (!visited.has(Math.floor(f.y / 10))) visited.set(Math.floor(f.y / 10), f);
+  add("decades", t("Across the decades"), t("Watch a film from every decade in the collection."), [...visited.values()], decades.size, "ERA", "hourglass");
   const winners = films.filter(catalog.isWinner),
     winnerGoal = Math.min(10, winners.length);
   if (winnerGoal)
@@ -230,17 +241,17 @@ export function computeMilestones(p, catalog) {
       catalog.prize && winnerGoal === 10
         ? t("Watch ten {prize} winners.", { prize: catalog.prize })
         : "Watch " + (winnerGoal === 10 ? "ten" : winnerGoal) + " " + catalog.shelfOf(winners[0]).label.toLowerCase() + "s.",
-      winners.filter((f) => p.seen.has(f.id)).length,
+      watched.filter(catalog.isWinner),
       winnerGoal,
       String(winnerGoal),
       "trophy",
     );
   const mentions = films.filter((f) => f.s === "H" && catalog.shelves.H);
   if (mentions.length)
-    add("mentions", t("Beyond the ballot"), t("Watch every honorable mention."), mentions.filter((f) => p.seen.has(f.id)).length, mentions.length, "HM", "rosette");
+    add("mentions", t("Beyond the ballot"), t("Watch every honorable mention."), watched.filter((f) => f.s === "H"), mentions.length, "HM", "rosette");
   for (const [key, title] of Object.entries(catalog.series)) {
     const parts = films.filter((f) => f.tri === key);
-    if (parts.length) add("series-" + key, title, t("Watch every part of the series."), parts.filter((f) => p.seen.has(f.id)).length, parts.length, "SERIE", "clapper");
+    if (parts.length) add("series-" + key, title, t("Watch every part of the series."), watched.filter((f) => f.tri === key), parts.length, "SERIE", "clapper");
   }
   return cards;
 }

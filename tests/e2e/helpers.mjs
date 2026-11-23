@@ -54,14 +54,26 @@ export const withFreshPosters = (context, at = null) =>
     route.fulfill({ response, body: (await response.text()).replace(/POSTERS_AT = "[^"]*"/, 'POSTERS_AT = "' + (at || testNow()).toISOString().slice(0, 10) + '"') });
   });
 
-/** A poster for a test, as a PNG: the left 60% red, the rest blue, with a black bar across the top. */
+/**
+ * A poster for a test, as a PNG: the left 60% red, the rest blue, with a black bar across the top. Painted
+ * on a canvas, not photographed off a page: a screenshot can fail when the machine is busy.
+ */
 export async function redBluePoster() {
-  const context = await env.browser.newContext({ viewport: { width: 120, height: 180 } });
+  const context = await env.browser.newContext();
   const page = await context.newPage();
-  await page.setContent('<body style="margin:0;background:linear-gradient(90deg,#d21e28 60%,#1e3cc8 60%)"><div style="height:24px;background:#000"></div></body>');
-  const png = await page.screenshot();
+  const png = await page.evaluate(() => {
+    const canvas = Object.assign(document.createElement("canvas"), { width: 120, height: 180 }),
+      ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#d21e28";
+    ctx.fillRect(0, 0, 72, 180);
+    ctx.fillStyle = "#1e3cc8";
+    ctx.fillRect(72, 0, 48, 180);
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, 120, 24);
+    return canvas.toDataURL("image/png").split(",")[1];
+  });
   await context.close();
-  return png;
+  return Buffer.from(png, "base64");
 }
 /**
  * TMDB's picture server for a test: the films named get the poster given, every other picture is refused.

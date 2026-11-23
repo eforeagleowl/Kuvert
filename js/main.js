@@ -412,3 +412,8 @@ if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
 }
 // For tests and the curious: the app, read-only.
 Object.defineProperty(window, "kuvert", { value: Object.freeze({ app, version: "5.0", count: () => plural(store.p.seen.size, "film") }) });
+// The envelope's button was tapped before the app was up (js/boot.js kept the tap): open it now.
+if (document.documentElement.dataset.early === "draw") {
+  delete document.documentElement.dataset.early;
+  if (!$("drawBtn").hidden && !document.querySelector("dialog[open]")) app.stage.drawOrFinale();
+}

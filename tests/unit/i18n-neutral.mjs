@@ -48,4 +48,5 @@ export const UNTRANSLATED = new Set([
   "KVÄLLENS VINNARE",
   "KVÄLLENS FILM",
   "MIN TOPPLISTA",
+  "MILSTOLPE",
 ]);

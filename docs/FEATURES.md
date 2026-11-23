@@ -47,6 +47,11 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
   perforated, with the poster, the place on a brass tab, the stars as the stamp's value and the watch day
   as a postmark, and lists the rest; the film-year image shows the year's best five the same way. A stamp
   needs at least one poster to be had: with none, both images are the plain lists. SEAGAL's stay plain.
+  An earned milestone has a picture too (Share, on its card on Stats): its brass stamp with its drawing or
+  number, what it is, the day it was earned, and the films that got you there (the last five to count),
+  as stamps or, with no poster to be had, as a list. A milestone is earned by the first films to reach
+  its count in the order you watched them (films with no date first); its day is the day the last of
+  them was watched, and a milestone completed by an undated film has none.
 - Ticket: "Kuvert · Biobiljett" header, ticket number, weekly streak punch holes (up to 8) with what they
   count in words ("26 weeks in a row"),
   eyebrow "Kvällens film" / "Kvällens vinnare" / "Nästa del" / "Sedd", title, year and shelf,
@@ -80,6 +85,11 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
   "Check missing movie details" (3 workers, stops after 3 failures), messages for expired or missing
   finish times, no services, films without mood tags.
 - Deadlines and availability re-checked every 30 s and on returning to the app.
+- On this day: when the evening is one you watched a film on in an earlier year, a line under the
+  envelope's button says so ("A year ago tonight you watched *Casablanca* ★★★★½"). The nearest year
+  wins, then the film you rated highest; others from that evening are counted ("and 1 more"). The name
+  opens that film's ticket. Only dated watches count, the evening lasts until 04:00 as everywhere, and
+  SEAGAL keeps no such memories.
 - Sleepy horse after midnight and "Dags att sova? Time for bed? One more is fine too."
 - Keyboard: Enter draws (or finishes the stub), W marks watched, 1–5 rates the stub, / searches,
   Escape leaves a field or closes the toast.
@@ -203,6 +213,11 @@ For the additions in version 5, see the README and [ARCHITECTURE.md](ARCHITECTUR
   | Saint Bridget's day, 7 October | The Bridgettine crown, over a veil | "Grattis, Birgitta!" |
   | Lucia, 13 December | A crown of candles | "Glad Lucia!" |
   | Christmas Eve to the day after Christmas | A tomte's cap | "God jul!" |
+
+  It also keeps a day of its own (`js/state/memory.js`): the day your first dated film here comes round,
+  every year after. That day it wears a paper crown with a balloon on a string, its tooltip says how many
+  years it has been, and the first pat gets "Ett år och 44 filmer!". When that day is one of the nine, the
+  calendar's outfit stays on and both greetings are given, its own first.
 
   Every horse on the page wears it (masthead, bar, station), its tooltip says so, and the first pat of the
   day gets the day's greeting. Easter and Midsummer are worked out for the year. A day lasts until 04:00,

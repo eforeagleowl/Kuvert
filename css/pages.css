@@ -1696,6 +1696,18 @@
   .milestone.earned .milestone-count {
     color: var(--brass);
   }
+  /* An earned milestone's picture, to share (js/share/images.js). */
+  .milestone-share {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    font-size: var(--fs-2);
+  }
+  .milestone-share .icon {
+    width: 15px;
+    height: 15px;
+  }
   .shelf-stats {
     display: grid;
     gap: var(--s-3);

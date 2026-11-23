@@ -64,6 +64,7 @@
 <link rel="modulepreload" href="js/state/catalog.js">
 <link rel="modulepreload" href="js/data/awards.js">
 <link rel="modulepreload" href="js/state/calendar.js">
+<link rel="modulepreload" href="js/state/memory.js">
 <link rel="modulepreload" href="js/ui/outfits.js">
 <link rel="modulepreload" href="js/ui/sounds.js">
 <link rel="modulepreload" href="js/state/store.js">
@@ -383,7 +384,7 @@
     </div>
     <div class="prefs">
       <div class="pref-bar">
-        <div class="chips" id="activeChips" aria-label="Active draw preferences"></div>
+        <div class="chips" id="activeChips" aria-label="Active draw preferences"><span class="chip chip-quiet">Any mood · Any length · All services</span></div>
         <button class="btn btn-quiet btn-sm" id="adjustPreferences" type="button" aria-expanded="false" aria-controls="preferencesPanel"><svg class="icon" aria-hidden="true"><use href="#i-sliders"/></svg><span>Adjust</span></button>
         <button class="chip chip-group" id="groupChip" type="button" aria-haspopup="dialog" hidden></button>
       </div>
@@ -426,6 +427,8 @@
       <button class="btn-draw" id="drawBtn" type="button" aria-controls="ticket" aria-expanded="false"><span id="drawMain" lang="sv">Öppna kuvertet</span><small id="drawSub"></small></button>
       <p class="eligible" id="eligibleCount" role="status"></p>
       <button class="link put-back" id="putBackTonight" type="button" data-sg="Return the file to the folder" hidden>Put it back in the draw</button>
+      <!-- On this day: the film you watched when this evening last came round (js/state/memory.js). -->
+      <p class="memory" id="onThisDay" hidden></p>
       <p class="sleepy-note" id="sleepyNote" hidden><span lang="sv">Dags att sova?</span> Time for bed? One more is fine too.</p>
       <a class="to-station" id="toStation" href="#station" data-route="station"><svg class="icon" aria-hidden="true"><use href="#i-train"/></svg><span lang="sv">Gå till stationen</span> Go to the station</a>
     </div>

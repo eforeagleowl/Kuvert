@@ -128,6 +128,12 @@
     -webkit-tap-highlight-color: transparent;
     transform-origin: 50% 100%;
   }
+  /* The horse is drawn by the app; its place is kept from the first paint, so the masthead doesn't grow
+     when it arrives. */
+  .hast-art {
+    display: block;
+    aspect-ratio: 100 / 90;
+  }
   .hast-art svg,
   .brand-horse svg {
     width: 100%;
@@ -483,9 +489,12 @@
     letter-spacing: 0.3em;
     text-transform: uppercase;
   }
+  /* Four tubes, there from the first paint: the app puts them in, into the room kept for them. */
   .nixie-tubes {
     display: flex;
     gap: 7px;
+    min-width: calc(4 * 42px + 3 * 7px);
+    min-height: 70px;
   }
   .tube {
     --lit: 0;
@@ -1752,6 +1761,19 @@
   .btn-draw.busy {
     pointer-events: none;
   }
+  /* Tapped before the app had started (js/boot.js keeps the tap): the button stays pressed, to show it
+     heard, and the envelope opens as soon as it can. */
+  :root[data-early] .btn-draw {
+    pointer-events: none;
+    transform: translateY(2px);
+    filter: brightness(0.88);
+    animation: early-wait 0.9s ease-in-out infinite alternate;
+  }
+  @keyframes early-wait {
+    to {
+      filter: brightness(1.02);
+    }
+  }
   /* The same evening's saved ticket: put it back without opening it. */
   .put-back {
     min-height: 32px;
@@ -1766,10 +1788,26 @@
     letter-spacing: 0.04em;
   }
   .eligible {
+    min-height: 1.4em; /* its line is kept before the app has counted */
     color: var(--faint);
     font: 500 var(--fs-1) / 1.4 var(--font-mono);
     letter-spacing: 0.04em;
     text-align: center;
+  }
+  /* On this day (js/state/memory.js): the film you watched when this evening last came round. */
+  .memory {
+    color: var(--muted);
+    font-size: var(--fs-2);
+    text-align: center;
+    text-wrap: balance;
+  }
+  .memory .link {
+    color: var(--paper);
+    font: italic 600 1.08rem var(--font-display);
+  }
+  .memory .memory-stars {
+    color: var(--brass);
+    white-space: nowrap;
   }
   .sleepy-note {
     color: var(--muted);
